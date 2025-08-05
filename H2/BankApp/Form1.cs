@@ -6,5 +6,10 @@ namespace BankApp
         {
             InitializeComponent();
         }
+
+        private void label_AccountOwner_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
