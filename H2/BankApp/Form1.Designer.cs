@@ -48,9 +48,10 @@
             label_AccountOwner.AutoSize = true;
             label_AccountOwner.Location = new Point(3, 8);
             label_AccountOwner.Name = "label_AccountOwner";
-            label_AccountOwner.Size = new Size(88, 32);
+            label_AccountOwner.Size = new Size(112, 32);
             label_AccountOwner.TabIndex = 0;
-            label_AccountOwner.Text = "label1";
+            label_AccountOwner.Text = "Owner";
+            label_AccountOwner.Click += label_AccountOwner_Click;
             // 
             // label_AccountAmount
             // 
@@ -58,24 +59,24 @@
             label_AccountAmount.AutoSize = true;
             label_AccountAmount.Location = new Point(3, 56);
             label_AccountAmount.Name = "label_AccountAmount";
-            label_AccountAmount.Size = new Size(88, 32);
+            label_AccountAmount.Size = new Size(112, 32);
             label_AccountAmount.TabIndex = 1;
-            label_AccountAmount.Text = "label1";
+            label_AccountAmount.Text = "Amount";
             // 
             // textBox_AccountOwner
             // 
             textBox_AccountOwner.Dock = DockStyle.Fill;
-            textBox_AccountOwner.Location = new Point(97, 3);
+            textBox_AccountOwner.Location = new Point(121, 3);
             textBox_AccountOwner.Name = "textBox_AccountOwner";
-            textBox_AccountOwner.Size = new Size(501, 39);
+            textBox_AccountOwner.Size = new Size(477, 39);
             textBox_AccountOwner.TabIndex = 2;
             // 
             // numericUpDown_AccountAmount
             // 
             numericUpDown_AccountAmount.Dock = DockStyle.Fill;
-            numericUpDown_AccountAmount.Location = new Point(97, 51);
+            numericUpDown_AccountAmount.Location = new Point(121, 51);
             numericUpDown_AccountAmount.Name = "numericUpDown_AccountAmount";
-            numericUpDown_AccountAmount.Size = new Size(501, 39);
+            numericUpDown_AccountAmount.Size = new Size(477, 39);
             numericUpDown_AccountAmount.TabIndex = 3;
             // 
             // dataGridView_Accounts
