@@ -1,0 +1,8 @@
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\PositiveNumbers\bin\Debug\PositiveNumbers.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\PositiveNumbers\bin\Debug\PositiveNumbers.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\PositiveNumbers\bin\Debug\PositiveNumbers.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\PositiveNumbers\obj\Debug\PositiveNumbers.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\PositiveNumbers\obj\Debug\PositiveNumbers.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\PositiveNumbers\obj\Debug\PositiveNumbers.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\PositiveNumbers\obj\Debug\PositiveNumbers.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\PositiveNumbers\obj\Debug\PositiveNumbers.pdb

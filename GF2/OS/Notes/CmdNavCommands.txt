@@ -1,0 +1,21 @@
+CD (Change Directory):
+    CD "C:\Path\To\Directory" (Goes to specfic directory)
+    CD .. (Goes 1 parent directory up)
+    CD \ (Goes to root directory)
+
+
+X: (Changes disk drive to)
+    E: (Changes disk drive to E)
+    C: (Changes disk drive to C)
+
+
+DIR (Lists files + directories in current directory)
+DIR "C:\Path\To\Directory" (Lists files + directories in specfic directory)
+
+
+MD "C:\Path\To\Directory" (Makes a new directory)
+RD "C:\Path\To\Directory" (Removes a specfic directory)
+
+
+HELP (Displays genrral help)
+COMAMND /? (Displays specfic help for command)

@@ -1,0 +1,8 @@
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave33\bin\Debug\Opgave33.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave33\bin\Debug\Opgave33.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave33\bin\Debug\Opgave33.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave33\obj\Debug\Opgave33.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave33\obj\Debug\Opgave33.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave33\obj\Debug\Opgave33.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave33\obj\Debug\Opgave33.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave33\obj\Debug\Opgave33.pdb

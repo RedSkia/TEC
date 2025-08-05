@@ -1,0 +1,8 @@
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave24\bin\Debug\Opgave24.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave24\bin\Debug\Opgave24.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave24\bin\Debug\Opgave24.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave24\obj\Debug\Opgave24.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave24\obj\Debug\Opgave24.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave24\obj\Debug\Opgave24.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave24\obj\Debug\Opgave24.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave24\obj\Debug\Opgave24.pdb

@@ -1,0 +1,164 @@
+@font-face {
+    font-family: 'Star Jedi';
+    src: url('font.ttf') format('truetype');
+}
+
+@media (max-width: 650px) {
+    header > h1 {
+        font-size: 50px !important;
+    }
+    header > nav > button {
+        font-size: 20px !important;
+    }
+    #container * {
+        font-size: 14px !important;
+    }
+    .modal-content {
+        font-size: 14px !important;
+    }
+}
+
+* {
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Star Jedi', sans-serif;
+}
+
+:root {
+    --text-color: #fce508;
+}
+
+body {
+    background-image: url('../img/starwars-background.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    margin: 20px;
+}
+
+ul, li {
+    list-style-type: none;
+}
+
+header {
+    background-color: transparent;
+    text-align: center;
+}
+header > h1 {
+    font-size: 100px;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--text-color);
+}
+header > nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+header > nav > button {
+    font-size: 25px;
+    margin: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 2px solid var(--text-color);
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: var(--text-color);
+}
+
+header > nav > button:hover {
+    color: white;
+}
+
+#container {
+    color: var(--text-color);
+    border: 2px solid var(--text-color);
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column; 
+    font-size: 20px;
+    padding: 10px;
+    margin-top: 20px;
+    max-width: 1100px;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#container .off{
+    display: none;
+}
+
+#container input, select{
+    font-size: 20px;
+    border: 2px solid var(--text-color);
+    border-radius: 5px;
+    color: var(--text-color);
+
+    background-color: black;
+}
+
+#container input:focus, select:focus{
+    outline: none;
+}
+
+
+#container ul > li > ul  {
+    margin-top: 4px;
+    margin-bottom: 20px;
+}
+
+#container ul > li > a  {
+    color: var(--text-color);
+}
+#container ul > li > a:hover  {
+    color: white;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    color: white;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border: 2px solid var(--text-color);
+    width: 80%;
+    max-width: 700px;
+    border-radius: 5px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    word-wrap: break-word;
+    word-break: break-word;
+    padding-top: 40px;
+}
+
+.close {
+    position: absolute;
+    color: white;
+    font-size: 50px;
+    font-weight: bold;
+    top: -20px;
+    right: 10px;
+}
+
+.close:hover, .close:focus {
+    color: var(--text-color);
+    text-decoration: none;
+    cursor: pointer;
+}

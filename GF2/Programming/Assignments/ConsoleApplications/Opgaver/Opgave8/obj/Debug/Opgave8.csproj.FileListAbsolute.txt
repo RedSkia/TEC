@@ -1,0 +1,15 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave8\bin\Debug\Opgave8.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave8\bin\Debug\Opgave8.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave8\bin\Debug\Opgave8.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave8\obj\Debug\Opgave8.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave8\obj\Debug\Opgave8.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave8\obj\Debug\Opgave8.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave8\obj\Debug\Opgave8.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave8\bin\Debug\Opgave8.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave8\bin\Debug\Opgave8.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave8\bin\Debug\Opgave8.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave8\obj\Debug\Opgave8.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave8\obj\Debug\Opgave8.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave8\obj\Debug\Opgave8.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave8\obj\Debug\Opgave8.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave8\obj\Debug\Opgave8.pdb

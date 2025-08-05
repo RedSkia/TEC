@@ -1,0 +1,8 @@
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\Arrays\bin\Debug\Arrays.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\Arrays\bin\Debug\Arrays.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\Arrays\bin\Debug\Arrays.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\Arrays\obj\Debug\Arrays.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\Arrays\obj\Debug\Arrays.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\Arrays\obj\Debug\Arrays.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\Arrays\obj\Debug\Arrays.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\Arrays\obj\Debug\Arrays.pdb

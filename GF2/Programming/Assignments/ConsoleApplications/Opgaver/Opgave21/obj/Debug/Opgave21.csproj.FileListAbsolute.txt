@@ -1,0 +1,15 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave21\bin\Debug\Opgave21.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave21\bin\Debug\Opgave21.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave21\bin\Debug\Opgave21.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave21\obj\Debug\Opgave21.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave21\obj\Debug\Opgave21.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave21\obj\Debug\Opgave21.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave21\obj\Debug\Opgave21.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave21\bin\Debug\Opgave21.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave21\bin\Debug\Opgave21.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave21\bin\Debug\Opgave21.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave21\obj\Debug\Opgave21.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave21\obj\Debug\Opgave21.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave21\obj\Debug\Opgave21.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave21\obj\Debug\Opgave21.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave21\obj\Debug\Opgave21.pdb

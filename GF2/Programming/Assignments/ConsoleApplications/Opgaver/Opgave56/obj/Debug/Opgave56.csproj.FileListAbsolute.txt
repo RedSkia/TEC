@@ -1,0 +1,8 @@
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave56\bin\Debug\Opgave56.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave56\bin\Debug\Opgave56.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave56\bin\Debug\Opgave56.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave56\obj\Debug\Opgave56.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave56\obj\Debug\Opgave56.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave56\obj\Debug\Opgave56.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave56\obj\Debug\Opgave56.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave56\obj\Debug\Opgave56.pdb

@@ -1,0 +1,38 @@
+Vi har udviklet et program, som simulerer en informationsstander med 3 muligheder.
+Tilmelding af nyhedsbrev, Søg efter bruger, og Vis alle brugere. (Se bilag "NavigationsMenu")
+
+
+Tilmelding af nyhedsbrev.
+    Man kan tilmelde sig nyhedsbrevet ved, at indtaste de påkrævede oplysninger.
+    Telefonnummer, fornavn, efternavn, alder, adresse, postnummer, by, og mail (Se bilag "Tilmelding")
+    Når tilmeldingen er komplet, vises der en kvittering med de indtastede oplysninger. (Se bilag "TilmeldingKomplet")
+
+
+
+Søg efter bruger.
+    Når en søgning efter en bruger skal foretages, er et kodeord "Ab12345" påærkvet, da kun godkendte brugere med kodeord skal kunne søge. (Se bilag "Kodeord")
+    Når kodeordet er godkendt, kan en søgning foretages, hvoraf det er muligt at vælge et søgekriterie. (Se bilag "SøgeMenu")
+    Når et søgekriterie er valgt, bedes brugeren indtaste et søgeord. (Se bilag "Søgeord")
+    Når både et søgekriterie og søgeord er valgt, foretages en søgning. (Se bilag "TelefonnummerSøgning1234")
+    Alle søgeresultater vises af 12 kolonner ad gangen.
+
+
+Vis alle brugere.
+    For at kunne se alle brugere, er et kodeord "Ab12345" påærkvet, da kun godkendte brugere med kodeord, må se de registrerede brugere. (Se bilag "Kodeord")
+    Når kodeordet er godkendt, kan de registrerede brugere vises. (Se bilag "AlleBrugereDel1") Og (Se bilag "AlleBrugereDel2")
+
+
+Beskrivelse af billeder.
+
+Kodeord = Her er muglihed 2 (Søg efter bruger) eller 3 (Vis alle brugere) valgt også er et kodeord påærkvet.
+
+NavigationsMenu = Her vises navigations menuen, med de 3 muligheder: (Tilmelding af nyhedsbrev, Søg efter bruger, og Vis alle brugere)
+Tilmelding = Her er mulighed 1 (Tilmelding af nyhedsbrev) valgt, og udfyldt med den påkrævede information.
+TilmeldingKomplet = Her vises en kvittering på at tilmeldingen succesfuld, med den indtaste information.
+
+SøgeMenu = Her er mulighed 2 (Søg efter bruger) valgt, og nu skal vi vælge hvad vi vil søge efter fra menuen.
+Søgeord = Her har vi valgt at søge efter værdien 1234 i telefonnumre.
+TelefonnummerSøgning1234 = Her vises alle de registrerede personer, hvor deres telefonnummeret indeholder 1234.
+
+AlleBrugereDel1 = Her er mulighed 3 (Vis alle brugere) valgt, der vises de første 12 registrerede personer i systemet. 
+AlleBrugereDel2 = Her er mulighed 3 (Vis alle brugere) valgt, og spacebar blev trykket på så derfor vises den næste side, af registrerede personer.

@@ -1,0 +1,8 @@
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgave45\bin\Debug\Opgave45.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgave45\bin\Debug\Opgave45.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgave45\bin\Debug\Opgave45.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgave45\obj\Debug\Opgave45.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgave45\obj\Debug\Opgave45.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgave45\obj\Debug\Opgave45.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgave45\obj\Debug\Opgave45.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgave45\obj\Debug\Opgave45.pdb

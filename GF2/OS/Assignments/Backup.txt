@@ -1,0 +1,14 @@
+1. Opret gendannelsespunkt
+Windows-søg -> "Restore Point"
+
+
+3: Opsæt daglig Backup af Data mappen og kør backup.
+Åben software -> File backup -> BurgerMenu -> Schedule
+
+
+5: Gendan datamappen med din backup
+Åben software -> BurgerMenu -> Restore
+
+
+6: kør systemgendannelse og gendan computer med gendannelsespunkt indenAntiVirus.
+Windows-søg -> "Vælg Restore Point"

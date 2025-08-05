@@ -1,0 +1,185 @@
+Finansiel matematik
+    Formel
+        Kn = K0 * (1 + r)^n
+    Forklaring
+        Kn = Slutbeløbet
+        K0 = Kontant start beløb
+        r = Renten fx 0.05
+        ^n = antal terminer eller år
+    Eksempel
+        Lad os sige man sætter 1000kr
+        Ind i banken i 5år med en rente til 5%
+        Opgave
+            K5 = 1000 * (1 + 0.05)^5
+        Mellemregner
+            1 + 0.05 = 1,05
+            1,05^5 = 1,28~
+            1,28 * 1000 = 1280kr
+        Så hvis man startede med 1000kr efter 5 terminer/år med rente på 5% ville man have 1280kr
+
+Talsystemer
+    Binære talsystem
+        Forestil dig en række 8 af nuller "00000000" dette hedder en byte
+        I det binære talsystem bruger vi kun tallene 0 og 1
+        Ved brug af 0 og 1 kan vi lave 256 kombinationer i en byte
+
+        Måden det binære talsystem virker på er ligesom en lang række af kontakter som kan være til(1) eller fra(0)
+        Hvis vi slår de første 4 kontakter til i vores byte så ville den se sådan ud 00001111
+        Og værdien 00001111 i det binære talsystem ville i 10-talsystemet være 15
+
+        For hver tal på vores byte man rykker til venstre skal værdien ganges med 2 så har man værdien i 10-talsystemet
+        2^7  2^6  2^5  2^4  2^3  2^2  2^1  2^0
+        128  64   32   16   8    4    2    1
+
+        Opgaver
+        a)
+            1. Oversæt 20  fra 10-talsystemet til binær (svar = 00010100)
+            2. Oversæt 100 fra 10-talsystemet til binær (svar = 01100100)
+            3. Oversæt 50  fra 10-talsystemet til binær (svar = 00110010)
+            4. Oversæt 111 fra 10-talsystemet til binær (svar = 01101111)
+            5. Oversæt 222 fra 10-talsystemet til binær (svar = 11011110)
+        b)
+            1. Oversæt 01111011 fra binær-talsystemet til 10-talsystemet (svar = 123)
+            2. Oversæt 01100011 fra binær-talsystemet til 10-talsystemet (svar = 99)
+            3. Oversæt 11111111 fra binær-talsystemet til 10-talsystemet (svar = 255)
+            4. Oversæt 10101010 fra binær-talsystemet til 10-talsystemet (svar = 170)
+            5. Oversæt 01010110 fra binær-talsystemet til 10-talsystemet (svar = 86)
+    Hexadecimal talsystem
+        I hexadecimal talsystemet bruger vi tal og bogstaver
+        0-9 og A-F (A = 10, B = 11, C = 12, D = 13, E = 14, F = 15)
+
+        For at beregne hexadecimal værdier kan vi bruge dette skema
+        For at beregne til tal med højere end 4 øger vi bare skemaet 16^4, 16^5, 16^6, 16^7 også videre
+        16^3   16^2  16^1  16^0
+        4.096  256   16    1
+
+        Oversætnings eksempel (ABE)
+        Frøst skal vi finde værdierne A -> B -> E (Husk bogstaverne har også tal værdier)
+        A * 256 = 2560
+        B * 16 = 176
+        E * 1 = 14
+        2560 + 176 + 14 = 2750
+
+        Opgaver
+        a)
+            1. Oversæt 999 fra 10-talsystemet til hex-talsystemet (svar = 3E7)
+            2. Oversæt 1234 fra 10-talsystemet til hex-talsystemet (svar = 4D2)
+            3. Oversæt 1020 fra 10-talsystemet til hex-talsystemet (svar = 4128)
+            4. Oversæt 10101 fra 10-talsystemet til hex-talsystemet (svar = 2775)
+            5. Oversæt 13312 fra 10-talsystemet til hex-talsystemet (svar = 3400)
+        b)
+            1. Oversæt D45 fra hex-talsystemet til 10-talsystemet (svar = 3397)
+            2. Oversæt 1234 fra hex-talsystemet til 10-talsystemet (svar = 4660)
+            3. Oversæt F16 fra hex-talsystemet til 10-talsystemet (svar = 3862)
+            4. Oversæt 3E7 fra hex-talsystemet til 10-talsystemet (svar = 999)
+            5. Oversæt ABCD fra hex-talsystemet til 10-talsystemet (svar = 43981)
+
+        1. cifferplads har værdien af talsystemet i 0. potens.
+        I alle talsystemer er dette 1
+        2. cifferplads har værdien af talsystemet i 1. potens
+        Fx. i binær er dette 2. I decimal er dette 10. I hex er dette 16
+        3. cifferplads har værdien af talsystemet i 2. potens
+        Fx. i binær er dette 4. I decimal er dette 100. I hex er dette 256
+    Omregning
+        Hexadecimal til binær
+            Lad os tage Hex tallet ABE igen og omregne til binær
+            A * 256 = 2560
+            B * 16 = 176
+            E * 1 = 14
+            2560 + 176 + 14 = 2750
+
+            Binær skema
+            2^11  2^10  2^9  2^8  2^7  2^6  2^5  2^4  2^3  2^2  2^1  2^0
+            2048  1024  512  256  128  64   32   16   8    4    2    1
+            Så tager vi værdien 2750 som bliver (101010111110) i binær
+
+        Binær til hexadecimal
+            Lad os tage binær tallet 101010111110 og regne tilbage igen til hexadecimal
+            Frøst skal vi splitte det op i sektioner af 3
+            Så har vi 1010 1011 1110
+            Så regner vi ud hvad de sektioner er i decimal
+            1010 = 10
+            1011 = 11
+            1110 = 14
+            Der efter skal vi oversætte de nye tal ind i hexadecimal talsystemet 
+            0-9 og A-F (A = 10, B = 11, C = 12, D = 13, E = 14, F = 15)
+            10 = A
+            11 = B
+            14 = E
+
+        Binær skema
+        2^11  2^10  2^9  2^8  2^7  2^6  2^5  2^4  2^3  2^2  2^1  2^0
+        2048  1024  512  256  128  64   32   16   8    4    2    1
+        Så tager vi værdien 2750 som bliver (101010111110) i binær
+
+
+        Binær til 10-talsystemet
+        Nu oversætter vi 10011001 til 10-talsystem ved brug af vores binære byte skema
+        2^7    2^6      2^5      2^4    2^3    2^2      2^1      2^0
+        128    64       32       16     8      4        2        1
+        Tændt  Slukket  Slukket  Tændt  Tændt  Slukket  Slukket  Tændt
+
+        Så tager vi tallene og lægger den sammen hvor der er tændt
+        128 + 16 + 8 + 1 = 153
+
+Geometri & Pythagoras
+    Opgave 3
+        Lad os sige kontoret er en firkant med højte og bredde på 5,5m (Så finder vi ud af hjørnet senere)
+        Vi skal gange højden med bredden af kontoret
+        5,5 * 5,5 = 30,25m^2
+
+        Nu kan vi beregne hjørnets kvadratmeter så vi kigger på de 2 højter af kontoret som er 5,5m og 4 vi trækker dem fra hinanden
+        5,5 - 4 = 1,5m^2
+        Så nu kender vi højten af hjørnet det skal vi gange med 2 da højte * bredde = kvadratmeter
+        1,5 * 1,5 = 2,25m^2
+        Men da det jo er et hjørne og ikke en firkant skal vi dele med 2
+        2,25 / 2 = 1,125m^2
+        
+        Nu kan vi beregne grundarealet af kontoret
+        Vi tager kvadratmeterne da vi forstillede os det var en firkantet rum
+        30,25 - 1,125 = 29,125m^2
+
+        Nu kan vi beregne prisen af behandling for kontoret med en pris på 253kr pr kvadratmeter
+        29,125 * 253 = 7368,625kr
+
+    Opgave 4
+    Da vi ved at hjørnet højte og bredde er 1,5m Så kan vi gøre
+    1,5^2 + 1,5^2 = 4,5m Også tage kvadratroden af 4,5 = 2,12 også trække de 25cm fra i begge sidder
+    Bredde = (2,12m - 0.25cm - 0.25cm = 1,62m)
+
+
+Anvendt matematik, ligningssystemet samt funktioner
+    Opgave a
+        Depositum (72000kr)
+            CM og to andre partnere betaler 21000kr hver (3*21000 = 63000kr)
+            Den fjerde partner betaler resten af depositummet (72000-63000 = 9000kr)
+            Så den fjerde partner betaler 9000kr for resten af depositummet
+
+        Lokaleleje (12000kr)
+            CM og to andre partnere betaler 2500kr hver per måned (3*2500 = 7500kr)
+            Den fjerde partner betaler resten af den månedlige leje (12000-7500 = 4500kr)
+            Så den fjerde partner betaler 4500kr for resten af den månedlige leje
+    Opgave b
+        Se bilag
+    Opgave c
+        CM og to andre partnere betaler 21000 + 6 * 2500/md i løbet af 6 måneder = 36000kr
+        Den fjerde partner betaler 9000 + 6 * 4500/md i løbet af 6 måneder = 36000kr
+
+Statistik
+    Opgave a
+        Anvendt observationssæt {12, 4, 2, 7, 10, 4, 10, 2, 4, 7, 12, 10}
+        Et observationssæt er de data man har til at lave statistik med
+        En observation er hver enkelt værdi i observationssættet
+        Mindsteværdien er den mindste værdi i observationssættet så i dette tilfælde 2
+        Størsteværdien er den største værdi i observationssættet så i dette tilfælde 12
+        Variationsbredden er Størsteværdien - Mindsteværdien så i dette tilfælde 12 - 2 = 10
+        Typetalet er den observation som er flest af i observationssættet så i dette tilfælde er det både 4 og 10 da disse observationer er set 3 gange hver
+        Middeltalet er hvor man lægger alle observationer sammen og deler med antallet af observationer så i dette tilfælde 
+        12 + 4 + 2 + 7 + 10 + 4 + 10 + 2 + 4 + 7 + 12 + 10 = 84
+        84 / 12 = 7
+        Så 7 er Middeltalet
+    Opgave b
+        h(x) hyppighed er antal af gange observationen er set i observationssættet
+        H(x) summeret hyppighed er hvor man lægger h(x) hyppighed sammen
+        f(x) frekvens er i procent det antal af gange observationen er set i observationssættet
+        F(x) summeret frekvens er i procent hvor man lægger f(x) frekvens sammen

@@ -1,0 +1,37 @@
+The Data Link Layer = (Er Lag2 Håndtere "NIC" Styrer håndtering af data Og Gør det muligt at tilgå "Media" til øvrige lag)
+
+
+Topology = (Opsætningen af "End Devices" og kabler, "routers" etc)
+    Physical topology = (Er den fysiske visuelle opsætning)
+    Logical topology = (Er den visuelle logiske opsætning)
+
+IEEE 802 LAN/MAN Data Link Sublayers
+    Logical Link Control (LLC) = (Kommunikerer mellem software og netværk lag Og indesætter information i pakkerne)
+    Media Access Control (MAC) = (Håndtere "data encapsulation")
+
+
+Data Link Layer Standards
+    Institute of Electrical and Electronics Engineers (IEEE)
+    International Telecommunication Union (ITU)
+    International Organization for Standardization (ISO)
+    American National Standards Institute (ANSI)
+
+Half and Full Duplex Communication
+    Half = (Kan enten sende eller modtage Kan IKKE multitaske)
+    Full = (Kan sende og modtage samtidig KAN multitaske)
+
+LAN Topologies
+    Star = (5 "End Devices" sat sammen i et stjerne format)
+    Extented Star = (Flere "Star" formater)
+    Bus = ("end Devices" på række)
+    Ring = (En cirkel ring med "End Devices" forbundet)
+
+
+The Frame = ("Header" -> "Data" -> "Trailer")
+    Frame start = (Er starten af en frame)
+    Addressing = (Indeholder "Sender" og "Receiver" adresser)
+    Type = (Er protokol typen)
+    Control = (Har et prioritet system hvor det vigtigste data bliver afviklet først og resten må vente)
+    Data = (Indhold)
+    Error Detection = (Inkluderet efter data)
+    Frame stop = (Slutningen af en frame)

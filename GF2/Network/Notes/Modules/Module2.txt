@@ -1,0 +1,51 @@
+Operating Systems
+
+    Mange operativsystemer har mindst 3 lag
+        Hardware er de fysiske komponenter i computeren
+        Kernel er den det af operativsystemet som håndtere system operationer
+        Shell er en bro hvor enten et CLI eller GUI system kan kommunikerer med
+
+    CLI = Command Line Interface (Console)
+    GUI = Graphical User Interface (Graphical)
+
+
+Access Methods
+    Console
+        En "Console" kan bruges uden opsat netværk derfor bruges denne mulighed ofte til konfiguration af enheder (Kræver "terminal emulation software" og et specielt "Console Cable")
+    Secure Shell (SSH)
+        Er en sikker krypteret forbindelse som går gennem et virtuelt interface over et netværk
+    Telnet
+        Er en usikret fjernforbindelse gennem et "CLI"
+    Auxiliary port (AUX Port)
+        Er en usikret fjernforbindelse over en telefonforbindelse ved brug af et modem
+        Gammel og outdated løsning
+
+Primary Command Modes
+    User EXEC Mode (Ender med >)
+        Er en begrænset tilstand ofte kaldes "view-only" som kun giver adgang til kommandoer der ikke ændre på enhedens konfiguration
+    Privileged EXEC Mode (Ender med #)
+        Er en ubegrænset tilstand som giver adgang til alle kommandoer og konfigurationer
+
+    Switch(config)# = Global konfiguration tilstand
+    Switch(config-line)# = Bruges til at konfigurationer SSH, Telnet eller AUX adgang
+    Switch(config-if)# = Buges til at konfigurationer "switch" porte eller "router network interface"
+
+Navigate Between IOS Modes
+    Kommandoen: enable/disable (Skifter mellem User EXEC Mode og Privileged EXEC Mode)
+    Kommandoen: configure terminal (Skifter til Global konfiguration tilstand Kræver "Privileged EXEC Mode")
+    Kommandoen: exit (Går 1 step tilbage)    
+    Kommandoen: end (Går helt tilbage)
+    Kommandoen: ? (Viser hjælp)
+    Kommandoen CTRL + SHIFT + 6 (Afbryder kommandoen)
+
+Device Names
+    DeviceType-Location/Name-Index (Eksempel "Switch-Kontor-1)
+    Brug kun "A-Z" "0-9" og "-" for mellemrum og kortere end 64 symboler 
+
+Configuration Files
+    Kommandoen: show running-config (Viser nuværende konfiguration)
+    Kommandoen: show startup-config (Viser konfiguration som bliver loaded ved startup)
+    Kommandoen: copy running-config startup-config (Gemmer nuværende konfiguration til konfiguration ved startup)
+    Kommandoen: copy startup-config running-config (Loader startup konfiguration til nuværende konfiguration)
+    Kommandoen: erase startup-config (Nulstiller startup konfiguration)
+    Kommandoen: reload (Genloader startup konfiguration til den nuværende)

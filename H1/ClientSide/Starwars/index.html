@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Wars Browser</title>
+    <link rel="stylesheet" href="./Assets/css/styles.css">
+
+    <link rel="icon" href="./Assets/img/icon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="./Assets/img/icon.ico" type="image/x-icon">
+    <link rel="icon" href="./Assets/img/icon.png" sizes="120x120">
+    <link rel="icon" href="./Assets/img/icon.png" sizes="120x120">
+</head>
+<body>
+    <header>
+        <h1>Pick a category</h1>
+        <nav>
+            <button onclick="DisplayPeople()">Characters</button>
+            <button onclick="DisplayPlanets()">Planets</button>
+            <button onclick="DisplayFilms()">Films</button>
+        </nav>
+    </header>
+    <div id="container">
+        <p>Select a catagory</p>
+        <div class="people off">
+            <label for="peopleSearch">Search by character</label>
+            <input list="suggestions" type="text" id="peopleSearch" placeholder="Search..." oninput="SearchPeople()">
+            <datalist id="suggestions"></datalist>
+        </div>
+        <div class="planets off">
+            <label for="peopleSearch">Select by climate</label>
+            <select id="suggestions" onchange="ShowPlanets()"></select>
+        </div>
+        <div class="films off"></div>
+    </div>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <p id="modalText"></p>
+        </div>
+    </div>
+</body>
+</html>
+<script src="./Assets/js/scripts.js"></script>

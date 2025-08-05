@@ -1,0 +1,8 @@
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\WhileLoop\bin\Debug\WhileLoop.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\WhileLoop\bin\Debug\WhileLoop.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\WhileLoop\bin\Debug\WhileLoop.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\WhileLoop\obj\Debug\WhileLoop.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\WhileLoop\obj\Debug\WhileLoop.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\WhileLoop\obj\Debug\WhileLoop.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\WhileLoop\obj\Debug\WhileLoop.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\WhileLoop\obj\Debug\WhileLoop.pdb

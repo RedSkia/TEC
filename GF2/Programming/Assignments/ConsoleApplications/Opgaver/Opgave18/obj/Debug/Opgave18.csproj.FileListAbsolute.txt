@@ -1,0 +1,15 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave18\bin\Debug\Opgave18.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave18\bin\Debug\Opgave18.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave18\bin\Debug\Opgave18.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave18\obj\Debug\Opgave18.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave18\obj\Debug\Opgave18.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave18\obj\Debug\Opgave18.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave18\obj\Debug\Opgave18.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave18\bin\Debug\Opgave18.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave18\bin\Debug\Opgave18.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave18\bin\Debug\Opgave18.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave18\obj\Debug\Opgave18.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave18\obj\Debug\Opgave18.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave18\obj\Debug\Opgave18.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave18\obj\Debug\Opgave18.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave18\obj\Debug\Opgave18.pdb

@@ -1,0 +1,7 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\LogicStatments\bin\Debug\LogicStatments.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\LogicStatments\bin\Debug\LogicStatments.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\LogicStatments\bin\Debug\LogicStatments.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\LogicStatments\obj\Debug\LogicStatments.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\LogicStatments\obj\Debug\LogicStatments.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\LogicStatments\obj\Debug\LogicStatments.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\LogicStatments\obj\Debug\LogicStatments.pdb

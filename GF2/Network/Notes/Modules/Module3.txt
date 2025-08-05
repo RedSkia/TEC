@@ -1,0 +1,124 @@
+Communications Fundamentals
+    Message source (sender) = Hvem sender beskeden
+    Message Destination (receiver) = Hvem er modtageren
+
+Network Protocol Requirements
+    Message encoding = Er lidt ligesom sproget brugt Fx hvis afsenderen sender en besked på dansk og modtageren forventer en besked på engelsk duer det ikke
+    Message formatting and encapsulation = strukturen og formatet beskeden er opbygget på
+    Message size = beskedstørrelsen (i bytes)
+    Message timing
+        Flow Control = Kontrollerer hastigheden på transmission af dataoverførslen
+        Response Timeout = Hvor lang tid giver vi modtageren til at svare inden vi gør noget andet
+        Access method = Bestemmer hvem sender beskeder hvornår så 2 beskeder ikke bliver transmitteret samtidig
+    Message delivery options
+        Unicast = 1 til 1 transmission
+        Multicast = 1 til valgte "End devices"
+        Broadcast = 1 til alle "End devices"
+
+Network Protocol Overview
+    IP = Internet Protocol
+    TCP = Transmission Control Protocol
+    HTTP = HyperText Transfer Protocol
+    SSH = Secure Shell
+    SSL = Secure Sockets Layer
+    TLS = Transport Layer Security
+    BGP = Border Gateway Protocol
+    OSPF = Open Shortest Path First
+    DHCP = Dynamic Host Configuration Protocol
+    DNS = Domain Name System
+
+Network Protocol Functions
+    TCP, HTTP = Kommunikations protokoller
+    SSH, SSL, TLS = Sikkerheds protokoller
+    OSPF, BGP = Route protokoller
+    DHCP, DNS = Service protokoller
+
+Network Protocol Suites
+    Content Layer = Hvor kommunikationen bliver transmitteret 
+    Rules Layer = Reglerne for kommunikationen Fx sproget (encoding)
+    Physical Layer = Er hvor kommunikationen forgår Fx mellem 2 mennesker
+
+TCP/IP Protocol Suite
+    Application Layer
+        DNS = Domain Name System (Oversætter domain navne til IP adresser Fx google.com -> 192.168.0.1)
+        DHCP = Dynamic Host Configuration Protocol (Uddeler dynamisk IP adresser til "End Devices")
+        SLAAC = StateLess Address AutoConfiguration (Henter IPv6 adresse information uden en DCHP server)
+
+        SMTP = Simple Mail Transfer Protocol (Er en simpel mail protokol til at sende og modtage mails)
+        POP3 = Post Office Protocol v3 (Tilader at mails kan blive gemt og downloaded fra en central server til en computer)
+        IMAP = Internet Message Access Protocol (Tilader mail klienter kan tilgå mails på en central server)
+
+        FTP = File Transfer Protocol (Er en fil transport protokol til at dele filer med)
+        SFTP = SSH File Transfer Protocol (Bruger samme teknologi som FTP men har også SSH protokollen for bedre sikkerhed og krypteret fildeling)
+        TFPT = Trivial File Transfer Protocol (Er en simplere fildeling protokol end FTP som også er forbindelsesløs)
+
+        HTTP = Hypertext Transfer Protocol (Er et udbredt regelsæt for tekst, grafik, lyd og video på "WorldWideWeb")
+        HTTPS = HTTP Secure (Er det samme som HTTP men alt data bliver krypteret mellem forbindelserne)
+        REST = Representational State Transfer (Er et API system som bruger HTTP requests til at udføere handlinger)
+
+    Transport Layer
+        TCP = Transmission Control Protocol (Er en stabil måde at transmitterer data på som også giver tilbage svar om transmissionen blev modtaget)
+        UDP = User Datagram Protocol (Er en protokol som bare sender data ud i det blå og håber på de "End Devices" som skal bruge det modtager korrekt da ingen tilbage svar kommer)
+
+    Internet Layer
+        IP = Internet Protocol (Er adresser ligesom navne til "End Devices")
+        NAT = Network Address Translation (Er en protokol som laver private IPv4 adresser til en global unik IPv4 adresse)
+
+        ICMP =  Internet Control Message Protocol (Er en protokol som holder styr på om data pakkerne blev leveret forkert eller skaber fejl)
+
+        OSPF = Open Shortest Path First (Er en Routing protokol til at finde den hurtigste vej til målet)
+        EIGRP = Enhanced Interior Gateway Routing Protocol (Er en protokol som finder den beste og hurtigste vej til andre netværk)
+        BGP = Border Gateway Protocol (Er den standardiseret route protokol som bruges mellem Internet Service Providers "ISPs")
+
+    Network Access Layer
+        ARP = Address Resolution Protocol (Er den protokol som giver en dynamisk adresse mellem IPv4 og hardware adressen)
+        Ethernet = (Er det standardiseret regelsæt for hvordan signaler skal gives og modtages over et netværk)
+        WLAN = Wireless Local Area Network (Er det regelsæt for trådløs signal givning på frekvenser 2.4GHz til 5GHz)
+
+Open Standards (Ved at bruge åbne standard protokoller sikres det at ingen ene firma laver monopol på netværk produkter)
+    Standards organizations (Så som IEEE, IETF, IANA, ICANN, ITU, TIA)
+        Er som regel "non-profit" og "vendor-neutral" selskaber som udvikler de åbne standarder så ethvert firma kan bruge dem
+
+    Internet Society (ISOC) = Promoverer udviklingen af internettet til verden
+    Internet Architecture Board (IAB) = Ansvarlig for ledelsen og udviklingen af internet standarderne
+    Internet Engineering Task Force (IETF) = Udvikler og vedligeholder internettet og TCP/IP protokoller Og dokumenterer ny udvikling/opdateringer kendes også som "Request for Comments (RFC)"
+    Internet Research Task Force (IRTF) = Forsker i internettet og TCP/IP protokoller Og "Anti-Spam Research Group (ASRG)" Og "Crypto Forum Research Group (CFRG)" Og "Peer-to-Peer Research Group (P2PRG)"
+    Internet Corporation for Assigned Names and Numbers (ICANN) = (Styre udgivelsen af IP adresser, domain navne og Information af  TCP/IP protokoller)
+    Internet Assigned Numbers Authority (IANA) = (Kontrollere at "ICANN" håndtere udgivelsen af IP adresser, domain navne og Information af  TCP/IP protokoller korrekt)
+    Institute of Electrical and Electronics Engineers (IEEE) = (Innoverer teknologien i industrielle områder og forbedre strøm forbrug, sundhedsvæsenet, telekommunikation, netværk)
+    Electronic Industries Alliance (EIA) = (Er kendt for deres kabel standarder og "19-inch racks")
+    Telecommunications Industry Association (TIA) = (Udviker kommunikations standarder såsom til radio, telefontårne, Tale over IP (VoIP), satellit og andre formere for kommunikation)
+    International Telecommunications Union-Telecommunication Standardization Sector (ITU-T) = (Er en af de største og ældste kommunikations standard organisationer Og definerer standarden for, video, tv, bredbånd kommunikation)
+
+
+The OSI Reference Model
+    Application = (Er hvor protokoller kommunikerer "process" til "process")
+    Presentation = (Er hvor data bliver transmitteret mellem "Application Layer")
+    Session = (Håndtere data dialog og udveksling af data)
+    Transport = (Holder styr på "individual communications" mellem "End Devices")
+    Network = (Håndtere "individual data pieces" over netværket mellem "End Devices")
+    Data Link = (Udveksler data pakker over "common media")
+    Physical = (Er de fysiske enheder)
+
+The TCP/IP Protocol Model
+    Application = (Håndtere dialog og data til brugeren, "encoding")
+    Transport = (Kommunikation mellem "End Devices" over netværket)
+    Internet = (Finder den bedste/korteste vej gennem netværket)
+    Network Access = (Kontrollerer "hardware devices" og "media" over netværket)
+
+Segmenting Messages 
+    Ved at sende flere små bidder af data i stedet for en stor bid
+    Øger vi hastiheden og effektivitet da hvis et stykke af data fejlede har vi stadig resten
+    TCP holder styr på hvilken rækkefølge data bidderne kommer i da alle stykker har et index tal
+
+Protocol Data Units (IP packets)
+    Data = ("Application Layer" laget for PDU)
+    Segment = ("Transport Layer" laget for PDU)
+    Packet = ("Network Layer" laget for PDU)
+    Frame = ("Data Link Layer" laget for PDU)
+    Bits = ("Physical Layer" laget for PDU)
+
+
+Addresses
+    Network layer source and destination addresses = (Håndtere IP packets fra "Sender" til "Destination" på samme eller "Remote" netværk)
+    Data link layer source and destination addresses = (Håndtere leveringen af "Data Link Frame" fra et "network interface card (NIC)" til et andet "(NIC)")

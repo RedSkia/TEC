@@ -1,0 +1,7 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Valuta\bin\Debug\Valuta.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Valuta\bin\Debug\Valuta.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Valuta\bin\Debug\Valuta.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Valuta\obj\Debug\Valuta.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Valuta\obj\Debug\Valuta.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Valuta\obj\Debug\Valuta.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Valuta\obj\Debug\Valuta.pdb

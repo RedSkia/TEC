@@ -1,0 +1,6 @@
+Kominikation-Model
+Afsender
+Budskab
+Modtager
+Media
+Effekt

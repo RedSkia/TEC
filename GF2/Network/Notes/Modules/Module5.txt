@@ -1,0 +1,30 @@
+Binary and IPv4 Addresses
+    IPv4 Addresses = (32bits)
+    IPv6 Addresses = (128bits)
+
+Hexadecimal and IPv6 Addresses (A=10, B=11, C=12, D=13, E=14, F=15)
+    Hexadecimal Er IKKE "case-sensitive"
+
+    IPv6 = (En adresse har formatet "x:x:x:x:x:x:x:x" hvor hvert X er 16 bits)
+
+    Hex "0xABC5" til Decimal
+        16^0 = 1
+        16^1 = 16
+        16^2 = 256
+        16^3 = 4.096
+
+        Så når vi sætter Hex tallene ind i tabellen
+        (A = 10) * 16^3 = 40960
+        (B = 11) * 16^2 = 2816
+        (C = 12) * 16^1 = 192
+        (5 = 5) * 16^0 = 5
+        Så lægger vi tallene sammen og får = 43.973
+
+    Decimal "12345" til Hex
+       Så tager man decimalerne og ganger med 16: 
+        (12345 / 16 = 771,5625) og (0,5625 * 16 = 9)
+        (771 / 16 = 48,1875) og (0,1875 * 16 = 3)
+        (48 / 16 = 3) og (0 * 16 = 0)
+        (3 / 16 = 0,1875) og (0,1875 * 16 = 3)
+        Da vi nu har et tal < 1.0 stopper vi
+        Nu tager vi de "Remainders" vi har fra bunden af "3039" og konvaterer til hex med tabellen = svar

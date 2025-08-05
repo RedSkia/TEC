@@ -1,0 +1,8 @@
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\BrevVægt\bin\Debug\BrevVægt.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\BrevVægt\bin\Debug\BrevVægt.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\BrevVægt\bin\Debug\BrevVægt.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\BrevVægt\obj\Debug\BrevVægt.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\BrevVægt\obj\Debug\BrevVægt.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\BrevVægt\obj\Debug\BrevVægt.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\BrevVægt\obj\Debug\BrevVægt.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Andet\BrevVægt\obj\Debug\BrevVægt.pdb

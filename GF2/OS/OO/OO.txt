@@ -1,0 +1,70 @@
+1. Hvilken version af Windows vil du anbefale Charlie Mørk at installere
+    Jeg vil anbefale at installere Windows 10 Pro
+    Denne version af Windows er mere velegnet til virksomheder, på grund af de avancerede funktioner som BitLocker-kryptering, fjernskrivebord og muligheden for at deltage i et domæne
+    Disse funktioner giver øget sikkerhed og administrativ kontrol, hvilket kan være vigtigt for 
+
+
+2. Hvilken type installation skal udføres på maskinerne, og hvad er forskellene på Clean install, Upgrade og Migration?
+    En Clean installation er, når Windows bliver installeret på en ny/tom disk, hvilket giver en helt frisk start
+    En Upgrade bruges, når en tidligere version af Windows allerede er installeret, fx Windows 7, og du ønsker at opdatere til en nyere version som Windows 10
+    En Migration bruges, når Windows allerede er installeret, og du ønsker at foretage en ny installation, samtidig med at du bevarer programmer, data og indstillinger
+
+
+3. Angiv nogle forskelle mellem filsystemerne FAT32, exFAT og NTFS
+    FAT32 blev udviklet af Microsoft og blev udgivet i 1996 
+    FAT32-systemet giver kun mulighed for enkelte filer op til 4 GB, og den maksimale diskstørrelse er 8 TB
+    FAT32-systemet havde begrænsede funktioner og havde ikke indbygget sikkerhed, filkryptering eller filkompression
+
+    exFAT blev udviklet af Microsoft og blev udgivet i 2006 som en videreudvikling af FAT32
+    exFAT er optimeret til bedre ydeevne og kan håndtere enkelte filer op til 16 EB (ExaBytes)
+
+    NTFS blev udviklet af Microsoft og blev udgivet i 1993
+    NTFS giver mulighed for enkelte filer op til 16 TB og er det mest moderne filsystem til Windows
+    NTFS har flere indbyggede funktioner såsom filkompression, kryptering og sikkerhed
+
+
+4. Beskriv forskellen samt fordele og ulemper på striped volumes, spanned volumes og mirror 
+    Et striped volume øger læsehastigheden ved at fordele data over flere fysiske diske
+    Dette forbedrer ydeevnen, men hvis blot en disk bliver korrupt eller fejler, kan det resultere i totalt datatab
+    Derfor er denne type volume ikke særlig sikker
+
+    Et spanned volume kombinerer flere fysiske diske til et enkelt volume
+    Hvis en disk bliver korrupt eller fejler, går kun data på den pågældende disk tabt
+    Dette gør spanned volumes mere sikre end striped volumes
+
+    Et mirrored volume spejler indholdet på flere diske og giver mest sikkerhed
+    Hvis en af diskene bliver korrupt eller fejler, vil dataene stadig være spejlet på de andre diske, (medmindre alle diske går i stykker samtidig, hvilket er meget usandsynligt)
+    Men det beskytter ikke mod indbrud eller brand, da data stadig er gemt på diskene
+
+
+5. Forklar forskellen på et workgroup netværk og et domain-netværk
+    En workgroup består af individuelle lokale Windows-konti på computeren (Hvis flere personer skal bruge pc'en, skal de hver især oprette en konto)
+    Et domæne er en central server (domæneserver), som administrerer politikker, regler og Windows-konti på maskinerne
+    Et domæne tillader, at flere personer kan bruge og logge på samme computer, da logon-processen bliver håndteret af domæneserveren
+
+
+6. Forklar hvad VPN er, og kom med 2 eksempler på, hvornår man vil bruge VPN
+    En VPN bruges til at etablere en krypteret digital tunnel mellem to computere, hvilket skaber en sikker forbindelse
+    Dette er især nyttigt, når virksomheder skal oprette forbindelse til en fjerncomputer på en sikker måde via internettet 
+    Desuden giver en VPN mulighed for, at virksomhedens medarbejdere kan arbejde eksternt fra deres hjemmecomputer
+
+    En VPN kan også anvendes, for eksempel hvis en artikel eller en hjemmeside kun er tilgængelig i bestemte lande
+    Her kan en VPN bruges til at oprette en tunnel til en anden computer i det specifikke land, hvilket giver adgang til det pågældende indhold
+
+
+7. Udarbejd en backup politik der sikrer at CMISs (Charlie Mørk Information System) data og systemopsætninger kan reetableres hvis fx en brand kræver en total reetablering af firmaet
+    En løsning på at sikre datatab er at bruge en cloud-løsning som fx OneDrive for Business, som tillader virksomhedens medarbejdere at gemme deres filer på en fjernserver
+    OneDrive er integreret direkte i Windows, så det er nemt at bruge, og det sikrer, at dataene ikke forsvinder i tilfælde af brand, tyveri osv
+
+
+
+
+NTFS Har logging på fil ændringer
+Sikkerhed og retiheder
+MasterBootRecord Starter windows ico fil
+retiheder på filer og mapper enskaber er NTFS Sikkerhed
+Det hårdeste reglsæt bestemmer
+Cmd -> Net User (kan lave windows kontoer)
+I shareing hvis man bruger "$" i enden af navent bliver den skujet
+
+Brug kodeord "Ab12345"

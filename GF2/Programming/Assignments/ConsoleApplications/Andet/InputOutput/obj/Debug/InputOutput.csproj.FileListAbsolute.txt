@@ -1,0 +1,7 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\InputOutput\bin\Debug\InputOutput.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\InputOutput\bin\Debug\InputOutput.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\InputOutput\bin\Debug\InputOutput.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\InputOutput\obj\Debug\InputOutput.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\InputOutput\obj\Debug\InputOutput.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\InputOutput\obj\Debug\InputOutput.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\InputOutput\obj\Debug\InputOutput.pdb

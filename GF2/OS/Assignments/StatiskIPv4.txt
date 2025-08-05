@@ -1,0 +1,10 @@
+Lav 2x statisk IPv4 adresser i Hyper-V -> "Virtual Switch Manager"
+(Lav en internal eller private switch)
+(Sæt switchen som den aktive på begge vms under "settings" -> "network adapter")
+
+Åbn windows-søg skriv "network" -> "Settings for ethernet" -> "adapter settings" -> "IPv4"
+Brug adresserne "192.168.1.10" og "192.168.1.20" brug samme subnetmaske for begge "255.255.255.0"
+
+Åbn windows-søg skriv "firewall" vælg apps -> "ny indgående regler" -> "custom"
+Under protokoltype vælg "ICMPv4"
+"Tilpas" -> "Specfikke" -> "Slå ekkoandmodning til" (tillader ping)

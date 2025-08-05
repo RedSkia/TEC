@@ -1,0 +1,15 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave13\bin\Debug\Opgave13.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave13\bin\Debug\Opgave13.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave13\bin\Debug\Opgave13.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave13\obj\Debug\Opgave13.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave13\obj\Debug\Opgave13.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave13\obj\Debug\Opgave13.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave13\obj\Debug\Opgave13.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave13\bin\Debug\Opgave13.exe.config
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave13\bin\Debug\Opgave13.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave13\bin\Debug\Opgave13.pdb
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave13\obj\Debug\Opgave13.csproj.AssemblyReference.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave13\obj\Debug\Opgave13.csproj.SuggestedBindingRedirects.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave13\obj\Debug\Opgave13.csproj.CoreCompileInputs.cache
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave13\obj\Debug\Opgave13.exe
+E:\Skrivebord\Documents\TEC\GF2\Programming\ConsoleApplications\Opgaver\Opgave13\obj\Debug\Opgave13.pdb

@@ -1,0 +1,13 @@
+Brug værktøj Windows-søg -> Computer Managment -> Storage -> Disk Managment
+
+Der er 2 typer diske
+Basic, Dynamic disk
+
+Mirrored volume
+tillader at en disks indhold kan blive spejlet ned på flere diske
+
+Spanned volume
+tillader at flere diske kan blive kombineret til 1 volume
+
+Striped volume
+tillader at data bliver fordelt ud på flere diske for bedre peformace og hastighed (hvis noget sker med 1 disk er alt data væk)

@@ -1,0 +1,7 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Position\bin\Debug\Position.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Position\bin\Debug\Position.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Position\bin\Debug\Position.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Position\obj\Debug\Position.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Position\obj\Debug\Position.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Position\obj\Debug\Position.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\Position\obj\Debug\Position.pdb

@@ -1,0 +1,7 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\IndexFormatting\bin\Debug\IndexFormatting.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\IndexFormatting\bin\Debug\IndexFormatting.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\IndexFormatting\bin\Debug\IndexFormatting.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\IndexFormatting\obj\Debug\IndexFormatting.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\IndexFormatting\obj\Debug\IndexFormatting.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\IndexFormatting\obj\Debug\IndexFormatting.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Andet\IndexFormatting\obj\Debug\IndexFormatting.pdb

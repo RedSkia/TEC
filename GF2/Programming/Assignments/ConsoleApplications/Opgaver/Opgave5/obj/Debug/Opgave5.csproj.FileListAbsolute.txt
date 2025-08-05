@@ -1,0 +1,7 @@
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave5\bin\Debug\Opgave5.exe.config
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave5\bin\Debug\Opgave5.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave5\bin\Debug\Opgave5.pdb
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave5\obj\Debug\Opgave5.csproj.AssemblyReference.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave5\obj\Debug\Opgave5.csproj.CoreCompileInputs.cache
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave5\obj\Debug\Opgave5.exe
+C:\Users\marcu\Desktop\ConsoleApplications\Opgaver\Opgave5\obj\Debug\Opgave5.pdb

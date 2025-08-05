@@ -1,0 +1,10 @@
+Sådan bereges procent opgaver
+
+Find 25% af 875
+Svar: 875 / 100 = 8,75 * 25
+
+Hvor mange % er 225 af 7500
+Svar: 225 / 7500 = 0,03 * 100
+
+Find forskellen i % fra 145 til 120
+Svar: ((145 - 120) / 145) * 100 = 17,24%
