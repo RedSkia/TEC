@@ -1,0 +1,114 @@
+Programmering
+    Vores gruppe har udviklet et CLI/konsol-program, kodet og designet af mig. 
+
+    Programmet simulerer en informationsstander som har mulighederne.
+    Tilmeldelse af nyhedsbrev, 
+    Søgning efter bruger, 
+    Visning af alle brugere
+
+    Teknologier brugt (keywords, classes, methods, properties, operatører, datatyper & kommentarer)
+        Kommentarer typer
+            //CommentMethod1
+            /*CommentMethod2*/
+            /// <summary>
+            /// CommentMethod3 (Det er nu ikke helt det samme som en kommentar, da et "summary" har mere funktionalitet)
+            /// </summary>
+
+        Datatyper brugt
+            string, bool, byte, ushort, int, (float)int casting, enum (ConsoleKey)
+
+        Operatører brugt
+        [] 
+        /
+        -
+        +
+        ++
+        +=
+        <
+        >
+        %
+        =
+        ==
+        !=
+        ||
+        &&
+
+        Adgangsmodifikatorer, klasser, metoder, egenskaber brugt
+            Console.Title
+            Console.Clear();
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine("Noget NY linje tekst");
+            Console.Write("Noget SAMME linje tekst");
+            Console.ReadKey(true); 
+            ConsoleKey inputKey = Console.ReadKey(true).Key;
+            string userLineInput = Console.ReadLine();
+            String.IsNullOrWhiteSpace(userLineInput);
+            String.Equals(userLineInput, "stringMatch", StringComparison.Ordinal)
+            String.ToLower("STORT TEKST");
+            bool containsText = userLineInput.Contains("Noget Tekst");
+            private const string password = "Ab12345";
+            private static bool isPasswordEnabled = false;
+            private static readonly string[] informationOptions = new string[3]
+            {
+                "Tilmelding af nyhedsbrev",
+                "Søg efter bruger",
+                "Vis alle brugere",
+            };
+            while (true) 
+            { 
+                continue;
+                return;
+                break;
+            }
+            for (int i = 0; i < informationOptions.Length; i++) 
+            {
+                return;
+                break;
+            }
+            switch (inputKey) 
+            {
+                /*IF*/
+                case ConsoleKey.NumPad1:
+                case ConsoleKey.D1:
+                {
+                } break;
+
+                /*ELSE-IF*/
+                case ConsoleKey.NumPad2:
+                case ConsoleKey.D2:
+                {
+                } break;
+
+                /*ELSE*/
+                default:
+                {
+
+                } break;
+            }
+
+
+OS
+Vores gruppe har installeret og konfigureret 2 virtuelle maskiner i Hyper-V, med Windows 10 pro (klient) og Windows server 2022 som (domain-controller + filserver).
+
+Windows server konfigurationer
+Active Directory Domain Services (AD DS) er grundkomponenterne i et Active Directory
+
+DHCP
+DNS
+
+File & Storage Service
+
+Custom Groups & Users
+
+
+Windows klient konfigurationer
+
+
+
+
+
+Netværk
+Vores gruppe har opbygget et netværk, med afdelinger i København og Aarhus, som har en DHCP server i København.
+VLSM
+Komandoer?
+Banner, passwords, SSH, lukke for ubrugte porte, kryptering.

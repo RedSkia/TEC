@@ -1,0 +1,65 @@
+Host Roles
+    Computere som er forbundet i et netværk kaldes "Hosts", "Clients" eller "End Devices"
+    IP står for "Internet Protocol"
+
+Peer-to-Peer
+    Flere sammenkædede Computere eller "End Devices" i samme netværk med forskellige funktioner kan samarbejde
+    Ved brug af et "network interface card (NIC)"
+    Kan Fx bruges i sammenhæng
+    PC1 er forbundet til en printer med "Universal Serial Bus (USB)" og har et "NIC"
+    Så kan PC2 finde PC1 på netværket og sende filer til udprintning
+
+
+Network Media
+    De 3 moderne netværk transmissionstyper
+    Kobber kabler
+        Fungere ved at sende elektriske impulser via kablet
+    Fiber optiske kabler
+        Fungere ved at sende lys impulser via kablet som er meget hurtigt
+    Trådløst (WIFI)
+        Fungere ved at sende specifikke frekvenser af elektromagnetiske bølger
+
+
+Network Representations
+    "End Devices" er Fx
+        Computere, bærbare, printere, IP telefoner, trådløse devices (tablet, mobiltelefoner)
+
+    Blå bølger = Trådløst transmission
+    Sort kabel = "Local Area Network" LAN (Bruges internt)
+    Rødt knæk kabel = "Wide Area Network" WAN (Bruges eksternt)
+
+    "Network Interface Card (NIC)" er en fysisk genstand (Netværks kort) som forbinder "End devices" til netværket
+    "Physical Port" er en port til LAN kabler
+    "Interface" er en særlig port på Fx en "Router" som forbinder flere netværk
+
+
+    Intermediary Devices
+        "Intermediary devices" forbinder "End devices" til netværket
+        Eksempler på "Intermediary devices"
+        Router, Wireless Router, LAN Switch, Multilayer Switch, Firewall Appliance
+
+LAN & WAN
+    "LAN" Er et netværk Fx i hjemmet eller på arbejdspladsen
+    "WAN" Er det netværk som forbinder "LAN" netværk
+
+Intranets & Extranets
+    "Intranet" = Et firmas private "LAN" netværk som kun kan tilgås inde fra af virksomhedens medarbejdere 
+    "Extranet" = En åbning af firmaets netværk til Fx sælgere af firmaets vare
+    "Internet" = En åbning som alle har adgang til
+
+Internet Access Technologies
+    "Cable"
+        Giver en høj båndbredde og tilgængelighed ved benyttelse af data transmission fra "television service providers"
+    "Digital Subscriber Lines (DSL) & Asymmetrical DSL (ADSL)"
+        Yder samme fordele som "Cable" Men download hastigheden er højere end upload hastihden    
+    "Cellular"
+        Ydeevnen er begrænset da transmissionen foregår over telefon tårne som kan have begrænset rækkevidde
+    "Satellite"
+        Giver internet til steder hvor det er svært at levere de ovengåne mugligheder Fx midt i en ørken
+    "Dial-up Telephone"
+        Har dårlig mugligheder for at transmitterer store stykker data da transmissionen foregår over et modem
+
+Network Security
+    Confidentiality = Om data bliver leveret sikkert til den rette modtager
+    Integrity = Om data i transmissionen er blevet ændret eller om data stadig er i dets orginale intakte form
+    Availability = Sikrer pålidelig adgang til data for godkendte brugere

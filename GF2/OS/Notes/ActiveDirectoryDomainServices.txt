@@ -1,0 +1,24 @@
+ADDS -> "ActiveDirectoryDomainServices"
+
+Det er en god ide at have 2x ADDS hvis 1 går ned
+ADDS Kræver en DNS Server er også installeret
+
+Når ADDS er færdig installeret skal man trykke på flaget og vælge 
+"Promote this server to a domain controller"
+
+En "Forrest" er en samling af flere ADDS (cluster)
+Hvis ændringer i en schema er fortaget vil ændringerne blive fortaget i alle schemas
+
+
+Fejler -> 192.168.0.
+Virker -> 192.168.1.
+Med subnetmask 255.255.255.0
+
+
+
+Herefter har vi lagt en bruger "Fatima Ulla" ind i "Active Directory Users and Computers"
+
+
+En DHCP Server uddeler Host ipv4 adresser
+
+

@@ -1,0 +1,70 @@
+The Physical Connection (Der er 2 typer af fysisk netværk Kabel og Trådløst ("Access Point"))
+
+Physical Components = (Hardware, "End Devices", "Network Interface Cards (NIC)")
+Media = (Måden data bliver transmitteret med Fx Kabel og Trådløst)
+
+Encoding 
+    Kabel bruger "Manchester encoding" = (Afgiver høj eller lav strøm spænding til at angive binær værdier 0:1)
+    Fiber bruger lys pulser (Ved kraftigt lys = 1, Ved svagt lys = 0)
+
+Bandwidth (Hastigheden på bits som kan sendes pr sekund)
+    bps = Bits per second
+    Kbps = Kilobits per second
+    Mbps = Megabits per second
+    Gbps = Gigabits per second
+    Tbps = Terabits per second
+
+Bandwidth Terminology
+    Latency = (Tid det tager at transmittere data fra et sted til et andet)
+    Throughput = (Mængden af data som sendes over netværket i en given tidsperiode)
+    Goodput = (Er "Throughput" minus fejl/overskydende pakker)
+
+Characteristics of Copper Cabling
+    Er den mest udbredte type af kabler da det er billigt og nemt Til gengæld lange afstande og signal interferens kan forvrænge signalet
+    
+    De 3 typer af kopper kabler
+        Unshielded twisted-pair (UTP) = (Er de mest udbredte kabler, De beskytter lidt mod fysiske skader og signal interferens da kablerne indeni er snoet, Kablerne er også "Color-Coded")
+            Kablerne er snoet forskelligt som skaber et magnetfelt som annullerer interferens
+            "IEEE "bedømmer kablernes kategori efter "bandwidth rates"
+
+            Kategori 3 = (Kabler orignalt brugt til "voice communication" men senere brugt til "data transmission")
+            Kategori 5 = (Giver 100Mbps Og kategori 5E giver 1000Mbps)
+            Kategori 6 & 7 = (Giver 10Gbps)
+            Kategori 8 = (Giver 40Gbps)
+
+        Shielded twisted-pair (STP) = (Bruger samme teknologi som UTP Men kræver en jordforbindelse for bedre beskyttelse mod Radio, Crosstalk og interferens Er også meget dyrere og svære at sætte op)
+        
+        Coaxial cable = (Har beskyttelse mod interferens Og små fysiske skader Bliver ofte brugt til trådløse løsninger og af internet udbydere Da det også kan opgraderes til fiber)
+
+
+    Cable Types and Standards
+        Ethernet Straight-through = (Forbinder "End Devices")
+        Ethernet Crossover = (Forbinder "Router" og "Switches" etc)
+        Rollover = (Forbinder "Cisco Devices" til "End Devices" så man kan tilgå "Console")
+
+Fiber-Optic Cabling = (Kablet er tyndt som et hår Bruger laserlys til at sende data Og er immun over for interferens)
+    De 2 typer af fiber
+        Single-Mode Fiber (SMF) = (Kan række mange 100km ved brug af laserlys)
+        Multimode fiber (MMF) = (Maks afstand 550m før signal tab, Bruger LED lys, Giver 10Gbps)
+
+
+Fiber versus Copper
+Bandwidth =             10Mbps/10Gbps
+Distance                100m/100.000m
+Interference =          Low/High
+Price =                 Low/High
+Installation skills =   Low/High 
+
+
+
+Wireless Media
+    Coverage area = (Godt i åbne områder men bygninger kan forringe forbindelsen)
+    Interference = (Små interferens bølger kan forringe forbindelsen så som, telefoner og andre trådløse enheder)
+    Security = (Sikkerheden er lav eller ikke eksisterende da uautoriseret enheder kan få forbindelse derfor at kabler mere sikkert da de skal være tilsluttet fysisk)
+    Shared medium = (Mange enheder tilsluttet kan forringe forbindelsen)
+
+Types of Wireless Media
+    WIFI = (Det "Network Interface Card" som behandler anmodningerne kan kun håndtere 1 anmodning af gangen og resten må vente)
+    Bluetooth = (Er en "one-to-one" forbindelse mellem 2 Devices som har en rækkevidde på 1-100m)
+    WiMAX = (Er en "one-to-many" forbindelse mellem flere Devices)
+    Zigbee = (Er en specifik trådløs type som har lav, båndbredde, strømforbrug Og bliver mest brugt til korte afstande med enheder som skal holde strøm længe)

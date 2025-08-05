@@ -1,0 +1,9 @@
+Ethernet Encapsulation = ("Ethernet" operere i "data link & physical layer" Og de Supportede hastiheder er 10, 100, 1000, 10.000, 40,000, 100.000 Mbps)
+
+
+Data Link Sublayers
+    LLC Sublayer = (Kommunikere mellem Software og hardware Og tilføjer information i "data frame")
+    MAC Sublayer = (integreret i hardware og Kontrollere "data encapsulation")
+
+Ethernet Frame Fields (Frame størelse 64-1518 bytes)
+

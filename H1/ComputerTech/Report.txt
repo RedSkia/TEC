@@ -1,0 +1,57 @@
+Hypervisor miljøer er komplette, isolerede virtuelle miljøer, som er deres eget system.
+Containerization er lidt ligesom hypervisor miljøer, men dog ikke helt, da containerization ikke er komplette systemer, men nærmere dele af et system, som bliver virtualiseret.
+
+HyperV (Hypervisor)
+    HyperV er Microsofts svar på et hypervisor software til professionel brug med mange avancerede funktioner såsom:
+    Virtuelle netværk, hardware og snapshots af virtuelle miljøer samt en høj kvalitet af sikkerhed.
+    HyperV er også dybt integreret i Windows systemer, hvilket gør det nemt at konfigurere.
+    HyperV kan også integreres med Microsofts online løsninger via Azure.
+
+VirtualBox (Hypervisor)
+    VirtualBox er en open source løsning fra firmaet Oracle, der også tilbyder færre avancerede funktioner sammenlignet med sine konkurrenter.
+    VirtualBox har understøttelse af cross platform til Windows, macOS og Linux og har en overskuelig brugergrænseflade.
+    VirtualBox kan bruges til professionel brug, men mangler nogle af de avancerede funktioner, og ydeevnen er mindre optimal end konkurrenternes.
+
+VMWare (Hypervisor)
+    VMWare er en af de store spillere på markedet, der ofte bruges i virksomhedsmiljøer samt enterprise løsninger.
+    VMWare har mange enterprise og avancerede funktioner såsom:
+    Automatisk reboot ved fejl og kombinerede server clusters og Live migration.
+    Disse funktioner gør VMWare meget attraktivt til enterprise løsninger.
+    VMWare er nok et af de mest kendte hypervisor platforme, der tilbyder robuste og skalerbare løsninger for mange virksomheder.
+
+Proxmox (Hypervisor & Containerization)
+    Proxmox er en ret unik hypervisor og containeriseringsplatform til Linux, som tilbyder det bedste af begge teknologier.
+    Proxmox er udviklet til Linux miljøer og tilbyder en simpel, webbaseret brugergrænseflade, som gør det nemt at styre virtuelle maskiner og containere.
+    Proxmox er specielt smart, fordi vi kan køre både komplette systemer som virtuelle maskiner og systemer som containere på samme platform, hvilket gør det til en meget attraktiv løsning.
+    Proxmox er en open source løsning, som er udviklet og vedligeholdt af et stort Linux fællesskab.
+
+Docker (Containerization)
+    Docker er nok den mest udbredte platform til containerization.
+    Docker har revolutioneret måden, vi tænker deployment af software.
+    Docker har gjort det nemt at pakke softwareapplikationer ned til Docker images, som køres i isolerede Docker containere med understøttelse for cross platform på Windows, macOS og Linux.
+    Det geniale ved Docker er, at vi slipper for at bruge timer på at konfigurere og opsætte avancerede softwareløsninger. 
+    Med Docker images kan vi bygge en komplet pakke, der indeholder alt nødvendig konfiguration og opsætning, som nemt kan distribueres og implementeres.
+
+    På vores virtuelle server maskine "Win Server" har vi opsat Active Direcvory Domain Services samt oprettet 1 bruger hvor vores virtuelle client maskine "WinClient" kan logge ind med en Domain bruger
+    Vi har også konfigurationer en Dynamic Host Configuration Protocol løsning hvoraf vi har lavet en IPv4 adresse pool 192.168.1.101 til 192.168.1.200 som Automatisk bliver uddelt til klienter på vores Domain
+    Derudover har vi også opsat DNS, File Storage og IIS Services
+
+
+
+
+DHCP (Static IP)
+webserver (iis)
+Shared Network Drive
+
+
+Static IP for Server:
+
+IP Address: 192.168.1.100
+Subnet Mask: 255.255.255.0
+IP Pool for DHCP Server:
+
+Starting IP Address: 192.168.1.101
+Ending IP Address: 192.168.1.200
+Subnet Mask: 255.255.255.0
+Default Gateway: 192.168.1.1 (your router's IP)
+DNS Server: 192.168.1.1 (your router's IP, or a dedicated DNS server)

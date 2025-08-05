@@ -1,0 +1,148 @@
+Forside side1
+Fortejlegse side2
+Text side 3-7
+bilag side8+
+
+Bilag skal have Text
+
+
+
+
+Teoretisk opgave
+    1. Hvilken version af Windows vil du anbefale Charlie Mørk at installere?
+        Jeg vil anbefale at installere Windows 10 Pro.
+        Denne version af Windows er mere velegnet til virksomheder, på grund af de avancerede funktioner som BitLocker-kryptering, fjernskrivebord og muligheden for at deltage i et domæne.
+        Disse funktioner giver øget sikkerhed og administrativ kontrol, hvilket kan være vigtigt for virksomhedsmiljøet.
+
+    2. Hvilken type installation skal udføres på maskinerne, og hvad er forskellene på Clean install, Upgrade og Migration?
+        En Clean installation er, når Windows bliver installeret på en ny/tom disk, hvilket giver en helt frisk start.
+        En Upgrade bruges, når en tidligere version af Windows allerede er installeret, fx Windows 7, og du ønsker at opgradere til en nyere version som Windows 10.
+        En Migration bruges, når Windows allerede er installeret, og du ønsker at foretage en ny installation, samtidig med at du bevarer programmer, data og indstillinger.
+
+    3. Angiv nogle forskelle mellem filsystemerne FAT32, exFAT og NTFS
+        FAT32 blev udviklet af Microsoft, og udkom i 1996.
+        FAT32-systemet giver kun mulighed for enkelte filer op til 4GB, og den maksimale diskstørrelse er 8TB.
+        FAT32-systemet havde begrænsede funktioner, og havde ikke indbygget sikkerhed, filkryptering eller filkompression.
+
+        exFAT blev udviklet af Microsoft, og udkom i 2006 som en videreudvikling af FAT32.
+        exFAT er optimeret til bedre ydeevne, og kan håndtere enkelte filer op til 16EB (ExaBytes).
+
+        NTFS blev udviklet af Microsoft, og udkom i 1993.
+        NTFS giver mulighed for enkelte filer op til 16TB, og er det mest moderne filsystem til Windows.
+        NTFS har flere indbyggede funktioner, såsom filkompression, kryptering og sikkerhed.
+
+    4. Beskriv forskellen samt fordele og ulemper på striped volumes, spanned volumes og mirror 
+        Et striped volume øger læsehastigheden, ved at fordele data over flere fysiske diske.
+        Dette forbedrer ydeevnen, men hvis blot en disk bliver korrupt eller fejler kan det resultere i totalt datatab.
+        Derfor er denne type volume ikke særlig sikker.
+
+        Et spanned volume kombinerer flere fysiske diske til et enkelt volume.
+        Hvis en disk bliver korrupt eller fejler, går kun data på den pågældende disk tabt.
+        Dette gør spanned volumes mere sikre end striped volumes.
+
+        Et mirrored volume spejler indholdet på flere diske, og giver mest sikkerhed.
+        Hvis en af diskene bliver korrupt eller fejler, vil dataene stadig være spejlet på de andre diske, (medmindre alle diske går i stykker samtidig, hvilket er meget usandsynligt.)
+        Men det beskytter ikke mod indbrud eller brand, da data stadig er gemt på diskene.
+
+    5. Forklar forskellen på et workgroup netværk og et domain-netværk
+        En workgroup består af individuelle lokale Windows-konti på computeren. (Hvis flere personer skal bruge pc'en, skal de hver især oprette en konto.)
+        Et domæne er en central server (Active Directory), som administrerer politikker, regler og Windows-konti på flere maskiner.
+        Et domæne tillader, at flere personer kan bruge og logge på samme computer, da logon-processen bliver håndteret af domæneserveren.
+
+    6. Forklar hvad VPN er, og kom med 2 eksempler på, hvornår man vil bruge VPN
+        En VPN kan bruges til at etablere en krypteret digital tunnel mellem to computere, hvilket skaber en sikker forbindelse.
+        Dette er især nyttigt, når virksomheder skal oprette forbindelse til en fjerncomputer på en sikker måde via internettet.
+        Desuden giver en VPN mulighed for, at virksomhedens medarbejdere kan arbejde remote fra deres hjemmecomputer.
+
+        En VPN kan også anvendes, for eksempel hvis en artikel eller en hjemmeside kun er tilgængelig i bestemte lande.
+        Så kan en VPN bruges til at oprette en tunnel til en anden computer i det specifikke land, hvilket giver adgang til det pågældende indhold.
+
+    7. Udarbejd en backup politik der sikrer at CMISs (Charlie Mørk Information System) data og systemopsætninger kan reetableres hvis fx en brand kræver en total reetablering af firmaet
+        En løsning på at sikre datatab er at bruge en cloud-løsning som fx OneDrive for Business, som tillader virksomhedens medarbejdere kan gemme deres filer på en fjernserver.
+        OneDrive er integreret direkte i Windows, så det er nemt at bruge, og det sikrer, at dataene ikke forsvinder i tilfælde af brand, tyveri osv.
+
+        
+
+Praktisk opgave – Workgroup netværk
+    1. Opret 2 virtuelle Windows 10 maskiner, PC1 og PC2. Maskinspecifikationer oplyses af underviseren
+        For at omdøbe hostnavnet på pc'en, tryk på Windows-tasten + R, og skriv "sysdm.cpl". Vælg "Skift". (navneændring kræver en genstart.)
+
+        Først skal vi bekræfte, om virtualization er aktiveret.
+        Dette kan kontrolleres i TaskManager, under fanen CPU. (se vedhæftede bilag.)
+        Virtualization kan normalt aktiveres i BIOS, under "Avancerede indstillinger".
+
+        Når virtualization er aktiveret, tryk på Windows-tasten + R, og skriv "optionalfeatures".
+        Marker "Hyper-V" boksen, bekræft ændringerne og genstart den fysiske pc.
+        Hent værktøjet fra Microsoft, til at oprette en ".ico" fil via dette link: https://go.microsoft.com/fwlink/?LinkId=691209.
+        Åbn Hyper-V, vælg "Ny virtuel maskine" og følg installationsguiden.
+
+    2. PC1: Opret 3x5 GB dynamiske harddiske som spanned volume
+        Åbn Hyper-V, og højreklik på den virtuelle maskine.
+        Vælg "Indstillinger" og gå til fanen, "SCSI-controller".
+        Tilføj 3 diske, på 5GB hver.
+
+        Tryk på Windows-tasten + R, og skriv "diskmgmt.msc" for at åbne Diskstyring.
+        Højreklik på en disk, og vælg "Konverter til dynamisk" gentag for hver af de 3 diske.
+        Højreklik derefter på en af de dynamiske diske, og vælg "spanned volume".
+        Følg opsætningsguiden, og vælg de andre diske, til at danne et spanned volume. (se vedhæftet bilag)
+
+    3. PC2: Opret 3x5 GB dynamiske harddiske som striped volume
+        Åbn Hyper-V, og højreklik på den virtuelle maskine.
+        Vælg "Indstillinger" og gå til fanen, "SCSI-controller".
+        Tilføj 3 diske, på 5GB hver.
+
+        Tryk på Windows-tasten + R, og skriv "diskmgmt.msc" for at åbne Diskstyring.
+        Højreklik på en disk, og vælg "Konverter til dynamisk" gentag for hver af de 3 diske.
+        Højreklik derefter på en af de dynamiske diske, og vælg "striped volume".
+        Følg opsætningsguiden, og vælg de andre diske, til at danne et striped volume. (se vedhæftet bilag)
+
+    4. Kontroller at PC1 og PC2 har DHCP konfiguration
+        Tryk på Windows-tasten + R, og skriv "ncpa.cpl" for at åbne Netværksforbindelser.
+        Højreklik på Ethernet, og vælg "Egenskaber".
+        Find og vælg "IPv4" (se vedhæftet bilag) i egenskaberne for Ethernet.
+        Kontroller, at "DHCP" er markeret.
+
+    5. Åbn firewallen for ping
+        Tryk på Windows-tasten + R, og skriv "wf.msc" for at åbne Windows Firewall, med avancerede sikkerhedsindstillinger.
+        Under "Indgående regler", vælg "Ny regel". Vælg typen "Tilpasset" og gå til fanen "Protokoller og porte".
+        Vælg "Protokoltype" "ICMPv4". Tilpas reglen efter behov og marker boksen "Echo Request" (se vedhæftet bilag).
+
+    6-7-8. Vis at PC1 og PC2 kan pinge hinanden
+        Åben HyperV, og start begge virtalle maskiner, og Tryk på Windows-tasten + R, og skriv "cmd" derefter skriv komandoen, "ping 192.168.1.20" i PC1, og omvent i PC2 skriv komandoen, "ping 192.168.1.10" (se bilag)
+
+    9-10-11. Opret brugere og grupper på PC-A og PC-B som vist i Gruppetabellen og Brugertabellen. Du skal sikre dig at brugerne kommer i de rigtige grupper
+        Tryk på winKnap + r og skriv "compmgmt.msc" under "Local users & Groups" kan workgroup brugere og grupper oprettes (se bilag)
+
+    12. Installer et gratis antivirusprogram – helst et du kender/har fået anbefalet
+        Jeg andbefaler Avast Antivirus, da det er gratis, og har noget af det beste beskylltelse mod malware virus.
+
+
+
+
+
+
+
+
+
+Praktisk opgave – Domain netværk
+    1. Installer domain server
+    2. Opsæt AD, DNS og DHCP
+    3. konfigurer resten af CMIS, så der kører på en domain løsning.
+
+
+
+
+
+
+
+
+
+NTFS Har logging på fil ændringer
+Sikkerhed og retiheder
+MasterBootRecord Starter windows ico fil
+retiheder på filer og mapper enskaber er NTFS Sikkerhed
+Det hårdeste reglsæt bestemmer
+Cmd -> Net User (kan lave windows kontoer)
+I shareing hvis man bruger "$" i enden af navent bliver den skujet
+
+Brug kodeord "Ab12345"

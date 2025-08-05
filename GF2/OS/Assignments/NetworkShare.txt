@@ -1,0 +1,2 @@
+Vælg mappe -> Properties -> Advanced Sharing
+(Hvis share-navnet har et dollartegn i enden er det et skjult share)

@@ -1,0 +1,11 @@
+En IPv4-adresse er opdelt i 2 dele: Netværks adresse og den lokale adresse
+En IPv4-adresse bliver defineret efter en subnetmaske
+(I subnetmasken hvis en byte er 0: indikerer det en lokal adresse)
+(I subnetmasken Hvis en byte er >= 1: indikerer det netværks adresse)
+
+IP-klasser:
+A (0.0.0.0 -> 127.255.255.255)
+B (128.0.0.0 -> 191.255.255.255)
+C (192.0.0.0 -> 223.255.255.255)
+D (224.0.0.0 -> 239.255.255.255)
+E (240.0.0.0 -> 255.255.255.255)
