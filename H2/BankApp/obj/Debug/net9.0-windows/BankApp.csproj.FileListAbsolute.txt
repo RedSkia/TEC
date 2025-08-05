@@ -1,0 +1,17 @@
+D:\Marcus\Desktop\TEC\H2\BankApp\bin\Debug\net9.0-windows\BankApp.exe
+D:\Marcus\Desktop\TEC\H2\BankApp\bin\Debug\net9.0-windows\BankApp.deps.json
+D:\Marcus\Desktop\TEC\H2\BankApp\bin\Debug\net9.0-windows\BankApp.runtimeconfig.json
+D:\Marcus\Desktop\TEC\H2\BankApp\bin\Debug\net9.0-windows\BankApp.dll
+D:\Marcus\Desktop\TEC\H2\BankApp\bin\Debug\net9.0-windows\BankApp.pdb
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.MainForm.resources
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.csproj.GenerateResource.cache
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.GeneratedMSBuildEditorConfig.editorconfig
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.AssemblyInfoInputs.cache
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.AssemblyInfo.cs
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.csproj.CoreCompileInputs.cache
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.sourcelink.json
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.dll
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\refint\BankApp.dll
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.pdb
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\BankApp.genruntimeconfig.cache
+D:\Marcus\Desktop\TEC\H2\BankApp\obj\Debug\net9.0-windows\ref\BankApp.dll
