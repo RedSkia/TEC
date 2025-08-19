@@ -9,39 +9,36 @@ namespace WinFormsEFCore.Models;
  */
 
 // ManyToMany entity connecting ObjectA and ObjectB
-public class ManyToMany : IEntity
+public class ManyToMany
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Ensure Auto_Increment
-    public uint Id { get; set; } // Automatically marked as KEY by EF
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public uint Id { get; set; }
 
-    // Navigation properties
-    public ObjectA A { get; set; } = null!; // Navigation reference to ObjectA
-    public ObjectB B { get; set; } = null!; // Navigation reference to ObjectB
+    public ObjectA A { get; set; } = null!;
+    public ObjectB B { get; set; } = null!;
 
     // ObjectA entity
     public class ObjectA : BaseObject
     {
-        public List<ObjectB> BCollection { get; set; } = new(); // Navigation collection to ObjectB
+        public List<ObjectA_B> A_BLinks { get; set; } = new();
     }
 
     // ObjectB entity
     public class ObjectB : BaseObject
     {
-        public List<ObjectA> ACollection { get; set; } = new(); // Navigation collection to ObjectA
+        public List<ObjectA_B> A_BLinks { get; set; } = new();
     }
 
-    // Junction table entity connecting ObjectA and ObjectB
+    // Junction table connecting ObjectA and ObjectB
     public class ObjectA_B
     {
-        [ForeignKey(nameof(ObjectA))]
-        public uint AId { get; set; } // Foreign Key reference to ObjectA
-        public ObjectA ARef { get; set; } = null!; // Navigation reference to ObjectA
+        public uint AId { get; set; } // FK to ObjectA
+        [ForeignKey(nameof(AId))]
+        public ObjectA ARef { get; set; } = null!;
 
-        [ForeignKey(nameof(ObjectB))]
-        public uint BId { get; set; } // Foreign Key reference to ObjectB
-        public ObjectB BRef { get; set; } = null!; // Navigation reference to ObjectB
+        public uint BId { get; set; } // FK to ObjectB
+        [ForeignKey(nameof(BId))]
+        public ObjectB BRef { get; set; } = null!;
     }
 }
 
-// Repository for ManyToMany
-public class ManyToManyRepository(AppDBContext context) : BaseRepository<ManyToMany>(context);
