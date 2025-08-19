@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WinFormsEFCore.Models;
@@ -8,7 +10,7 @@ namespace WinFormsEFCore.Models;
  */
 
 // OneToMany entity connecting ObjectA and ObjectB
-public class OneToMany : IEntity
+public class OneToMany
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Ensure Auto_Increment
     public uint Id { get; set; } // Automatically marked as KEY by EF
@@ -20,17 +22,22 @@ public class OneToMany : IEntity
     // ObjectA entity
     public class ObjectA : BaseObject
     {
-        public ICollection<ObjectB> BCollection { get; set; } = new List<ObjectB>(); // Navigation collection to ObjectB
+        [InverseProperty(nameof(ObjectB.ARef))]
+        public List<ObjectB> BCollection { get; set; } = new(); // Navigation collection to ObjectB
     }
 
     // ObjectB entity
     public class ObjectB : BaseObject
     {
-        [ForeignKey(nameof(ObjectA))]
+        [ForeignKey(nameof(ARef))]
         public uint AId { get; set; } // Foreign Key reference
-        public ObjectA ARef { get; set; } = null!; // Navigation reference to ObjectA
+
+        [Required] // Enforce NOT NULL in DB
+        [InverseProperty(nameof(ObjectA.BCollection))]
+        public ObjectA ARef
+        {
+            get => field ?? throw new NullReferenceException($"{nameof(ARef)} is required but was not set.");
+            set => field = value ?? throw new ArgumentNullException(nameof(ARef));
+        } = null!; // Navigation reference to ObjectA
     }
 }
-
-// Repository for OneToMany
-public class OneToManyRepository(AppDBContext context) : BaseRepository<OneToMany>(context);
