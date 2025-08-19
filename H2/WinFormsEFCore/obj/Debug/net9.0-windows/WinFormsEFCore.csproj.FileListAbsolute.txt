@@ -1,0 +1,8 @@
+D:\Marcus\Desktop\TEC\H2\WinFormsEFCore\obj\Debug\net9.0-windows\WinFormsEFCore.csproj.AssemblyReference.cache
+D:\Marcus\Desktop\TEC\H2\WinFormsEFCore\obj\Debug\net9.0-windows\WinFormsEFCore.MainForm.resources
+D:\Marcus\Desktop\TEC\H2\WinFormsEFCore\obj\Debug\net9.0-windows\WinFormsEFCore.csproj.GenerateResource.cache
+D:\Marcus\Desktop\TEC\H2\WinFormsEFCore\obj\Debug\net9.0-windows\WinFormsEFCore.GeneratedMSBuildEditorConfig.editorconfig
+D:\Marcus\Desktop\TEC\H2\WinFormsEFCore\obj\Debug\net9.0-windows\WinFormsEFCore.AssemblyInfoInputs.cache
+D:\Marcus\Desktop\TEC\H2\WinFormsEFCore\obj\Debug\net9.0-windows\WinFormsEFCore.AssemblyInfo.cs
+D:\Marcus\Desktop\TEC\H2\WinFormsEFCore\obj\Debug\net9.0-windows\WinFormsEFCore.csproj.CoreCompileInputs.cache
+D:\Marcus\Desktop\TEC\H2\WinFormsEFCore\obj\Debug\net9.0-windows\WinFormsEFCore.sourcelink.json

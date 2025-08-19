@@ -8,7 +8,6 @@ public static class BankAccountRepository
     public static bool RemoveAccount(BankAccount account) => _accounts.Remove(account);
     public static bool RemoveAccount(Predicate<BankAccount> predicate)
         => _accounts.RemoveWhere(predicate) > 0;
-
     public static void CopyTo(BankAccount[] destination, int startIndex = 0)
     {
         if (destination == null) throw new ArgumentNullException(nameof(destination));

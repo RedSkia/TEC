@@ -3,20 +3,20 @@
   "WorkspaceRootPath": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|solutionrelative:mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|d:\\marcus\\desktop\\tec\\h2\\bankapp\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|solutionrelative:mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|d:\\marcus\\desktop\\tec\\h2\\bankapp\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|solutionrelative:mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|d:\\marcus\\desktop\\tec\\h2\\bankapp\\banksystem\\bankaccountrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|solutionrelative:banksystem\\bankaccountrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|d:\\marcus\\desktop\\tec\\h2\\bankapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|d:\\marcus\\desktop\\tec\\h2\\bankapp\\banksystem\\bankaccountrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|solutionrelative:banksystem\\bankaccountrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{31D7C07A-6CE3-4A27-915B-A7BF0A5ED95B}|BankApp.csproj|d:\\marcus\\desktop\\tec\\h2\\bankapp\\banksystem\\bankaccount.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -38,29 +38,29 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "MainForm.cs [Design]",
               "DocumentMoniker": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\MainForm.cs",
               "RelativeDocumentMoniker": "MainForm.cs",
-              "ToolTip": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\MainForm.cs [Design]",
-              "RelativeToolTip": "MainForm.cs [Design]",
+              "ToolTip": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\MainForm.cs [Design]*",
+              "RelativeToolTip": "MainForm.cs [Design]*",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-05T12:57:44.589Z",
               "EditorCaption": " [Design]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "MainForm.cs",
               "DocumentMoniker": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\MainForm.cs",
               "RelativeDocumentMoniker": "MainForm.cs",
-              "ToolTip": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\MainForm.cs",
-              "RelativeToolTip": "MainForm.cs",
-              "ViewState": "AgIAAHcAAAAAAAAAAAAUwIoAAAABAAAAAAAAAA==",
+              "ToolTip": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\MainForm.cs*",
+              "RelativeToolTip": "MainForm.cs*",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAuwDQAAAA4AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-05T07:55:47.925Z",
               "EditorCaption": ""
@@ -71,8 +71,8 @@
               "Title": "MainForm.Designer.cs",
               "DocumentMoniker": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\MainForm.Designer.cs",
               "RelativeDocumentMoniker": "MainForm.Designer.cs",
-              "ToolTip": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\MainForm.Designer.cs",
-              "RelativeToolTip": "MainForm.Designer.cs",
+              "ToolTip": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\MainForm.Designer.cs*",
+              "RelativeToolTip": "MainForm.Designer.cs*",
               "ViewState": "AgIAACgAAAAAAAAAAAAtwDYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-05T07:55:57.285Z",
@@ -88,25 +88,23 @@
               "RelativeToolTip": "BankSystem\\BankAccount.cs",
               "ViewState": "AgIAAAcAAAAAAAAAAAAkwBEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-05T10:44:57.109Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-05T10:44:57.109Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "BankAccountRepository.cs",
               "DocumentMoniker": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\BankSystem\\BankAccountRepository.cs",
               "RelativeDocumentMoniker": "BankSystem\\BankAccountRepository.cs",
               "ToolTip": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\BankSystem\\BankAccountRepository.cs",
               "RelativeToolTip": "BankSystem\\BankAccountRepository.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAA+wBUAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAIAAAAAAAAAAAA0wAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-05T10:54:07.208Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-05T10:54:07.208Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\Marcus\\Desktop\\TEC\\H2\\BankApp\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
@@ -114,8 +112,7 @@
               "RelativeToolTip": "Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-05T07:32:09.023Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-05T07:32:09.023Z"
             },
             {
               "$type": "Document",

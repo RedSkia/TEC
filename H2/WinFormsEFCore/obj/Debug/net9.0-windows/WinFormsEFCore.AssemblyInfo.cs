@@ -11,12 +11,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("BankApp")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("WinFormsEFCore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+adc68808537d97eb1fcebda30ca645d982608814")]
-[assembly: System.Reflection.AssemblyProductAttribute("BankApp")]
-[assembly: System.Reflection.AssemblyTitleAttribute("BankApp")]
+[assembly: System.Reflection.AssemblyProductAttribute("WinFormsEFCore")]
+[assembly: System.Reflection.AssemblyTitleAttribute("WinFormsEFCore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 [assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
 [assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]
