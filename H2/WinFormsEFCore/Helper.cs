@@ -11,15 +11,26 @@ public static class Helper
 {
     public static string RandomWord(int length = -1)
     {
-        const string chars = "abcdefghijklmnopqrstuvwxyz";
         var random = new Random();
+        const string vowels = "aeiou";
+        const string consonants = "bcdfghjklmnpqrstvwxyz";
 
-        if (length == -1) length = random.Next(1, chars.Length + 1);
+        // If length not specified, choose 3–8 letters (more realistic)
+        if (length == -1) length = random.Next(3, 9);
 
         var word = new char[length];
-        for (int i = 0; i < length; i++)
-            word[i] = chars[random.Next(chars.Length)];
 
+        // Alternate consonant and vowel for a more "word-like" structure
+        bool startWithConsonant = random.Next(2) == 0;
+        for (int i = 0; i < length; i++)
+        {
+            if ((i % 2 == 0 && startWithConsonant) || (i % 2 == 1 && !startWithConsonant))
+                word[i] = consonants[random.Next(consonants.Length)];
+            else
+                word[i] = vowels[random.Next(vowels.Length)];
+        }
+
+        // Capitalize first letter
         word[0] = char.ToUpper(word[0]);
         return new string(word);
     }
