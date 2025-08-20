@@ -137,6 +137,7 @@ namespace WinFormsEFCore
             button_Delete.TabIndex = 5;
             button_Delete.Text = "Delete";
             button_Delete.UseVisualStyleBackColor = true;
+            button_Delete.Click += button_Delete_Click;
             // 
             // button_Add
             // 
@@ -148,6 +149,7 @@ namespace WinFormsEFCore
             button_Add.TabIndex = 6;
             button_Add.Text = "Add";
             button_Add.UseVisualStyleBackColor = true;
+            button_Add.Click += button_Add_Click;
             // 
             // button_Update
             // 
@@ -159,6 +161,7 @@ namespace WinFormsEFCore
             button_Update.TabIndex = 7;
             button_Update.Text = "Update";
             button_Update.UseVisualStyleBackColor = true;
+            button_Update.Click += button_Update_Click;
             // 
             // textBox_Input
             // 
@@ -202,6 +205,7 @@ namespace WinFormsEFCore
             button_Search.TabIndex = 9;
             button_Search.Text = "Search";
             button_Search.UseVisualStyleBackColor = true;
+            button_Search.Click += button_Search_Click;
             // 
             // MainForm
             // 

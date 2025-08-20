@@ -13,7 +13,7 @@ namespace WinFormsEFCore.Models;
 public class OneToOne
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Ensure Auto_Increment
-    public uint Id { get; set; } // Automatically marked as KEY by EF
+    public uint Id { get; set; } // Primary Key
 
     // Navigation properties
     public ObjectA A { get; set; } = null!; // Navigation reference to ObjectA
@@ -22,7 +22,7 @@ public class OneToOne
     // ObjectA entity
     public class ObjectA : BaseObject
     {
-        [Required] // Enforce NOT NULL in DB
+        [Required] // Enforce NOT NULL
         [InverseProperty(nameof(ObjectB.ARef))]
         public ObjectB BRef
         {
@@ -32,13 +32,13 @@ public class OneToOne
     }
 
     // ObjectB entity
-    [Index(nameof(AId), IsUnique = true)] // Ensure Unique to make relation 1:1
+    [Index(nameof(AId), IsUnique = true)] // Enforce 1:1 uniqueness
     public class ObjectB : BaseObject
     {
         [ForeignKey(nameof(ARef))]
-        public uint AId { get; set; } // Foreign Key reference
+        public uint AId { get; set; } // FK to ObjectA
 
-        [Required] // Enforce NOT NULL in DB
+        [Required] // Enforce NOT NULL
         [InverseProperty(nameof(ObjectA.BRef))]
         public ObjectA ARef
         {
@@ -47,34 +47,3 @@ public class OneToOne
         } = null!; // Navigation reference to ObjectA
     }
 }
-
-    //public override void CreateData(ushort count = 100)
-    //{
-    //    var random = new Random();
-
-    //    for (int i = 0; i < count; i++)
-    //    {
-    //        // Create ObjectA with random value
-    //        OneToOne.ObjectA objectA = new()
-    //        {
-    //            Value = Helper.RandomWord()
-    //        };
-
-    //        // Create ObjectB with random value
-    //        OneToOne.ObjectB objectB = new()
-    //        {
-    //            Value = Helper.RandomWord()
-    //        };
-
-    //        // Link them
-    //        objectA.BRef = objectB;
-    //        objectB.ARef = objectA;
-
-    //        // Add to repository
-    //        Add(new OneToOne()
-    //        {
-    //            A = objectA,
-    //            B = objectB,
-    //        });
-    //    }
-    //}
