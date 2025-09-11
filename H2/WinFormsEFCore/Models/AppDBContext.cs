@@ -12,6 +12,7 @@ public class AppDBContext : DbContext
     {
         optionsBuilder.UseInMemoryDatabase("InMemoryDb");
     }
+
 }
 
 public abstract class BaseObject

@@ -154,7 +154,7 @@ namespace WinFormsEFCore
             // button_Update
             // 
             button_Update.Dock = DockStyle.Fill;
-            button_Update.Location = new Point(280, 2);
+            button_Update.Location = new Point(380, 2);
             button_Update.Margin = new Padding(2);
             button_Update.Name = "button_Update";
             button_Update.Size = new Size(96, 30);
@@ -181,11 +181,11 @@ namespace WinFormsEFCore
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
-            tableLayoutPanel2.Controls.Add(button_Search, 2, 0);
             tableLayoutPanel2.Controls.Add(textBox_Input, 0, 0);
-            tableLayoutPanel2.Controls.Add(button_Update, 1, 0);
             tableLayoutPanel2.Controls.Add(button_Delete, 4, 0);
+            tableLayoutPanel2.Controls.Add(button_Update, 2, 0);
             tableLayoutPanel2.Controls.Add(button_Add, 3, 0);
+            tableLayoutPanel2.Controls.Add(button_Search, 1, 0);
             tableLayoutPanel2.Font = new Font("Arial", 12F);
             tableLayoutPanel2.Location = new Point(296, 33);
             tableLayoutPanel2.Margin = new Padding(2);
@@ -198,7 +198,7 @@ namespace WinFormsEFCore
             // button_Search
             // 
             button_Search.Dock = DockStyle.Fill;
-            button_Search.Location = new Point(380, 2);
+            button_Search.Location = new Point(280, 2);
             button_Search.Margin = new Padding(2);
             button_Search.Name = "button_Search";
             button_Search.Size = new Size(96, 30);
