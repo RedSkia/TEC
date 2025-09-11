@@ -8,10 +8,10 @@ const pages=[
   {name:'Desserts',url:'https://www.mcdonalds.com/dk/da-dk/vores-menu/is.html',icon:'🍦'}
 ];
 
-const proxy='https://api.allorigins.win/raw?url=';
-const $ = id => document.getElementById(id);
+const proxy='https://api.allorigins.win/raw?url='; //Bypass CORS
+const $ = id => document.getElementById(id); 
 const grid=$('productGrid'),
-      status=$('status'),
+      itemstatus=$('itemstatus'),
       cartEl=$('cartItems'),
       cartTotal=$('cartTotal'),
       checkoutBtn=$('checkoutBtn'),
@@ -30,7 +30,7 @@ pages.forEach((p,i)=>{
 
 // Fetch products
 async function fetchProducts(url){
-  status.textContent='Loading...'; grid.innerHTML=''; $('pageTitle').textContent='Loading...';
+  itemstatus.textContent='Loading...'; grid.innerHTML=''; $('pageTitle').textContent='Loading...';
   try{
     const res=await fetch(proxy+encodeURIComponent(url));
     const doc=new DOMParser().parseFromString(await res.text(),'text/html');
@@ -53,8 +53,8 @@ async function fetchProducts(url){
       };
       grid.appendChild(div);
     });
-    status.textContent=`Loaded ${items.length} items.`;
-  } catch(e){status.textContent='Error loading items.';}
+    itemstatus.textContent=`Loaded ${items.length} items.`;
+  } catch(e){itemstatus.textContent='Error loading items.';}
 }
 
 // Cart functions
@@ -78,7 +78,7 @@ function renderCart(){
     cartEl.appendChild(div);
   });
   cartTotal.textContent=total?`Total: $${total.toFixed(2)}`:'';
-  $('cartTitle').textContent=`Cart #${totalOrders}`;
+  $('cartTitle').textContent=`Order #${totalOrders}`;
   checkoutBtn.style.display=Object.keys(cart).length?'block':'none';
   if(!Object.keys(cart).length) cartEl.innerHTML='<p style="text-align:center;">Cart is empty.</p>';
 }

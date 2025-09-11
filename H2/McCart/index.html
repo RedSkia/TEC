@@ -2,23 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>McDonald's Cart</title>
 <link rel="icon" href="https://www.mcdonalds.com/content/dam/sites/dk/nfl/logo/McD_GoldenArches_1235_RGB.png"/>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1 id="pageTitle">Loading...</h1>
-<p id="status">Loading...</p>
-<div id="productGrid" class="grid"></div>
+<div id="main">
+  <div id="productGridWrapper">
+    <h1 id="pageTitle">Loading...</h1>
+    <p id="itemstatus">Loading...</p>
+    <div id="productGrid" class="grid"></div>
+    <nav id="navBottom" class="nav-bottom"></nav>
+  </div>
 
-<nav id="navBottom" class="nav-bottom"></nav>
-
-<div id="cart">
-  <h2 id="cartTitle">Cart #1</h2>
-  <div id="cartItems"></div>
-  <p id="cartTotal"></p>
-  <button id="checkoutBtn">Checkout</button>
+  <div id="cart">
+    <h2 id="cartTitle">Order #1</h2>
+    <div id="cartItems"></div>
+    <p id="cartTotal"></p>
+    <button id="checkoutBtn">Checkout</button>
+  </div>
 </div>
 
 <div id="overlay">
