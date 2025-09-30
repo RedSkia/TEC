@@ -1,4 +1,4 @@
-# 4.1 Inter-VLAN Routing Operation
+# 4.1 Inter-VLAN Routing Operation (![](./_/M4_InterVlanRoute.png))
 
 ---
 
@@ -48,7 +48,7 @@ Legacy Inter-VLAN Routing was the first method used to connect VLANs:
 > **Note:** This method is **no longer implemented** in modern switched networks and is included only for historical context.
 
 
-# 4.2 Router-on-a-Stick Inter-VLAN Routing
+# 4.2 Router-on-a-Stick Inter-VLAN Routing (![](./_/M4_RouterStick.png))
 
 ---
 
@@ -75,7 +75,7 @@ The **Router-on-a-Stick** method is an efficient solution that overcomes the phy
 
 
 
-# 4.3 Inter-VLAN Routing on a Layer 3 Switch
+# 4.3 Inter-VLAN Routing on a Layer 3 Switch (![](./_/M4_VlanLayer3Switch.png))
 
 The modern and scalable method uses **Layer 3 switches** and **Switched Virtual Interfaces (SVIs)**.
 
@@ -89,7 +89,7 @@ The modern and scalable method uses **Layer 3 switches** and **Switched Virtual 
 
 ---
 
-## Layer 3 Switch
+## Layer 3 Switch (![](./_/M4_Layer3Switch.png))
 
 * **Terminology:** Also called a **multilayer switch**—operates at **Layer 2** (switching) and **Layer 3** (routing).  
 * **Scaling:** Using SVIs is **highly scalable** due to hardware-based routing.
@@ -144,7 +144,7 @@ If physical connections are correct, the following table summarizes common reaso
 * Use the commands listed in the table to verify configuration and connectivity.
 
 
-## Troubleshoot Inter-VLAN Routing Scenario
+## Troubleshoot Inter-VLAN Routing Scenario (![](./_/M4_TroubleshootVlanRoute.png))
 
 Examples of some of these inter-VLAN routing problems will now be covered in more detail.  
 This topology will be used for all of these issues.

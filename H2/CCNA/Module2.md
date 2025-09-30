@@ -1,6 +1,6 @@
 # 2.1 Frame Forwarding
 
-## Switching in Networking (![imgref](./imgrefs/M2_Switching.png))
+## Switching in Networking (![](./_/M2_Switching.png))
 * **Ingress:** Frame **entering** a switch.
 * **Egress:** Frame **exiting** a switch.
 * Forwarding is based on: **Ingress interface** and **Destination MAC address**.
@@ -40,12 +40,12 @@ Switches use a simple **two-step process**:
 ## Switch Forwarding Methods
 Uses **ASICs** for decisions. Two methods:
 
-### 1. Store-and-Forward Switching (Cisco's Preferred Method) (![imgref](./imgrefs/M2_StoreForwardSwitching.png.png))
+### 1. Store-and-Forward Switching (Cisco's Preferred Method) (![](./_/M2_StoreForwardSwitching.png))
 * **Receives entire frame** before deciding.
 * Checks for errors (ensures frame is **valid**).
 * **Slower**, guarantees **error-free** transfer.
 
-### 2. Cut-Through Switching (Low Latency) (![imgref](./imgrefs/M2_CutThroughSwitching.png))
+### 2. Cut-Through Switching (Low Latency) (![](./_/M2_CutThroughSwitching.png))
 * **Forwards immediately** after reading the **destination MAC address**.
 * Starts forwarding **before** the entire frame is received.
 * **Faster** (lower latency), but may forward corrupted frames.
@@ -77,7 +77,7 @@ Prioritizes speed (low latency).
 
 # 2.2 Switching Domains
 
-## Collision Domains (![imgref](./imgrefs/M2_CollisionDomains.png))
+## Collision Domains (![](./_/M2_CollisionDomains.png))
 * **Switches' Role:** **Eliminate collision domains** and **reduce network congestion**.
 * **Elimination:** Occurs when link is in **full-duplex** mode. **Each port** in full-duplex is its own collision domain.
 * **Existence:** Occurs if link is in **half-duplex**, causing **contention** and possible **collisions**.
@@ -85,7 +85,7 @@ Prioritizes speed (low latency).
 
 ***
 
-## Broadcast Domains (![imgref](./imgrefs/M2_Boradcast.png))
+## Broadcast Domains (![](./_/M2_Boradcast.png))
 * **Definition:** **All devices** on a LAN that receive the same broadcast traffic.
 * **Scope:** Extends across **Layer 1 (hubs)** and **Layer 2 (switches)**.
 * **Boundary:** Only a **Layer 3 device (router)** will stop or "break" a broadcast domain.

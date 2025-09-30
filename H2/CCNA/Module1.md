@@ -48,7 +48,7 @@ The **Boot Loader** is used if the IOS is missing, damaged, or to **recover pass
 
 ---
 
-## Switch Management Access (SVI Configuration) (![imgref](./imgrefs/M1_SwitchManagementAccess.png))
+## Switch Management Access (SVI Configuration) (![](./_/M1_SwitchManagementAccess.png))
 
 Switches are managed via a **Switched Virtual Interface (SVI)**—a Layer 3 interface bound to a VLAN.
 
@@ -75,7 +75,7 @@ S1# copy running-config startup-config
 
 # 1.2 Configure Switch Ports
 
-## Duplex Communication (![imgref](./imgrefs/M1_FullDuplex.png))
+## Duplex Communication (![](./_/M1_FullDuplex.png))
 
 | Duplex Mode | Characteristics | Performance | Requirement |
 | :--- | :--- | :--- | :--- |
@@ -200,7 +200,7 @@ S1# copy running-config startup-config
 
 ---
 
-## Dual Stack Topology (![imgref](./imgrefs/M1_DualStack.png))
+## Dual Stack Topology (![](./_/M1_DualStack.png))
 
 * **Routers vs Switches:** Routers support **both IPv4 and IPv6** interfaces, while Switches (Layer 2) primarily handle LANs.
 * **Dual Stack Topology:** Demonstrates configuration of **IPv4 and IPv6** on router interfaces simultaneously.

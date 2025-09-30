@@ -4,7 +4,7 @@
 
 ---
 
-## VLAN Definitions
+## VLAN Definitions (![](./_/M3_VlanDefinitons.png))
 
 VLANs divide devices into smaller groups and provide these benefits:
 
@@ -15,7 +15,7 @@ VLANs divide devices into smaller groups and provide these benefits:
 
 ---
 
-## Benefits of a VLAN Design
+## Benefits of a VLAN Design (![](./_/M3_VlanDesign.png))
 
 VLANs improve traditional flat networks:
 
@@ -30,7 +30,7 @@ VLANs improve traditional flat networks:
 
 ---
 
-## Types of VLANs
+## Types of VLANs (![](./_/M3_VlanTypes.png))
 
 ### Default VLAN
 
@@ -82,7 +82,7 @@ Roles of VLAN 1:
 
 ---
 
-## Defining VLAN Trunks
+## Defining VLAN Trunks (![](./_/M3_VlanTrunks.png))
 
 A **trunk** is a high-bandwidth **point-to-point link** between two network devices (usually switches, or a switch and a router).
 
@@ -94,7 +94,7 @@ Functions of a Cisco trunk:
 
 ---
 
-## Networks without VLANs
+## Networks without VLANs (![](./_/M3_WithoutVlan.png))
 
 In a **flat network** (no VLANs):  
 * All devices are in one large **broadcast domain**.  
@@ -103,7 +103,7 @@ In a **flat network** (no VLANs):
 
 ---
 
-## Networks with VLANs
+## Networks with VLANs (![](./_/M3_VlanNetwork.png))
 
 In a network **with VLANs**:  
 * **Traffic Confinement:** Traffic (unicast, multicast, broadcast) is limited to its VLAN.  
@@ -112,7 +112,7 @@ In a network **with VLANs**:
 
 ---
 
-## VLAN Identification with a Tag
+## VLAN Identification with a Tag (![](./_/M3_VlanTag.png))
 
 VLAN tagging follows the **IEEE 802.1Q standard** to show which VLAN a frame belongs to across a trunk link.
 
@@ -133,7 +133,7 @@ VLAN tagging follows the **IEEE 802.1Q standard** to show which VLAN a frame bel
 
 ---
 
-## Native VLANs and 802.1Q Tagging
+## Native VLANs and 802.1Q Tagging (![](./_/M3_VlanNative.png))
 
 ### 802.1Q Trunk Basics
 * **Tagging Default:** Frames for most VLANs are tagged with 802.1Q headers.  
@@ -144,7 +144,7 @@ VLAN tagging follows the **IEEE 802.1Q standard** to show which VLAN a frame bel
 
 ---
 
-## Voice VLAN Tagging
+## Voice VLAN Tagging (![](./_/M3_VlanVoice.png))
 
 Voice traffic requires a dedicated VLAN and prioritization (QoS).  
 
@@ -187,7 +187,7 @@ Command to check Data VLAN and Voice VLAN configuration on an interface:
 
 
 
-# 3.3 VLAN Configuration
+# 3.3 VLAN Configuration (![](./_/M3_VlanExample.png))
 
 ---
 
@@ -249,7 +249,7 @@ Assign access port **FastEthernet 0/18** to **VLAN 20**:
 
 ---
 
-## Data and Voice VLANs
+## Data and Voice VLANs (![](./_/M3_VlanData.png))
 
 * An access port can have **only one Data VLAN**.  
 * The same port can also have **one Voice VLAN** for IP phones.  
@@ -373,7 +373,7 @@ Trunks are **Layer 2 links** designed to carry traffic for **multiple VLANs** ov
 
 ---
 
-## Trunk Configuration Example
+## Trunk Configuration Example (![](./_/M3_VlanTrunkExample.png))
 
 This example configures port **Fa0/1** on switch S1 as a trunk link using 802.1Q tagging.
 
