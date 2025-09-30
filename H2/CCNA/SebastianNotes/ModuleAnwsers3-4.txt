@@ -1,0 +1,63 @@
+modul 3 og 4 
+
+Klar! Her er en simpel note-liste med alle spørgsmål og de rigtige svar:
+
+Hvad sker der med en port, når VLAN 10 slettes? → Porten bliver inaktiv.
+
+Hvor gemmes normal range VLANs på en Catalyst-switch? → Flash (vlan.dat).
+
+Hvorfor forhandles trunk ikke med en ikke-Cisco switch? → Andre producenter understøtter ikke DTP.
+
+Formålet med vlan.dat? → Indeholder VLAN-databasen.
+
+Hvorfor adskille native VLAN fra data-VLANs? → Bære sjældne untagged frames separat for at undgå konkurrence/båndbreddeproblemer på data-VLANs.
+
+Untagged frames på 802.1Q trunk havner i? → Native VLAN.
+
+Hvilke forbindelser bruger trunking? (Vælg 2) → Mellem to switche med flere VLANs og mellem switch og server med 802.1Q-NIC.
+
+Tre primære fordele ved VLANs? → Sikkerhed, omkostningsreduktion, bedre IT-effektivitet.
+
+Hvor lagres extended range VLANs (1006–4094)? → Running-config (og i startup-config når gemt).
+
+Hvor lagres normal range VLANs som standard? → Flash memory.
+
+Hvilken VLAN-type bruges til at administrere switchen? → Management VLAN.
+
+show interfaces trunk bruges til? → At se native VLAN (og tilladte VLANs) på trunkporte.
+
+Hvor ligger vlan.dat? → I flash memory.
+
+Design med Cisco IP-telefoner kræver? → Separat Voice VLAN.
+
+Effekt af switchport trunk allowed vlan 30? → Kun VLAN 30 tillades på trunk’en.
+
+Højeste L3-båndbredde + default gateway? → Multilayer switch med routing aktiveret.
+
+Skalerbar inter-VLAN metode for >1000 VLANs? → Routing internt på en Layer 3-switch.
+
+Router-on-a-stick: hvor tildeles IP? → På subinterfacet.
+
+Legacy inter-VLAN routing mellem VLAN 10 og 20 kræver? → Router med mindst to LAN-interfaces.
+
+Ulempe ved multilayer switches? → Dyrere end router-on-a-stick.
+
+Hvilket design kræver flere subinterfaces? → Router-on-a-stick.
+
+Ulempe ved router-on-a-stick? → Skalerer dårligt langt over ~50 VLANs.
+
+encapsulation dot1Q 10 native – hvad betyder 10? → VLAN-ID.
+
+no switchport på en L3-switchport? → Laver porten til en routed port.
+
+Kommandoerne int g0/1 + no switchport gør hvad? → Gør Gi0/1 til routed port.
+
+Switchport til router ved router-on-a-stick skal være? → Trunk.
+
+Korrekt beskrivelse af SVI-routing? → Der kræves en SVI pr. VLAN.
+
+Routing mellem VLANs på en multilayer switch sker via? → Interne VLAN-interfaces (SVI’er).
+
+Krav for router-on-a-stick? → Router med flere subinterfaces.
+
+Fejlfinding af router-on-a-stick (vælg 2 kommandoer) → show ip interface og show running-config.
