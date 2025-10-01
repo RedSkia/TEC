@@ -1,4 +1,4 @@
-# 6.1 EtherChannel Operation
+# 6.1 EtherChannel Operation (![](./_/M6_EtherChannel.png))
 
 ## Link Aggregation
 - **Problem:** Single link may not provide enough **bandwidth or redundancy**; STP **blocks redundant links**.
@@ -33,7 +33,7 @@
 - **LACP:** IEEE 802.3ad, multi-vendor compatible.
 - **Static EtherChannel:** Can configure manually without negotiation.
 
-## PAgP Overview
+## PAgP Overview (![](./_/M6_Pagp.png))
 - **Auto-negotiation protocol** for automatic EtherChannel creation.
 - Sends **packets every 30 sec** to manage links.
 - Ensures **configuration consistency**.
@@ -62,7 +62,7 @@
 | Auto  | Desirable | Yes  |
 | Desirable | Desirable/Auto | Yes |
 
-## LACP Overview
+## LACP Overview (![](./_/M6_LACP.png))
 - IEEE standard for bundling physical ports into a **logical channel**.
 - Works with **multi-vendor switches**.
 - Cisco supports **PAgP and LACP**.
