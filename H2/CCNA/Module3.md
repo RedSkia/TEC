@@ -1,191 +1,172 @@
 # 3.1 Overview of VLANs
 
-**VLANs (Virtual Local Area Networks)** are **logical groups** of devices (PCs, servers, phones, etc.) that communicate as if they are on the same network, even if they are in different physical locations.
+**VLANs (Virtual Local Area Networks)** are **logical groups** of devices (PCs, servers, phones, etc.) that communicate as if they are on the same network, even if physically separated.
 
 ---
 
-## VLAN Definitions (![](./_/M3_VlanDefinitons.png))
+## VLAN Definitions
 
-VLANs divide devices into smaller groups and provide these benefits:
+VLANs segment devices into logical groups with several benefits:
 
-* **Segmentation & Isolation:** Traffic stays inside its VLAN. To reach other VLANs, a **Layer 3 device** (router or SVI) is required.  
-* **IP Addressing:** Each VLAN has its own **unique subnet** (IP address range).  
-* **Broadcast Domains:** Each VLAN is its own broadcast domain, which reduces network congestion.  
-* **Organization:** Devices are easier to group, manage, and administer.  
+- **Segmentation & Isolation:** Traffic stays within the VLAN. Communication between VLANs requires a **Layer 3 device** (router or SVI).  
+- **IP Addressing:** Each VLAN has its **own unique subnet**.  
+- **Broadcast Domains:** Each VLAN is a separate broadcast domain, reducing congestion.  
+- **Organization:** Devices are easier to group, manage, and administer.
 
 ---
 
-## Benefits of a VLAN Design (![](./_/M3_VlanDesign.png))
-
-VLANs improve traditional flat networks:
+## Benefits of VLAN Design
 
 | Benefit | Explanation |
 |---------|-------------|
-| **Smaller Broadcast Domains** | Less unnecessary broadcast traffic. |
+| **Smaller Broadcast Domains** | Reduces unnecessary broadcast traffic. |
 | **Improved Security** | Devices in different VLANs are isolated by default. |
-| **Improved IT Efficiency** | Devices with similar needs can be grouped together (easier to apply rules). |
+| **Improved IT Efficiency** | Group similar devices together for easier management and rule application. |
 | **Reduced Cost** | One physical switch can support multiple VLANs. |
-| **Better Performance** | Less broadcast traffic = more bandwidth. |
-| **Simpler Management** | Easier to monitor and troubleshoot devices. |
+| **Better Performance** | Less broadcast traffic = more available bandwidth. |
+| **Simpler Management** | Easier to monitor, troubleshoot, and manage devices. |
 
 ---
 
-## Types of VLANs (![](./_/M3_VlanTypes.png))
+## Types of VLANs
 
 ### Default VLAN
-
-**VLAN 1** is a permanent VLAN on all Cisco switches and cannot be deleted or renamed.  
-
-Roles of VLAN 1:  
-* **Default Membership:** All switch ports are in VLAN 1 until reassigned.  
-* **Default Native VLAN:** Handles untagged traffic on trunk links.  
-* **Default Management VLAN:** Used for managing the switch (e.g., assigning an IP address).  
-* **Permanent:** VLAN 1 cannot be removed.  
-
-> **Best Practice:** Do not use VLAN 1 for Native or Management VLAN. Use a different VLAN (for example, VLAN 99).  
+- **VLAN 1** is permanent on all Cisco switches and cannot be deleted or renamed.  
+- Roles:  
+  - **Default Membership:** All ports start in VLAN 1.  
+  - **Default Native VLAN:** Handles untagged traffic on trunk links.  
+  - **Default Management VLAN:** Used for switch management (e.g., assigning IP).  
+- **Best Practice:** Avoid using VLAN 1 for Native or Management; use another VLAN (e.g., VLAN 99).
 
 ---
 
 ### Data VLAN
-* **Purpose:** Carries normal user traffic (web, email, file transfers).  
-* **Default:** VLAN 1 is the default Data VLAN.  
+- **Purpose:** Carries normal user traffic (web, email, file transfers).  
+- **Default:** VLAN 1 is the default Data VLAN.
 
 ---
 
 ### Native VLAN
-* **Purpose:** Used only on trunk links (802.1Q).  
-* **Function:** The only traffic that crosses the trunk untagged. All other VLANs are tagged.  
+- **Purpose:** Used only on trunk links (802.1Q).  
+- **Function:** Only untagged traffic crosses the trunk; all other VLANs are tagged.
 
 ---
 
 ### Management VLAN
-* **Purpose:** Used for remote management of switches (SSH/Telnet).  
-* **Configuration:** This VLAN hosts the switch’s **SVI (Switched Virtual Interface)** with an IP address.  
-* **Security Note:** Keep it separate from normal user traffic.  
+- **Purpose:** For remote management of switches (SSH/Telnet).  
+- **Configuration:** Hosts the switch’s **SVI (Switched Virtual Interface)** with an IP address.  
+- **Security Tip:** Keep separate from user traffic.
 
 ---
 
 ### Voice VLAN
-* **Purpose:** Dedicated for IP phones and voice traffic.  
-* **Requirements:**  
-  - **High QoS Priority:** Voice traffic must be prioritized over data.  
-  - **Low Delay:** End-to-end delay must be less than 150 ms.  
-  - **Assured Bandwidth:** Enough capacity to avoid dropped calls.  
-* **Note:** The entire network must be configured to support QoS and bandwidth for Voice VLAN.  
+- **Purpose:** Dedicated for IP phones and voice traffic.  
+- **Requirements:**  
+  - **High QoS Priority:** Voice traffic is prioritized over data.  
+  - **Low Delay:** End-to-end delay <150 ms.  
+  - **Assured Bandwidth:** Prevents dropped calls.  
+- **Note:** QoS and bandwidth configuration must be applied across the network to support Voice VLAN.
 
+---
 
-
-
-
+**Summary:** VLANs improve network efficiency, security, and management by logically grouping devices, reducing broadcast domains, and enabling traffic prioritization for data and voice.
 
 # 3.2 VLANs in a Multi-Switched Environment
 
 ---
 
-## Defining VLAN Trunks (![](./_/M3_VlanTrunks.png))
+## Defining VLAN Trunks
 
-A **trunk** is a high-bandwidth **point-to-point link** between two network devices (usually switches, or a switch and a router).
+A **trunk** is a high-bandwidth **point-to-point link** between two network devices (usually switches or a switch and a router).
 
-Functions of a Cisco trunk:  
-* **Allow Multiple VLANs:** A trunk lets traffic from more than one VLAN cross a single physical link.  
-* **Extend VLANs:** A VLAN can span multiple interconnected switches.  
-* **Default Behavior:** By default, a trunk carries traffic for all VLANs.  
-* **Protocol:** Trunks use the **802.1Q protocol** for VLAN tagging.  
-
----
-
-## Networks without VLANs (![](./_/M3_WithoutVlan.png))
-
-In a **flat network** (no VLANs):  
-* All devices are in one large **broadcast domain**.  
-* Every device receives all unicast, multicast, and broadcast traffic.  
-* This creates unnecessary traffic, reduces bandwidth, and lowers performance.  
+**Functions of a Cisco Trunk:**
+- **Allow Multiple VLANs:** Multiple VLANs can share a single physical link.  
+- **Extend VLANs:** A VLAN can span across multiple switches.  
+- **Default Behavior:** Carries traffic for all VLANs by default.  
+- **Protocol:** Uses **802.1Q** for VLAN tagging.
 
 ---
 
-## Networks with VLANs (![](./_/M3_VlanNetwork.png))
+## Networks Without VLANs
 
-In a network **with VLANs**:  
-* **Traffic Confinement:** Traffic (unicast, multicast, broadcast) is limited to its VLAN.  
-* **No Direct Communication:** Devices in different VLANs cannot talk to each other directly.  
-* **Inter-VLAN Routing:** A **Layer 3 device** (router or SVI) is required for communication between VLANs.  
+In a **flat network** (no VLANs):
+- All devices are in one large **broadcast domain**.  
+- Every device receives all unicast, multicast, and broadcast traffic.  
+- Leads to unnecessary traffic, reduced bandwidth, and poor performance.
+
+---
+
+## Networks With VLANs
+
+In a network **with VLANs**:
+- **Traffic Confinement:** Traffic stays within its VLAN.  
+- **No Direct Communication:** Devices in different VLANs cannot communicate directly.  
+- **Inter-VLAN Routing:** A **Layer 3 device** (router or SVI) is needed for VLAN-to-VLAN communication.
 
 ---
 
-## VLAN Identification with a Tag (![](./_/M3_VlanTag.png))
+## VLAN Identification with a Tag
 
-VLAN tagging follows the **IEEE 802.1Q standard** to show which VLAN a frame belongs to across a trunk link.
-
-* **802.1Q Tag:** Inserted into the Ethernet frame header, 4 bytes long.  
-* **FCS Recalculation:** Adding/removing the tag requires recalculating the Frame Check Sequence (FCS).  
-* **Tag Removal:** The tag is removed before reaching the end device, restoring the original FCS.  
-
----
+- Follows **IEEE 802.1Q standard** to identify VLANs across a trunk.  
+- **802.1Q Tag:** 4 bytes inserted in Ethernet frame header.  
+- **FCS Recalculation:** Adding/removing tag recalculates Frame Check Sequence (FCS).  
+- **Tag Removal:** Tag is removed before reaching end device.
 
 ### 802.1Q VLAN Tag Field Breakdown
 
 | Field | Function | Size |
 |-------|----------|------|
-| **Type (TPID)** | Tag Protocol Identifier. Marks the frame as 802.1Q tagged (value = **0x8100**). | 2 bytes |
-| **User Priority** | A 3-bit field used for **QoS prioritization**. | 3 bits |
-| **Canonical Format Identifier (CFI)** | 1-bit field, originally for token ring support. | 1 bit |
-| **VLAN ID (VID)** | VLAN Identifier. 12-bit value supporting up to **4096 VLANs** ($2^{12}$). | 12 bits |
+| **Type (TPID)** | Marks frame as 802.1Q tagged (value = 0x8100). | 2 bytes |
+| **User Priority** | 3-bit field for **QoS priority**. | 3 bits |
+| **Canonical Format Identifier (CFI)** | 1-bit field, originally for token ring. | 1 bit |
+| **VLAN ID (VID)** | VLAN Identifier. 12-bit field supporting up to **4096 VLANs**. | 12 bits |
 
 ---
 
-## Native VLANs and 802.1Q Tagging (![](./_/M3_VlanNative.png))
+## Native VLANs and 802.1Q Tagging
 
-### 802.1Q Trunk Basics
-* **Tagging Default:** Frames for most VLANs are tagged with 802.1Q headers.  
-* **Native VLAN Purpose:** Supports older devices that cannot handle tags.  
-* **Default:** Native VLAN = VLAN 1 (unless changed).  
-* **Requirement:** Both ends of a trunk must use the same Native VLAN ID to avoid errors and security issues.  
-* **Per-Trunk Setting:** Different trunk links can use different Native VLANs.  
-
----
-
-## Voice VLAN Tagging (![](./_/M3_VlanVoice.png))
-
-Voice traffic requires a dedicated VLAN and prioritization (QoS).  
-
-### VoIP Phone as a 3-Port Switch
-A VoIP phone functions like a mini 3-port switch:  
-1. One port connects to the wall (switch).  
-2. One port connects to the PC.  
-3. One internal port is for the phone.  
-
-Key points:  
-* **VLAN Discovery:** The switch tells the phone which VLAN ID to use for voice traffic using **CDP (Cisco Discovery Protocol)**.  
-* **Voice Traffic:** The phone **tags its own traffic** with the Voice VLAN ID and a **CoS (Class of Service)** priority.  
-* **PC Traffic:** The phone may pass PC traffic either **tagged** or **untagged**, depending on configuration.  
+**802.1Q Trunk Basics:**
+- Frames for most VLANs are tagged.  
+- **Native VLAN:** For older devices that cannot handle tags.  
+- **Default:** Native VLAN = VLAN 1 (can be changed).  
+- Both ends of a trunk **must use the same Native VLAN ID** to avoid errors or security issues.  
+- Different trunks can use **different Native VLANs**.
 
 ---
+
+## Voice VLAN Tagging
+
+Voice traffic requires a **dedicated VLAN** with QoS priority.
+
+### VoIP Phone as a Mini Switch
+- 1 port connects to the wall (switch).  
+- 1 port connects to the PC.  
+- 1 internal port for the phone itself.  
+
+**Key Points:**
+- Switch uses **CDP (Cisco Discovery Protocol)** to tell the phone which VLAN ID to use for voice.  
+- Phone **tags its own traffic** with Voice VLAN ID + CoS priority.  
+- PC traffic can be tagged or untagged depending on configuration.
 
 ### Traffic Handling on the Phone Port
 
 | Traffic Type | Destination VLAN | Tagging Function |
-|--------------|------------------|------------------|
-| **Voice** | Voice VLAN | Tagged with VLAN ID + CoS (priority). |
-| **Data (from PC)** | Access VLAN | Tagged with VLAN ID + optional CoS. |
-| **Data (from PC)** | Access VLAN | Sent untagged (no VLAN ID or CoS). |
+|--------------|-----------------|-----------------|
+| **Voice** | Voice VLAN | Tagged with VLAN ID + CoS (priority) |
+| **Data (from PC)** | Access VLAN | Tagged with VLAN ID + optional CoS |
+| **Data (from PC)** | Access VLAN | Untagged (no VLAN ID or CoS) |
 
 ---
 
-## Voice VLAN Verification Example
+## Voice VLAN Verification
 
-Command to check Data VLAN and Voice VLAN configuration on an interface:
+**Command Example:** Check VLAN and Voice VLAN configuration on a switch interface:
 
-
-
-
-
-
-
-
-
-
-
-
+```bash
+show running-config
+show vlan brief
+show interfaces <interface> switchport
+```
 
 # 3.3 VLAN Configuration (![](./_/M3_VlanExample.png))
 
@@ -285,8 +266,7 @@ Steps to configure a port for both a PC (Data) and an IP phone (Voice):
 Command: `show vlan`  
 
 **Syntax:**  
-show vlan [brief | id vlan-id | name vlan-name | summary]
-
+`show vlan [brief | id vlan-id | name vlan-name | summary]`
 
 | Task | Option | Purpose |
 |------|--------|--------|
@@ -302,14 +282,12 @@ show vlan [brief | id vlan-id | name vlan-name | summary]
 Two methods to change the Data VLAN of an access port:
 
 1. **Reassign VLAN:**  
-switchport access vlan [new-vlan-id]
-
-Example: Move port from VLAN 20 → VLAN 30
+   `switchport access vlan [new-vlan-id]`  
+   Example: Move port from VLAN 20 → VLAN 30
 
 2. **Return to Default VLAN (VLAN 1):**  
-no switchport access vlan
-
-Removes current VLAN assignment, returning to default VLAN 1.
+   `no switchport access vlan`  
+   (Removes VLAN assignment, returns to default)
 
 ### Verification Commands
 * `show vlan brief`  
@@ -333,26 +311,6 @@ Removes current VLAN assignment, returning to default VLAN 1.
 2. Erase startup configuration: `erase startup-config`  
 3. Delete `vlan.dat` file  
 4. Reload the switch: `reload`
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # 3.4 VLAN Trunks
 
@@ -398,8 +356,7 @@ This example configures port **Fa0/1** on switch S1 as a trunk link using 802.1Q
 ## Verify Trunk Configuration
 
 Primary command:  
-show interfaces [interface-id] switchport
-
+`show interfaces [interface-id] switchport`
 
 Checks:
 
@@ -423,10 +380,10 @@ Restore trunk settings to factory defaults using the `no` form of the commands.
 
 ### Verification
 
-Use:
-show interfaces [interface-id] switchport
+Use:  
+`show interfaces [interface-id] switchport`
 
-Example: `sh int fa0/1 switchport`  
+Example: `show int fa0/1 switchport`  
 
 * Confirms **Native VLAN = 1**  
 * Confirms **Allowed VLANs = 1-4094**
@@ -443,52 +400,6 @@ To convert a trunk port to a standard access port:
   * Port is **access interface operationally**.  
 * **Verification:** Use `show interfaces [interface-id] switchport` to confirm both modes show `access`.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # 3.5 Introduction to DTP
 
 **Dynamic Trunking Protocol (DTP)** is a Cisco-proprietary protocol used to automatically negotiate the trunking state of a link.
@@ -497,41 +408,41 @@ To convert a trunk port to a standard access port:
 
 ## DTP Characteristics
 
-* **Default Status:** DTP is **on by default** on Cisco Catalyst switches (like the 2960/2950).  
-* **Default Mode:** Interface default mode is **`dynamic auto`**.  
-* **Disabling DTP:** Use `switchport nonegotiate` in interface configuration mode to turn DTP off.  
-* **Re-enabling DTP:** Set interface mode to **`switchport mode dynamic auto`**.  
-* **Avoiding Negotiation Issues:** Use **static mode** (`switchport mode trunk` or `switchport mode access`) for stability.
+* **Default Status:** Enabled by default on Cisco Catalyst switches (e.g., 2960/2950).  
+* **Default Mode:** `dynamic auto` (passive).  
+* **Disable DTP:** `switchport nonegotiate` (stops sending DTP frames).  
+* **Re-enable DTP:** `switchport mode dynamic auto`.  
+* **Best Practice:** Use static configuration (`switchport mode trunk` or `switchport mode access`) to avoid negotiation issues.
 
 | Command | Purpose |
-|---------|--------|
-| `switchport mode trunk` | Forces port into permanent trunk mode (static trunk) |
-| `switchport nonegotiate` | Disables DTP; stops sending negotiation frames |
-| `switchport mode dynamic auto` | Passively waits for remote side to initiate trunking (DTP enabled) |
+|---------|---------|
+| `switchport mode trunk` | Forces permanent trunk mode (static trunk). |
+| `switchport nonegotiate` | Disables DTP on the port. |
+| `switchport mode dynamic auto` | Passive mode; waits for remote side to initiate trunking. |
 
 ---
 
 ## Negotiated Interface Modes
 
-The `switchport mode` command determines an interface’s behavior for trunk negotiation via **DTP**.
+The **`switchport mode`** setting determines how an interface behaves with DTP.
 
-| Mode Option | Description | Resulting Link State |
-|-------------|------------|-------------------|
-| **access** | Forces port into **permanent access mode**; tries to negotiate neighbor into access | **Access** (No Trunk) |
-| **dynamic auto** | Default DTP state; **passively** waits for remote port to initiate trunk | **Trunk** if remote is `trunk` or `desirable`; else **Access** |
-| **dynamic desirable** | **Actively** tries to form a trunk by sending DTP frames | **Trunk** if remote is `trunk`, `desirable`, or `auto`; else **Access** |
-| **trunk** | Forces port into **permanent trunk mode**; tries to negotiate neighbor into trunk | **Trunk** (Always) |
+| Mode | Description | Result |
+|------|-------------|--------|
+| **access** | Always access mode; negotiates neighbor to access | **Access** |
+| **dynamic auto** | Passive; waits for remote to initiate trunk | **Trunk** (if remote = `trunk` or `desirable`), else **Access** |
+| **dynamic desirable** | Active; sends DTP frames to request trunking | **Trunk** (with `trunk`, `desirable`, or `auto`), else **Access** |
+| **trunk** | Always trunk mode; negotiates neighbor into trunk | **Trunk** |
 
-> **Tip:** Use `switchport nonegotiate` to turn off DTP for a predictable, static link.
+> **Tip:** Use `switchport nonegotiate` with static trunk mode for predictable, stable links.
 
 ---
 
-## Results of a DTP Configuration
+## DTP Negotiation Results
 
-This table shows the resulting link state (Trunk or Access) when two Cisco switch ports running **DTP** are connected.
+Resulting link states when two switch ports with DTP connect:
 
-| Local Mode | Remote Access | Remote Dynamic Auto | Remote Dynamic Desirable | Remote Trunk |
-|------------|----------------|------------------|------------------------|--------------|
+| Local Mode | Remote Access | Remote Auto | Remote Desirable | Remote Trunk |
+|------------|---------------|-------------|------------------|--------------|
 | **Access** | Access | Access | Access | Limited Connectivity |
 | **Dynamic Auto** | Access | Access | Trunk | Trunk |
 | **Dynamic Desirable** | Access | Trunk | Trunk | Trunk |
@@ -539,8 +450,8 @@ This table shows the resulting link state (Trunk or Access) when two Cisco switc
 
 ---
 
-### Key Takeaways
+## Key Takeaways
 
-* **Access-to-Trunk:** Connecting a permanent **Access** port to a permanent **Trunk** port results in **Limited Connectivity**.  
-* **Dynamic Auto (Passive):** Forms a **Trunk** only if the remote side actively initiates (`dynamic desirable` or `trunk`).  
-* **Dynamic Desirable (Active):** Will form a **Trunk** with any remote mode except `access`.  
+* **Access ↔ Trunk** → Causes **Limited Connectivity**.  
+* **Dynamic Auto (Passive)** → Becomes trunk only if the other side is **trunk** or **desirable**.  
+* **Dynamic Desirable (Active)** → Trunks with anything except a permanent **Access** port.  
