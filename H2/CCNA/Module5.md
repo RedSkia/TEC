@@ -12,14 +12,14 @@
 
 - **Solution:** **STP (Spanning Tree Protocol)** → loop-free logical network with redundancy
 
-## Spanning Tree Protocol (STP)
+## Spanning Tree Protocol (STP) (![](./_/M5_SpanningTree.png))
 - **STP:** Loop-prevention for Layer 2  
 - **Purpose:** Keep network **loop-free** while allowing redundancy  
 - **Function:**  
   - Blocks loops logically  
   - Prevents endless frame circulation  
 
-## STP Recalculation
+## STP Recalculation (![](./_/M5_STPRecal.png))
 - **On failure:** STP recalculates topology  
 - Previously blocked ports may **open** to restore connectivity  
 - Maintains **loop-free operation** and redundancy  
@@ -55,15 +55,15 @@
 3. **Create Loop-Free Topology:** One logical path per switch → tree topology  
 4. **Recalculate on Failure:** Backup paths unblocked if primary fails or new switch/link added
 
-# 5.2 STP Operations
+# 5.2 STP Operations (![](./_/M5_ElectBridge.png))
 
 ## Steps to a Loop-Free Topology
 STP uses **Spanning Tree Algorithm (STA)** to prevent loops in 4 main steps:
 
 1. **Elect Root Bridge** – Switch that becomes **network reference point**  
-2. **Elect Root Ports** – Closest port to root bridge on non-root switches  
-3. **Elect Designated Ports** – Ports that **forward traffic toward root**  
-4. **Elect Alternate (Blocked) Ports** – Remaining ports blocked as **backup paths**
+2. **Elect Root Ports** – Closest port to root bridge on non-root switches  (![](./_/M5_ElectPort.png))
+3. **Elect Designated Ports** – Ports that **forward traffic toward root**  (![](./_/M5_ElectDesignated.png))
+4. **Elect Alternate (Blocked) Ports** – Remaining ports blocked as **backup paths** (![](./_/M5_ElectBlocked.png))
 
 ## Role of BPDUs
 - **BPDUs (Bridge Protocol Data Units):** Share network topology info  
@@ -122,7 +122,7 @@ STP uses **Spanning Tree Algorithm (STA)** to prevent loops in 4 main steps:
 - **Blocking state** prevents loops  
 - Example: Port F0/2 blocked, others forwarding
 
-## Elect Root Port from Equal-Cost Paths
+## Elect Root Port from Equal-Cost Paths (![](./_/M5_ElectMultiPath.png)) (![](./_/M5_ElectMultiPath2.png))
 1. Lowest sender BID  
 2. Lowest sender port priority  
 3. Lowest sender port ID
@@ -168,7 +168,7 @@ STP uses **Spanning Tree Algorithm (STA)** to prevent loops in 4 main steps:
 - **Rapid PVST+** runs RSTP per VLAN → fast convergence  
 - RSTP must be explicitly enabled
 
-## RSTP Concepts
+## RSTP Concepts (![](./_/M5_RSTP.png))
 - Replaces STP, faster convergence  
 - Maintains **port roles** and **algorithm similar to STP**  
 - Converges in **hundreds of milliseconds** if network configured well
