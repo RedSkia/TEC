@@ -63,7 +63,7 @@
 | 802.11ac      | 5 GHz         | Data rates 450 Mb/s – 1.3 Gb/s; supports up to 8 antennas |
 | 802.11ax      | 2.4 & 5 GHz   | High-Efficiency Wireless (HEW); supports 1–7 GHz frequencies |
 
-## Radio Frequencies
+## Radio Frequencies (![](./_/M12_RadioFreq.png))
 - WLAN devices operate within the electromagnetic spectrum
 - Main WLAN bands:
   - **2.4 GHz**
@@ -83,7 +83,7 @@
 - Promotes WLAN growth and adoption
 - Ensures interoperability of 802.11-based products
 
-# 12.2 WLAN Components
+# 12.2 WLAN Components (![](./_/M12_FrameStruct.png))
 
 ## Wireless NICs
 - Devices like laptops, tablets, smartphones, and some automobiles have **integrated wireless NICs** (Network Interface Cards) with a radio transmitter/receiver.
@@ -101,7 +101,7 @@
 - Clients **associate** and **authenticate** with an AP.
 - Once authenticated, users can access network resources.
 
-## AP Categories
+## AP Categories (![](./_/M12_APCata.png))
 - APs can be **autonomous** or **controller-based**.
 
 ### Autonomous APs
@@ -129,7 +129,7 @@
 
 # 12.3 WLAN Operation
 
-## 802.11 Wireless Topology Modes
+## 802.11 Wireless Topology Modes (![](./_/M12_Wireless.png))
 - **Ad hoc mode:**  
   - Connects clients in a peer-to-peer manner without an AP
 - **Infrastructure mode:**  
@@ -138,7 +138,7 @@
   - Variation of ad hoc mode  
   - A smartphone or tablet with cellular data creates a personal hotspot
 
-## BSS and ESS
+## BSS and ESS (![](./_/M12_BSSvsESS.png))
 - **Infrastructure mode** defines two topology blocks:
 
 ### Basic Service Set (BSS)
@@ -161,7 +161,7 @@
 5. **Transmit the data** once access is granted  
 6. **Acknowledge transmissions**; if no acknowledgment is received, assume a collision and restart
 
-## Wireless Client and AP Association
+## Wireless Client and AP Association (![](./_/M12_APClient.png))
 - Wireless devices must **associate with an AP or wireless router** to communicate  
 - **Three-stage process:**
 1. **Discover** a wireless AP  
@@ -176,7 +176,7 @@
   4. **Security Mode:** WEP, WPA, or WPA2  
   5. **Channel Settings:** Frequency bands in use
 
-## Passive and Active Discover Mode
+## Passive and Active Discover Mode (![](./_/M12_DiscoverMode.png))
 - Wireless clients connect to an AP using **passive** or **active scanning**
 
 ### Passive Mode
@@ -192,7 +192,7 @@
 
 # 12.4 CAPWAP Operation
 
-## Introduction to CAPWAP
+## Introduction to CAPWAP (![](./_/M12_CAPWAP.png))
 - **CAPWAP** is an IEEE standard protocol that allows a **WLAN Controller (WLC)** to manage multiple APs and WLANs.
 - Based on **LWAPP**, but adds **Datagram Transport Layer Security (DTLS)** for additional security.
 - **Encapsulates and forwards** WLAN client traffic between an AP and WLC over tunnels using **UDP ports 5246 and 5247**.
@@ -210,15 +210,15 @@
 | Frame queueing and packet prioritization | Frame translation to other protocols           |
 | MAC layer data encryption                 | Termination of 802.11 traffic on a wired interface |
 
-## DTLS Encryption
+## DTLS Encryption (![](./_/M12_DTLS.png))
 - **DTLS** secures communication between the AP and the WLC.
 - **Enabled by default** to protect the CAPWAP **control channel** and encrypt all **management/control traffic**.
 - **Data encryption** is **disabled by default**:
   - Requires a **DTLS license** on the WLC  
   - Must be enabled on the AP after licensing
 
-## FlexConnect APs
-- **FlexConnect** allows AP configuration and control over a WAN link.
+## Flex Connect APs (![](./_/M12_FlexAP.png))
+- **Flex Connect** allows AP configuration and control over a WAN link.
 - Two operation modes:
 
 | Mode             | Description                                                                                       |
@@ -249,7 +249,7 @@
 - Reduces interference and increases efficiency
 - Used by **802.11a/g/n/ac**
 
-## Channel Selection
+## Channel Selection (![](./_/M12_Channel.png)) (![](./_/M12_Channel2.png))
 
 ### 2.4 GHz Band
 - Multiple channels, each **22 MHz wide**, separated by **5 MHz**
@@ -259,7 +259,7 @@
 - 24 channels, each separated by **20 MHz**
 - **Non-overlapping channels:** 36, 48, 60
 
-## Plan a WLAN Deployment
+## Plan a WLAN Deployment (![](./_/M12_PlanWLAN.png))
 - User support depends on:
   - **Facility layout**
   - **Number of people and devices**
