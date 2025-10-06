@@ -1,6 +1,6 @@
 # 9.1 First Hop Redundancy Protocols
 
-## Default Gateway Limitations
+## Default Gateway Limitations (![](./_/M9_DefaultGate.png))
 - Devices usually have **one default gateway** (a router IP).  
 - If that gateway fails → devices **cannot access networks outside the LAN**.  
 - Even if another router is available, devices **won’t switch automatically**.  
@@ -43,12 +43,12 @@
 ### Key Term
 - **First-Hop Redundancy**: Ability of the network to **recover automatically** when the default gateway fails.  
 
-## Steps for Router Failover
+## Steps for Router Failover (![](./_/M9_Failover.png))
 1. **Standby router notices** it is no longer receiving "Hello" messages from active router.  
 2. **Standby router takes over** as the new active router.  
 3. New active router uses **same IP and MAC** → hosts see **no change**.  
 
-✅ Result: Traffic continues **without disruption**.  
+Result: Traffic continues **without disruption**.  
 
 ## FHRP Options
 
@@ -65,7 +65,7 @@
 
 # 9.2 HSRP
 
-## HSRP Overview
+## HSRP Overview (![](./_/M9_HSRP.png))
 - **HSRP (Hot Standby Router Protocol)** is Cisco proprietary.  
 - Prevents loss of outside network access if default router fails.  
 - Provides **transparent failover** → hosts don’t notice.  

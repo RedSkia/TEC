@@ -47,7 +47,7 @@ These devices protect the network perimeter from unauthorized access.
 
 ---
 
-## Endpoint Protection
+## Endpoint Protection (![](./_/M10_Endpoint.png))
 
 ### What Are Endpoints?
 * **Definition:** Devices that **connect to the network**.
@@ -199,7 +199,7 @@ AAA Authentication can use two main methods: **Local** or **Server-Based**.
 
 ---
 
-## 802.1X (Port-Based Access Control)
+## 802.1X (Port-Based Access Control) (![](./_/M10_802.png))
 
 ### Overview
 * **IEEE 802.1X** is a **port-based access control protocol**.
@@ -224,7 +224,7 @@ AAA Authentication can use two main methods: **Local** or **Server-Based**.
 
 ---
 
-## Layer 2 Vulnerabilities
+## Layer 2 Vulnerabilities (![](./_/M10_OSI.png))
 
 ### Overview
 * The **OSI model** has seven layers. Security solutions like **VPNs, firewalls, and IPS** typically protect the **upper layers (3 through 7)**.
@@ -289,7 +289,7 @@ These practices secure the management access to the switches themselves:
 
 ---
 
-## MAC Address Table Flooding
+## MAC Address Table Flooding (![](./_/M10_MACFlooding.png))
 
 ### Overview
 * Switches use the **source MAC addresses** of incoming frames to build a **MAC address table**.
@@ -327,7 +327,7 @@ These practices secure the management access to the switches themselves:
 
 ---
 
-## VLAN Hopping Attacks
+## VLAN Hopping Attacks (![](./_/M10_VlanHop.png))
 
 ### Overview
 * **VLAN hopping** allows an attacker on one VLAN to **access traffic on other VLANs** without a router.
@@ -372,7 +372,7 @@ These practices secure the management access to the switches themselves:
 ### Overview
 * **DHCP (Dynamic Host Configuration Protocol)** servers assign crucial network settings to clients, including: IP address, subnet mask, default gateway, and DNS servers.
 
-### DHCP Message Exchange
+### DHCP Message Exchange (![](./_/M10_DCHP.png))
 Clients and servers use a four-step process:
 1.  **DHCP Discover:** Client broadcasts to find servers.
 2.  **DHCP Offer:** Server offers an IP address.
