@@ -249,7 +249,7 @@ VLAN hopping is prevented by manually securing the switch's **trunking** configu
 
 ---
 
-## DHCP Snooping: The Core Defense
+## DHCP Snooping: The Core Defense (![](./_/M11_Snooping.png))
 
 ### Function and Goals
 * **DHCP Snooping** is a Layer 2 security feature that filters DHCP messages.
@@ -336,7 +336,7 @@ In a typical **ARP attack** (like **ARP spoofing** or **ARP poisoning**), an att
 
 ---
 
-## DAI Implementation Guidelines
+## DAI Implementation Guidelines (![](./_/M11_DAI.png))
 
 To reduce the risk of **ARP spoofing** and **ARP poisoning**, follow these DAI implementation guidelines:
 
