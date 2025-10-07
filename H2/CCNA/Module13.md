@@ -177,16 +177,6 @@ The topology and addressing scheme used for this topic are shown in the figure a
 - Click **Clients** in the left menu to view detailed information about **connected clients**.
 
 
-
-
-
-
-
-
-
-
-
-
 # 13.3 Configure a WPA2 Enterprise WLAN on the WLC
 
 ## SNMP and RADIUS (![](./_/M13_SNMP.png))

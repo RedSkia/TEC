@@ -13,7 +13,7 @@
 
 ---
 
-## Router Functions Example
+## Router Functions Example (![](./_/M14_RouterFunction.png))
 
 - Routers use their **IP routing table** to select a **path (route)**.  
 - Example:  
@@ -91,7 +91,7 @@
 
 # 14.2 Packet Forwarding
 
-## Packet Forwarding Decision Process
+## Packet Forwarding Decision Process (![](./_/M14_PackForward.png))
 
 1. A **data link frame** carrying an **IP packet** arrives on the **ingress interface**.
 2. The router checks the **destination IP address** in the packet header against its **IP routing table**.
@@ -127,7 +127,7 @@
 
 ---
 
-## Packet Forwarding Mechanisms
+## Packet Forwarding Mechanisms (![](./_/M14_PacketMechanic.png)) (![](./_/M14_PacketMechanic2.png)) (![](./_/M14_PacketMechanic3.png))
 
 - **Goal:** Encapsulate packets efficiently for fast forwarding.
 - **Three main mechanisms:**
@@ -173,7 +173,7 @@
   - Not **packet-triggered** like fast switching.
 - **Benefit:** Efficient, scalable forwarding without per-packet CPU intervention.
 
-# 14.3 Basic Router Configuration Review
+# 14.3 Basic Router Configuration Review (![](./_/M14_RouterCfg.png))
 
 ## Topology
 - The example topology will be used for:
@@ -224,7 +224,7 @@ Routing tables follow three main principles, addressed by proper configuration o
 
 ---
 
-## Routing Table Entries
+## Routing Table Entries (![](./_/M14_RouteTable.png))
 Each routing table entry contains key information used to forward packets:
 
 | Entry Component | Description |
@@ -268,14 +268,14 @@ Static routes are **manually configured paths** between devices and are not auto
 
 ---
 
-## Static Routes in the Routing Table
+## Static Routes in the Routing Table (![](./_/M14_StaticRoute.png))
 - Example: R1 has one LAN attached and static routes to R2 networks:  
   - IPv4: 10.0.4.0/24  
   - IPv6: 2001:db8:acad:4::/64
 
 ---
 
-## Dynamic Routing Protocols
+## Dynamic Routing Protocols (![](./_/M14_DyniamicRoute.png))
 Dynamic routing protocols allow routers to **automatically share reachability and status information**.
 
 - Key activities:
@@ -294,7 +294,7 @@ Dynamic routing protocols allow routers to **automatically share reachability an
 
 ---
 
-## Default Route
+## Default Route (![](./_/M14_DefaultRoute.png))
 - Specifies the **next-hop router** when no specific route exists.  
 - Can be **static** or **dynamic**.  
 - Route entries:
@@ -337,7 +337,7 @@ Dynamic routing protocols allow routers to **automatically share reachability an
 | External EIGRP         | 170 |
 | Internal BGP           | 200 |
 
-# 14.5 Static and Dynamic Routing
+# 14.5 Static and Dynamic Routing (![](./_/M14_DyniamicRoute.png))
 
 ## Static or Dynamic?
 Static and dynamic routing are **not mutually exclusive**. Most networks use a combination of both.
