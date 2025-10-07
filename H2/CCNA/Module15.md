@@ -50,7 +50,7 @@ Most parameters are the same as the IPv4 command.
 
 ---
 
-## Dual-Stack Topology
+## Dual-Stack Topology (![](./_/M15_DualStack.png))
 A **dual-stack topology** runs both **IPv4** and **IPv6**.  
 Initially, no static routes are configured for either protocol.
 
@@ -140,7 +140,7 @@ R1(config)# ipv6 route 2001:db8:cafe:2::/64 s0/1/0
 
 ---
 
-## IPv6 Fully Specified Static Route
+## IPv6 Fully Specified Static Route (![](./_/M15_StaticIpv6.png))
 - Specifies **both exit interface and next-hop IPv6 address**.  
 - Required when the next-hop address is an **IPv6 link-local address**.  
 - Ensures the router knows which interface to use.
@@ -171,7 +171,7 @@ R1(config)# ipv6 route 2001:db8:cafe:2::/64 s0/1/0
 
 # 15.3 Configure IP Default Static Routes
 
-## Default Static Route
+## Default Static Route (![](./_/M15_DefaultIp.png))
 A **default route** is a static route that **matches all packets** not found in the routing table.  
 It serves as the **Gateway of Last Resort**.
 
@@ -270,7 +270,7 @@ R1(config)# ipv6 route ::/0 2001:db8:cafe:2::2 5 # Floating route (AD = 5)
 
 ---
 
-## Test the Floating Static Routes
+## Test the Floating Static Routes (![](./_/M15_FloatingRoute.png))
 - **Scenario:** R2 fails (both serial interfaces shut down)  
 - **Observation on R1:**
   - Syslog messages show links going down  
@@ -301,7 +301,7 @@ A **host route** is a route to a **specific IP address**:
 
 ---
 
-## Static Host Routes
+## Static Host Routes (![](./_/M15_StaticRoute.png))
 - **Manually configured** to direct traffic to a **specific device** (e.g., a server)  
 - Uses **/32 for IPv4** or **/128 for IPv6**
 
