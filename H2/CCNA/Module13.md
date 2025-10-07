@@ -1,6 +1,6 @@
 # 13.1 Remote Site WLAN Configuration
 
-## The Wireless Router
+## The Wireless Router (![](./_/M13_WirelessRouter.png))
 - Used by **remote workers, small branch offices, and home networks**  
 - Small office/home routers are often **integrated devices** with:
   - **Switch** for wired clients  
@@ -78,7 +78,7 @@
 
 # 13.2 Configure a Basic WLAN on the WLC
 
-## WLC Topology
+## WLC Topology (![](./_/M13_WLC.png))
 The topology and addressing scheme used for this topic are shown in the figure and table.
 
 - The **Access Point (AP)** is a **controller-based AP** (not autonomous) and requires **no initial configuration**.
@@ -189,7 +189,7 @@ The topology and addressing scheme used for this topic are shown in the figure a
 
 # 13.3 Configure a WPA2 Enterprise WLAN on the WLC
 
-## SNMP and RADIUS
+## SNMP and RADIUS (![](./_/M13_SNMP.png))
 
 - **PC-A** runs **SNMP** and **RADIUS** server software.
 - **Network goals**:
@@ -202,7 +202,7 @@ The topology and addressing scheme used for this topic are shown in the figure a
 
 ---
 
-## VLAN 5 Interface
+## VLAN 5 Interface (![](./_/M13_VLAN.png))
 
 - Each WLAN requires its **own virtual interface**.
 - WLC supports multiple WLANs on multiple physical ports.
