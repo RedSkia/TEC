@@ -145,47 +145,6 @@ Switch(config-if)# no shutdown
 | `Switch# show port-security interface [id]` | **Detailed View:** Specific configuration and status for one port. | Violation Count, Aging Type/Time, Sticky status. | **Interface** |
 | `Switch# show port-security address` | **Secure MAC Address List:** Shows all secure MACs. | MAC Address, Learning Type (Static/Dynamic/Sticky), VLAN, and Port. | **MAC Address** |
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # 11.2 Mitigate VLAN Attacks
 
 ---
@@ -215,21 +174,6 @@ VLAN hopping is prevented by manually securing the switch's **trunking** configu
 | **3. Manually Enable Trunk** | **Explicitly set** ports that *must* be trunks to trunk mode. Trunk links should be created by design, not by negotiation. | `switchport mode trunk` | **No negotiation for trunks.** |
 | **4. Disable DTP on Trunk** | **Completely disable DTP negotiation** even on designated trunk ports. This provides maximum security. | `switchport nonegotiate` | **Disable DTP entirely.** |
 | **5. Change Native VLAN** | Set the **Native VLAN** on trunks to an unused VLAN ID **other than the default VLAN 1**. This stops **Double-Tagging Attacks**. | `switchport trunk native vlan [vlan_number]` | **Move Native VLAN.** |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # 11.3 Mitigate DHCP Attacks
 
@@ -290,8 +234,6 @@ S1(config)# interface range F0/15-24
 S1(config-if-range)# ip dhcp snooping limit rate 6
 ```
 
-
-
 ## Verification Commands
 
 | Command | Goal | What it Shows | Keyword |
@@ -306,15 +248,6 @@ S1(config-if-range)# ip dhcp snooping limit rate 6
 * **DHCP Snooping is required for Dynamic ARP Inspection (DAI).**
 * DAI uses the **DHCP Snooping Binding Table** to confirm that the IP and MAC addresses in an **ARP packet** are valid.
 * If the IP/MAC addresses don't match the table, the ARP packet is **dropped**.
-
-
-
-
-
-
-
-
-
 
 # 11.4 Mitigate ARP Attacks
 
@@ -373,23 +306,6 @@ ip arp inspection validate {src-mac | dst-mac | ip}
 
 * This command is used to drop ARP packets when **IP addresses are invalid** or when **MAC addresses** in the ARP body do not match the Ethernet header.
 * **Crucial Note:** To include **more than one validation method** (e.g., both source MAC and IP), specify all options on the **same command line**. Entering the command multiple times **overwrites** the previous configuration.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # 11.5 Mitigate STP Attacks
 
