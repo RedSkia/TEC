@@ -36,7 +36,10 @@ Switch LEDs + Mode button help monitor status:
 | **DUPLX** | Duplex Mode | **Green:** Full-duplex. **Amber/Off:** Half-duplex. |
 | **SPEED** | Speed Mode | Shows port speed (green patterns). |
 | **PoE** | PoE Mode | **Green:** Power OK. **Amber/Alt:** Fault or denied. |
-
+**Port Status**
+ ```
+ #(config-if) <no> shutdown 
+ ```
 ---
 
 ## Recovery from System Crash (Password Recovery)
@@ -861,7 +864,7 @@ This example configures port **Fa0/1** on switch S1 as a trunk link using 802.1Q
 | `S1(config-if)#` | `switchport trunk allowed vlan 10,20,30,99` | Filter trunk to allow only these VLANs |
 | `S1(config-if)#` | `end` | Exit and apply configuration |
 
-> **Note:** On Layer 3 switches, the command `switchport trunk encapsulation dot1q` may be required.
+> **Note:** On Layer 3 switches, the command `switchport trunk encapsulation dot1q <native>` may be required.
 
 ---
 
@@ -1018,7 +1021,7 @@ Resulting link states when two switch ports with DTP connect:
 - **Connection:** Router interface → switch **trunk port**  
 - **Subinterfaces:** Logical divisions of physical interface, one per VLAN  
   - Each subinterface has **VLAN ID** and **IP address** (default gateway)  
-  - Use command: `encapsulation dot1q [vlan-id]` to assign VLAN tag  
+  - Use command: `encapsulation dot1q [vlan-id] <native>` to assign VLAN tag  
 
 ---
 
