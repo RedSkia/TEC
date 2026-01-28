@@ -1,9 +1,12 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-	"name": "Python 3",
+	"name": "Python 3.9 (TMC compatible)",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/python:2-3.14-trixie"
+	"image": "mcr.microsoft.com/devcontainers/python:0-3.9-bullseye",
+
+	"postCreateCommand": "pip install --upgrade pip && pip install tmc pytest"
+
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
