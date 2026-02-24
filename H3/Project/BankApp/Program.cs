@@ -1,6 +1,6 @@
 using BankApp.Components;
 using BankApp.Data;
-using BankApp.Data.Entities;
+using BankApp.Entities.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -96,4 +96,14 @@ app.Run();
     Public WebAPI 
     CRUD
     NUnit
+
+
+
+JWT Login
+Roles (User, Admin)
+AccountHolder -> BankAccount -> UserAccount -> AuthAccount
+Cards 
+Invesnting (RandomGrapths)
+Transtations -> Transfer,Withdraw,Add,Loan
+Loan -> intrest rates
  */

@@ -22,37 +22,7 @@ namespace BankApp.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BankApp.Data.Entities.Account", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AccountNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AccountType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Balance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("BankUserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BankUserId");
-
-                    b.ToTable("Accounts");
-                });
-
-            modelBuilder.Entity("BankApp.Data.Entities.AuthUser", b =>
+            modelBuilder.Entity("BankApp.Entities.Auth.AuthUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -117,7 +87,7 @@ namespace BankApp.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("BankApp.Data.Entities.BankUser", b =>
+            modelBuilder.Entity("BankApp.Entities.Auth.BankUser", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -129,11 +99,7 @@ namespace BankApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
+                    b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -145,7 +111,138 @@ namespace BankApp.Migrations
                     b.ToTable("BankUsers");
                 });
 
-            modelBuilder.Entity("BankApp.Data.Entities.Transaction", b =>
+            modelBuilder.Entity("BankApp.Entities.Auth.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RoleTypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleTypeId");
+
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Auth.RoleType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RoleTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Customer"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Support"
+                        });
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Core.Account", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("AccountTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountTypeId");
+
+                    b.ToTable("Accounts");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Core.AccountType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AccountTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Checking"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Savings"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Investment"
+                        });
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Core.BankUserAccount", b =>
+                {
+                    b.Property<int>("BankUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BankUserId", "AccountId");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("BankUserAccounts");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Core.Transaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -160,18 +257,399 @@ namespace BankApp.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Description")
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TransactionTypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("TransactionTypeId");
+
+                    b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Core.TransactionType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TransactionTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Internal Transfer"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "External Payment"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "ATM Withdrawal"
+                        });
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Finance.Card", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CardNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CardTypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("CardTypeId");
+
+                    b.ToTable("Cards");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Finance.Loan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BankUserId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("InterestRate")
+                        .HasColumnType("float");
+
+                    b.Property<int>("LoanTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Principal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankUserId");
+
+                    b.HasIndex("LoanTypeId");
+
+                    b.ToTable("Loans");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Finance.LoanPayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("LoanId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoanId");
+
+                    b.ToTable("LoanPayments");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Finance.LoanType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LoanTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Mortgage"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Car Loan"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Personal Loan"
+                        });
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Infrastructure.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
+                    b.ToTable("AuditLogs");
+                });
 
-                    b.ToTable("Transactions");
+            modelBuilder.Entity("BankApp.Entities.Investing.Investment", b =>
+                {
+                    b.Property<int>("BankUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StockId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PurchasePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("BankUserId", "StockId");
+
+                    b.HasIndex("StockId");
+
+                    b.ToTable("Investments");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Investing.MarketData", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("StockId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StockId");
+
+                    b.ToTable("MarketData");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Investing.Stock", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StockTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StockTypeId");
+
+                    b.ToTable("Stocks");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Investing.StockType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StockTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Technology"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Green Energy"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Finance"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "ETF"
+                        });
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Messaging.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BankUserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankUserId");
+
+                    b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Messaging.SupportTicket", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BankUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankUserId");
+
+                    b.ToTable("SupportTickets");
+                });
+
+            modelBuilder.Entity("CardType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CardTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Visa Debit"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Mastercard Credit"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Virtual Card"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -307,9 +785,170 @@ namespace BankApp.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BankApp.Data.Entities.Account", b =>
+            modelBuilder.Entity("BankApp.Entities.Auth.BankUser", b =>
                 {
-                    b.HasOne("BankApp.Data.Entities.BankUser", "BankUser")
+                    b.HasOne("BankApp.Entities.Auth.AuthUser", "AuthUser")
+                        .WithOne("BankUser")
+                        .HasForeignKey("BankApp.Entities.Auth.BankUser", "AuthUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthUser");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Auth.Role", b =>
+                {
+                    b.HasOne("BankApp.Entities.Auth.RoleType", "RoleType")
+                        .WithMany()
+                        .HasForeignKey("RoleTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RoleType");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Core.Account", b =>
+                {
+                    b.HasOne("BankApp.Entities.Core.AccountType", "AccountType")
+                        .WithMany()
+                        .HasForeignKey("AccountTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AccountType");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Core.BankUserAccount", b =>
+                {
+                    b.HasOne("BankApp.Entities.Core.Account", "Account")
+                        .WithMany("BankUserAccounts")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BankApp.Entities.Auth.BankUser", "BankUser")
+                        .WithMany("BankUserAccounts")
+                        .HasForeignKey("BankUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("BankUser");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Core.Transaction", b =>
+                {
+                    b.HasOne("BankApp.Entities.Core.Account", "Account")
+                        .WithMany("Transactions")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BankApp.Entities.Core.TransactionType", "TransactionType")
+                        .WithMany()
+                        .HasForeignKey("TransactionTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("TransactionType");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Finance.Card", b =>
+                {
+                    b.HasOne("BankApp.Entities.Core.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CardType", "CardType")
+                        .WithMany()
+                        .HasForeignKey("CardTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("CardType");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Finance.Loan", b =>
+                {
+                    b.HasOne("BankApp.Entities.Auth.BankUser", "BankUser")
+                        .WithMany()
+                        .HasForeignKey("BankUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BankApp.Entities.Finance.LoanType", "LoanType")
+                        .WithMany()
+                        .HasForeignKey("LoanTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BankUser");
+
+                    b.Navigation("LoanType");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Finance.LoanPayment", b =>
+                {
+                    b.HasOne("BankApp.Entities.Finance.Loan", "Loan")
+                        .WithMany("LoanPayments")
+                        .HasForeignKey("LoanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Loan");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Investing.Investment", b =>
+                {
+                    b.HasOne("BankApp.Entities.Auth.BankUser", "BankUser")
+                        .WithMany()
+                        .HasForeignKey("BankUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BankApp.Entities.Investing.Stock", "Stock")
+                        .WithMany("Investments")
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BankUser");
+
+                    b.Navigation("Stock");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Investing.MarketData", b =>
+                {
+                    b.HasOne("BankApp.Entities.Investing.Stock", "Stock")
+                        .WithMany("MarketHistory")
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Stock");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Investing.Stock", b =>
+                {
+                    b.HasOne("BankApp.Entities.Investing.StockType", "StockType")
+                        .WithMany()
+                        .HasForeignKey("StockTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StockType");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Messaging.Notification", b =>
+                {
+                    b.HasOne("BankApp.Entities.Auth.BankUser", "BankUser")
                         .WithMany()
                         .HasForeignKey("BankUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -318,26 +957,15 @@ namespace BankApp.Migrations
                     b.Navigation("BankUser");
                 });
 
-            modelBuilder.Entity("BankApp.Data.Entities.BankUser", b =>
+            modelBuilder.Entity("BankApp.Entities.Messaging.SupportTicket", b =>
                 {
-                    b.HasOne("BankApp.Data.Entities.AuthUser", "AuthUser")
-                        .WithOne()
-                        .HasForeignKey("BankApp.Data.Entities.BankUser", "AuthUserId")
+                    b.HasOne("BankApp.Entities.Auth.BankUser", "BankUser")
+                        .WithMany()
+                        .HasForeignKey("BankUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AuthUser");
-                });
-
-            modelBuilder.Entity("BankApp.Data.Entities.Transaction", b =>
-                {
-                    b.HasOne("BankApp.Data.Entities.Account", "Account")
-                        .WithMany("Transactions")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
+                    b.Navigation("BankUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -351,7 +979,7 @@ namespace BankApp.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("BankApp.Data.Entities.AuthUser", null)
+                    b.HasOne("BankApp.Entities.Auth.AuthUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -360,7 +988,7 @@ namespace BankApp.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("BankApp.Data.Entities.AuthUser", null)
+                    b.HasOne("BankApp.Entities.Auth.AuthUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -375,7 +1003,7 @@ namespace BankApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BankApp.Data.Entities.AuthUser", null)
+                    b.HasOne("BankApp.Entities.Auth.AuthUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -384,16 +1012,40 @@ namespace BankApp.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("BankApp.Data.Entities.AuthUser", null)
+                    b.HasOne("BankApp.Entities.Auth.AuthUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("BankApp.Data.Entities.Account", b =>
+            modelBuilder.Entity("BankApp.Entities.Auth.AuthUser", b =>
                 {
+                    b.Navigation("BankUser");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Auth.BankUser", b =>
+                {
+                    b.Navigation("BankUserAccounts");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Core.Account", b =>
+                {
+                    b.Navigation("BankUserAccounts");
+
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Finance.Loan", b =>
+                {
+                    b.Navigation("LoanPayments");
+                });
+
+            modelBuilder.Entity("BankApp.Entities.Investing.Stock", b =>
+                {
+                    b.Navigation("Investments");
+
+                    b.Navigation("MarketHistory");
                 });
 #pragma warning restore 612, 618
         }
