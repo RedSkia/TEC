@@ -1,6 +1,7 @@
 using BankApp.Components;
 using BankApp.Data;
 using BankApp.Data.Entities.Auth;
+using BankApp.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,63 +10,66 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. DATABASE SETUP (Docker SQL Server)
+// --- 1. DATABASE SETUP ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Server=localhost;Database=BankAppDb;User Id=sa;Password=Pa$$w0rd!;TrustServerCertificate=True";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// 2. IDENTITY SETUP (Opdateret til at matche din arkitektur)
+// --- 2. IDENTITY SETUP ---
 builder.Services.AddIdentityCore<ApplicationUser>(options => {
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
 })
-.AddRoles<ApplicationRole>() // Bruger din custom ApplicationRole (Admin, LoanOfficer, Customer)
+.AddRoles<ApplicationRole>()
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-// 3. JWT SIKKERHED
-// HUSK: I produktion skal denne nøgle gemmes sikkert (User Secrets/Environment Variables)
-const string JWTKey = "Dette_Er_En_Meget_Lang_Og_Sikker_Noegle_Til_JWT_123456";
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
+// --- 3. JWT & AUTHORIZATION ---
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidAudience = builder.Configuration["JWT:Audience"],
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWTKey)),
-        ClockSkew = TimeSpan.Zero // Sikrer præcis udløb af tokens
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!)),
+        ClockSkew = TimeSpan.Zero
     };
 });
 
 builder.Services.AddAuthorization();
 
-// 4. DINE EGNE SERVICES (Klar til implementering)
-// builder.Services.AddScoped<AuthService>();
-// builder.Services.AddScoped<AccountService>();
-// builder.Services.AddScoped<LoanTicketService>(); // Din LoanTicket-fokuserede service
+// --- 4. CUSTOM PROJECT SERVICES ---
+// Her kalder vi din extension method fra SetupService.cs
+builder.Services.AddProjectServices();
 
-// 5. BLAZOR SETUP
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
-// 6. API & CONTROLLERS (Til dit Public WebAPI og SPA logik)
+// --- 5. UI & API SETUP ---
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// PIPELINE KONFIGURATION
+// --- 6. DATABASE INITIALIZATION (SEEDING) ---
+using (var scope = app.Services.CreateScope())
+{
+    var authService = scope.ServiceProvider.GetRequiredService<AuthService>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    if (await userManager.FindByEmailAsync("admin@bank.dk") == null)
+        await authService.Register("admin@bank.dk", "Admin123!", "System Admin", RoleType.Admin);
+
+    if (await userManager.FindByEmailAsync("officer@bank.dk") == null)
+        await authService.Register("officer@bank.dk", "Officer123!", "Lånebehandler", RoleType.LoanOfficer);
+}
+
+// --- 7. PIPELINE / MIDDLEWARE ---
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -75,16 +79,11 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// VIGTIGT: Authentication skal altid komme før Authorization
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseAntiforgery();
 
-// Map dine API Controllers (vigtigt for JWT flowet)
 app.MapControllers();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.Run();

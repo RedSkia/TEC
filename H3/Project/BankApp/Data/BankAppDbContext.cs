@@ -8,19 +8,12 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    // Auth
     public DbSet<Address> Addresses { get; set; }
     public DbSet<LoginActivity> LoginActivities { get; set; }
-
-    // Banking
     public DbSet<BankAccount> BankAccounts { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Card> Cards { get; set; }
-
-    // Lending (Kommunikation & Sagsbehandling)
-    public DbSet<LoanTicket> LoanTickets { get; set; }
-
-    // Market
+    public DbSet<LoanRequest> LoanRequests { get; set; }
     public DbSet<Stock> Stocks { get; set; }
     public DbSet<Investment> Investments { get; set; }
     public DbSet<ExchangeRate> ExchangeRates { get; set; }
@@ -29,22 +22,26 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     {
         base.OnModelCreating(builder);
 
-        // Seed Roles med FAST ConcurrencyStamp
+        // Seeding af roller via Enum
         builder.Entity<ApplicationRole>().HasData(
-            new ApplicationRole { Id = "1", Name = "ADMIN", NormalizedName = "ADMIN", RoleColor = "#c80000", ConcurrencyStamp = "STAMP_ADMIN" },
-            new ApplicationRole { Id = "2", Name = "LOANOFFICER", NormalizedName = "LOANOFFICER", RoleColor = "#00c800", ConcurrencyStamp = "STAMP_LOANOFFICER" },
-            new ApplicationRole { Id = "3", Name = "CUSTOMER", NormalizedName = "CUSTOMER", RoleColor = "#00c8c8", ConcurrencyStamp = "STAMP_CUSTOMER" }
+            CreateRole(RoleType.Admin, "#c80000", "S1"),
+            CreateRole(RoleType.LoanOfficer, "#00c800", "S2"),
+            CreateRole(RoleType.Customer, "#00c8c8", "S3")
         );
 
-        // Cascade delete konfigurationer
-        builder.Entity<BankAccount>()
-            .HasMany(b => b.Transactions)
-            .WithOne(t => t.BankAccount)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<BankAccount>()
-            .HasMany(b => b.LoanTickets)
-            .WithOne(l => l.BankAccount)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<BankAccount>().HasMany(b => b.Transactions).WithOne(t => t.BankAccount).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<BankAccount>().HasMany(b => b.LoanTickets).WithOne(l => l.BankAccount).OnDelete(DeleteBehavior.Cascade);
+    }
+    private static ApplicationRole CreateRole(RoleType role, string color, string stamp)
+    {
+        var name = role.ToString().ToUpperInvariant();
+        return new ApplicationRole
+        {
+            Id = ((int)role + 1).ToString(),
+            Name = name,
+            NormalizedName = name,
+            RoleColor = color,
+            ConcurrencyStamp = stamp
+        };
     }
 }

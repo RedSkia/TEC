@@ -4,7 +4,7 @@ using BankApp.Data.Entities.Lending;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class LoanTicket
+public class LoanRequest
 {
     [Key]
     public int Id { get; set; }
