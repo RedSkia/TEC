@@ -1,25 +1,37 @@
 ﻿using BankApp.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Data.SqlClient;
 
 namespace BankApp.Tests;
 
-public abstract class BankAppDbContextTests : IDisposable
+[TestClass]
+public abstract class BankAppDbContextTests
 {
-    protected readonly BankAppDbContext Context;
+    protected BankAppDbContext Context = null!;
     private const string ConnectionString = "Server=localhost;Database=TEST_BankAppDb;User Id=sa;Password=Pa$$w0rd!;TrustServerCertificate=True";
 
-    protected BankAppDbContextTests()
+    [TestInitialize]
+    public void Initialize()
     {
         var options = new DbContextOptionsBuilder<BankAppDbContext>()
             .UseSqlServer(ConnectionString).Options;
+
         Context = new BankAppDbContext(options);
+
+        // 1. Fortæl C# at den skal slippe forbindelserne til databasen
+        SqlConnection.ClearAllPools();
+
+        // 2. Brug EF Core til at slette og oprette (Ingen rå SQL her!)
         Context.Database.EnsureDeleted();
         Context.Database.EnsureCreated();
     }
 
-    public void Dispose() => Context.Dispose();
+    [TestCleanup]
+    public void Cleanup()
+    {
+        // Sikrer at vi lukker pænt hver gang
+        Context.Database.CloseConnection();
+        Context.Dispose();
+    }
 }
-
