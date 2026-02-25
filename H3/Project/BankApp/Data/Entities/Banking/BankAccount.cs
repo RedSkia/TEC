@@ -10,7 +10,7 @@ public class BankAccount
     [Key]
     public int Id { get; set; }
     [Required]
-    public string AccountNumber { get; set; } = string.Empty;
+    public string AccountNumber { get; set; } = Guid.NewGuid().ToString();
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal Balance { get; set; }

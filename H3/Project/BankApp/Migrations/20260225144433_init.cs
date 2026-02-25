@@ -75,6 +75,7 @@ namespace BankApp.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Ticker = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CurrentPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
@@ -111,6 +112,7 @@ namespace BankApp.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ZipCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -238,6 +240,8 @@ namespace BankApp.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     LoginTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -257,8 +261,10 @@ namespace BankApp.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CardNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CardNumber = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     IsBlocked = table.Column<bool>(type: "bit", nullable: false),
+                    ExpiryDate = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Cvc = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
                     BankAccountId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -300,13 +306,13 @@ namespace BankApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "LoanTickets",
+                name: "LoanRequests",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TicketReference = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RequestedAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    RequestReference = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     InterestRate = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     MessageFromCustomer = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -317,14 +323,14 @@ namespace BankApp.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LoanTickets", x => x.Id);
+                    table.PrimaryKey("PK_LoanRequests", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_LoanTickets_AspNetUsers_AssignedOfficerId",
+                        name: "FK_LoanRequests_AspNetUsers_AssignedOfficerId",
                         column: x => x.AssignedOfficerId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_LoanTickets_BankAccounts_BankAccountId",
+                        name: "FK_LoanRequests_BankAccounts_BankAccountId",
                         column: x => x.BankAccountId,
                         principalTable: "BankAccounts",
                         principalColumn: "Id",
@@ -337,6 +343,7 @@ namespace BankApp.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    TransactionReference = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -359,9 +366,9 @@ namespace BankApp.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName", "RoleColor" },
                 values: new object[,]
                 {
-                    { "1", "S1", "ADMIN", "ADMIN", "#c80000" },
-                    { "2", "S2", "LOANOFFICER", "LOANOFFICER", "#00c800" },
-                    { "3", "S3", "CUSTOMER", "CUSTOMER", "#00c8c8" }
+                    { "1", "S1", "Admin", "Admin", "#c80000" },
+                    { "2", "S2", "LoanOfficer", "LoanOfficer", "#00c800" },
+                    { "3", "S3", "Customer", "Customer", "#00c8c8" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -430,13 +437,13 @@ namespace BankApp.Migrations
                 column: "StockId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LoanTickets_AssignedOfficerId",
-                table: "LoanTickets",
+                name: "IX_LoanRequests_AssignedOfficerId",
+                table: "LoanRequests",
                 column: "AssignedOfficerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LoanTickets_BankAccountId",
-                table: "LoanTickets",
+                name: "IX_LoanRequests_BankAccountId",
+                table: "LoanRequests",
                 column: "BankAccountId");
 
             migrationBuilder.CreateIndex(
@@ -481,7 +488,7 @@ namespace BankApp.Migrations
                 name: "Investments");
 
             migrationBuilder.DropTable(
-                name: "LoanTickets");
+                name: "LoanRequests");
 
             migrationBuilder.DropTable(
                 name: "LoginActivities");

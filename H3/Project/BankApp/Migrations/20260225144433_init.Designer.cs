@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankApp.Migrations
 {
     [DbContext(typeof(BankAppDbContext))]
-    [Migration("20260225113505_init")]
+    [Migration("20260225144433_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -44,6 +44,11 @@ namespace BankApp.Migrations
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
 
@@ -88,24 +93,24 @@ namespace BankApp.Migrations
                         {
                             Id = "1",
                             ConcurrencyStamp = "S1",
-                            Name = "ADMIN",
-                            NormalizedName = "ADMIN",
+                            Name = "Admin",
+                            NormalizedName = "Admin",
                             RoleColor = "#c80000"
                         },
                         new
                         {
                             Id = "2",
                             ConcurrencyStamp = "S2",
-                            Name = "LOANOFFICER",
-                            NormalizedName = "LOANOFFICER",
+                            Name = "LoanOfficer",
+                            NormalizedName = "LoanOfficer",
                             RoleColor = "#00c800"
                         },
                         new
                         {
                             Id = "3",
                             ConcurrencyStamp = "S3",
-                            Name = "CUSTOMER",
-                            NormalizedName = "CUSTOMER",
+                            Name = "Customer",
+                            NormalizedName = "Customer",
                             RoleColor = "#00c8c8"
                         });
                 });
@@ -194,6 +199,13 @@ namespace BankApp.Migrations
                     b.Property<DateTime>("LoginTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -244,6 +256,16 @@ namespace BankApp.Migrations
 
                     b.Property<string>("CardNumber")
                         .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("Cvc")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("ExpiryDate")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsBlocked")
@@ -274,6 +296,10 @@ namespace BankApp.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionReference")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -348,6 +374,10 @@ namespace BankApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Ticker")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Stocks");
@@ -360,6 +390,9 @@ namespace BankApp.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("AssignedOfficerId")
                         .HasColumnType("nvarchar(450)");
@@ -377,8 +410,9 @@ namespace BankApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("RequestedAmount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("RequestReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ResponseFromOfficer")
                         .HasColumnType("nvarchar(max)");
@@ -386,17 +420,13 @@ namespace BankApp.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<string>("TicketReference")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AssignedOfficerId");
 
                     b.HasIndex("BankAccountId");
 
-                    b.ToTable("LoanTickets");
+                    b.ToTable("LoanRequests");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

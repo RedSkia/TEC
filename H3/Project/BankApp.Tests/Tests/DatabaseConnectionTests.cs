@@ -1,42 +1,39 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BankApp.Tests;
 
+[TestClass]
 public class DatabaseConnectionTests : BankAppDbContextTests
 {
-    [Fact]
+    [TestMethod]
+    [Priority(1)]
     public async Task Database_ShouldHaveAllTablesFromContext()
     {
-        // 1. Act - Hent database-skaberen for at validere den relationelle struktur
+        // 1. Arrange - Get the creator to validate structure
         var databaseCreator = Context.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
 
-        // 2. Assert - Tjek om forbindelsen til SQL Server er aktiv
+        // 2. Assert - Connection Check
         var dbExists = await Context.Database.CanConnectAsync();
-        Assert.True(dbExists, "Database connection failed. Is SQL Server running and accessible?");
+        Assert.IsTrue(dbExists, "Database connection failed. Is SQL Server running?");
 
-        // 3. Assert - Tjek om databasen indeholder tabeller overhovedet
-        // Dette bekræfter at EnsureCreated() eller migrations har kørt succesfuldt
-        var hasTables = databaseCreator.HasTables();
-        Assert.True(hasTables, "The database exists on SQL Server but contains no tables.");
+        // 3. Assert - Table Presence Check
+        Assert.IsNotNull(databaseCreator);
+        Assert.IsTrue(databaseCreator.HasTables(), "The database exists but contains no tables.");
 
-        // 4. Act & Assert - Dynamisk validering af alle entiteter i din DbContext
-        // Vi henter alle typer direkte fra din model, så testen aldrig skal opdateres manuelt
+        // 4. Act & Assert - Loop through every C# entity and check SQL
         var entityTypes = Context.Model.GetEntityTypes();
 
         foreach (var entityType in entityTypes)
         {
-            // Hent det faktiske tabelnavn som det står i SQL Server (f.eks. "BankAccounts")
             var tableName = entityType.GetTableName();
+            Assert.IsNotNull(tableName, $"Entity {entityType.Name} is not mapped to a table.");
 
-            // Verificer at entiteten rent faktisk er mappet til en tabel
-            Assert.NotNull(tableName);
-
-            // Vi bekræfter her, at SQL Server accepterer forespørgsler mod den specifikke tabel
-            // Hvis tabellen mangler i SQL, vil dette fejle
+            // Verify the table is actually queryable/accessible
             var tableExists = await Context.Database.CanConnectAsync();
-            Assert.True(tableExists, $"Table {tableName} was defined in C# but is missing from SQL Server.");
+            Assert.IsTrue(tableExists, $"Table {tableName} was defined in C# but is missing from SQL Server.");
         }
     }
 }
