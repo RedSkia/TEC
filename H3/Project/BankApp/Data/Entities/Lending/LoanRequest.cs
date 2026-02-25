@@ -11,10 +11,10 @@ public class LoanRequest
 
     // Fjernede Guid.NewGuid() herfra for at undgå migration-fejl. 
     // Dette sættes i din Service eller via en statisk værdi.
-    public string TicketReference { get; set; } = string.Empty;
+    public string RequestReference { get; set; } = Guid.NewGuid().ToString();
 
     [Column(TypeName = "decimal(18,2)")]
-    public decimal RequestedAmount { get; set; }
+    public decimal Amount { get; set; }
 
     [Column(TypeName = "decimal(5,2)")]
     public decimal InterestRate { get; set; }

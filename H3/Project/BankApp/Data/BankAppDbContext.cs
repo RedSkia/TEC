@@ -4,9 +4,11 @@ using BankApp.Data.Entities.Market;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
+namespace BankApp.Data;
+
+public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public BankAppDbContext(DbContextOptions<BankAppDbContext> options) : base(options) { }
 
     public DbSet<Address> Addresses { get; set; }
     public DbSet<LoginActivity> LoginActivities { get; set; }
@@ -34,7 +36,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     }
     private static ApplicationRole CreateRole(RoleType role, string color, string stamp)
     {
-        var name = role.ToString().ToUpperInvariant();
+        var name = role.ToString();
         return new ApplicationRole
         {
             Id = ((int)role + 1).ToString(),

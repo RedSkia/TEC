@@ -9,6 +9,8 @@ public class Transaction
 {
     [Key]
     public int Id { get; set; }
+    [Required]
+    public string TransactionReference { get; set; } = Guid.NewGuid().ToString();
     [Column(TypeName = "decimal(18,2)")]
     public decimal Amount { get; set; }
     public string Note { get; set; } = string.Empty;
