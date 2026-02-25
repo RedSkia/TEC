@@ -25,8 +25,6 @@ D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\scopedcss\bundle\BankApp.sty
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\scopedcss\projectbundle\BankApp.bundle.scp.css
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\oxzdwe5dxj-{0}-4kywy7iv6g-4kywy7iv6g.gz
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\culsnhui22-{0}-abdmv1u4y3-abdmv1u4y3.gz
-D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\rynp0wv6ut-{0}-2i0r6wwb69-2i0r6wwb69.gz
-D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\vzb17s3epx-{0}-iz83ucvm53-iz83ucvm53.gz
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\m5pqix876n-{0}-fihgjvpmw4-fihgjvpmw4.gz
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\untau80m5g-{0}-fihgjvpmw4-fihgjvpmw4.gz
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\staticwebassets.build.json
@@ -168,3 +166,5 @@ D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\net10.0\runtimes\win-x64\native\Micr
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\net10.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\BankApp.csproj.AssemblyReference.cache
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\BankApp.csproj.Up2Date
+D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\rynp0wv6ut-{0}-ax6tuj8tun-ax6tuj8tun.gz
+D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\vzb17s3epx-{0}-zr4b1gdhaw-zr4b1gdhaw.gz

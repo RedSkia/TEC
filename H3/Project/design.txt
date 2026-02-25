@@ -1,37 +1,71 @@
-/YourBlazorProject
+JWT Login (PREFIXED Roles: Admin, LoanOfficer, Customer)
+JWT: ApplicationUser -> ApplocaitonRole
+Login Actiivty
+UserSettings
+
+
+
+
+
+UserAccount
+ AuthUser - AuthRole
+ SupportMessage
+  Notifaction
+ Notifcation
+ BankAccount
+  Transtations
+  Cards
+  Loans
+  Invesmtents
+   Stock
+
+
+
+
+
+JWT Login
+Roles (User, Admin)
+AccountHolder -> BankAccount -> UserAccount -> AuthAccount
+Cards 
+Invesnting (RandomGrapths)
+Transtations -> Transfer,Withdraw,Add,Loan
+Loan -> intrest rates
+
+
+/Bank.API
 │
 ├── /Data
-│   ├── AppDbContext.cs           // EF Core DbContext
-│   └── Entities                  // Database entities / models
-│       └── User.cs
-│       └── Account.cs
-│       └── Transaction.cs
+│   └── AppDbContext.cs           // EF Core configuration
 │
-├── /Services
-│   ├── AuthService.cs            // JWT login + registration
-│   ├── UserSession.cs            // Tracks logged-in user
-│   ├── AccountService.cs         // Business logic for accounts
-│   └── TransactionService.cs    // Business logic for transactions
-│
-├── /Components
-│   ├── Login.razor
-│   ├── Register.razor
-│   ├── Navbar.razor
-│   ├── AccountList.razor
-│   └── TransactionList.razor
-│
-├── /Pages
-│   ├── Index.razor
-│   ├── Dashboard.razor
-│   ├── Accounts.razor
-│   ├── Transactions.razor
-│   └── Admin.razor
-│
-├── /wwwroot                     // CSS, JS, images
-│
-├── Program.cs                   // App configuration
-├── appsettings.json             // Connection strings / settings
-└── YourBlazorProject.csproj
+├── /Entities
+│   ├── /Auth
+│   │   ├── ApplicationUser.cs    // Extends IdentityUser
+│   │   ├── ApplicationRole.cs    // Admin, LoanOfficer, Customer
+│   │   ├── Address.cs            // 1:1 Profile data
+│   │   ├── UserSettings.cs       // GUI Preferences
+│   │   └── LoginActivity.cs      // Security logs
+│   │
+│   ├── /Banking
+│   │   ├── BankAccount.cs        // Customer accounts
+│   │   ├── Card.cs               // Tied to accounts
+│   │   ├── Transaction.cs        // Transfer, Withdraw, Loan
+│   │   ├── Category.cs           // Food, Rent, etc.
+│   │   └── TransactionTag.cs     // #Holiday, #Gamble
+│   │
+│   ├── /Market
+│   │   ├── ExchangeRate.cs       // Admin power: Currency multiplier
+│   │   ├── GlobalCurrency.cs     // DKK, USD, etc.
+│   │   ├── Stock.cs              // Market data for graphs
+│   │   ├── Investment.cs         // User's stock portfolio
+│   │   └── Crypto.cs             // Digital assets
+│   │
+│   ├── /Lending
+│   │   ├── Loan.cs               // Status: Pending, Approved, Denied
+│   │   └── LoanOffer.cs          // Pre-approved offers
+│   │
+│   └── /Communication
+│       ├── SupportMessage.cs     // Customer -> Support
+│       └── Notification.cs       // System -> User (Loan status alerts)
 
 
 
