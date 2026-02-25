@@ -359,9 +359,9 @@ namespace BankApp.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName", "RoleColor" },
                 values: new object[,]
                 {
-                    { "1", "STAMP_ADMIN", "ADMIN", "ADMIN", "#c80000" },
-                    { "2", "STAMP_LOANOFFICER", "LOANOFFICER", "LOANOFFICER", "#00c800" },
-                    { "3", "STAMP_CUSTOMER", "CUSTOMER", "CUSTOMER", "#00c8c8" }
+                    { "1", "S1", "ADMIN", "ADMIN", "#c80000" },
+                    { "2", "S2", "LOANOFFICER", "LOANOFFICER", "#00c800" },
+                    { "3", "S3", "CUSTOMER", "CUSTOMER", "#00c8c8" }
                 });
 
             migrationBuilder.CreateIndex(

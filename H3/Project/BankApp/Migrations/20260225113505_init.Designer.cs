@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260225080821_init")]
+    [Migration("20260225113505_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -86,7 +86,7 @@ namespace BankApp.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "STAMP_ADMIN",
+                            ConcurrencyStamp = "S1",
                             Name = "ADMIN",
                             NormalizedName = "ADMIN",
                             RoleColor = "#c80000"
@@ -94,7 +94,7 @@ namespace BankApp.Migrations
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "STAMP_LOANOFFICER",
+                            ConcurrencyStamp = "S2",
                             Name = "LOANOFFICER",
                             NormalizedName = "LOANOFFICER",
                             RoleColor = "#00c800"
@@ -102,7 +102,7 @@ namespace BankApp.Migrations
                         new
                         {
                             Id = "3",
-                            ConcurrencyStamp = "STAMP_CUSTOMER",
+                            ConcurrencyStamp = "S3",
                             Name = "CUSTOMER",
                             NormalizedName = "CUSTOMER",
                             RoleColor = "#00c8c8"
@@ -352,7 +352,7 @@ namespace BankApp.Migrations
                     b.ToTable("Stocks");
                 });
 
-            modelBuilder.Entity("LoanTicket", b =>
+            modelBuilder.Entity("LoanRequest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -578,7 +578,7 @@ namespace BankApp.Migrations
                     b.Navigation("Stock");
                 });
 
-            modelBuilder.Entity("LoanTicket", b =>
+            modelBuilder.Entity("LoanRequest", b =>
                 {
                     b.HasOne("BankApp.Data.Entities.Auth.ApplicationUser", "AssignedOfficer")
                         .WithMany()
