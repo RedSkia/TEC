@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BankApp.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankApp.Services;
 
@@ -12,7 +13,7 @@ public interface ICRUDService<T> where T : class
     Task<bool> DeleteAsync(int id);
 }
 
-public class CRUDService<T>(AppDbContext context) : ICRUDService<T> where T : class
+public class CRUDService<T>(BankAppDbContext context) : ICRUDService<T> where T : class
 {
     public virtual async Task<IEnumerable<T>> GetAllAsync()
         => await context.Set<T>().ToListAsync();

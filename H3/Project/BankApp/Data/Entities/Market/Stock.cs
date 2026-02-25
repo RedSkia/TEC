@@ -9,6 +9,10 @@ public class Stock
     public int Id { get; set; }
     [Required]
     public string Name { get; set; } = string.Empty;
+
+    [Required]
+    public string Name { get; set; } = string.Empty;
+
     [Column(TypeName = "decimal(18,2)")]
     public decimal CurrentPrice { get; set; }
 

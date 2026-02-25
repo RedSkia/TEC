@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Server=localhost;Database=BankAppDb;User Id=sa;Password=Pa$$w0rd!;TrustServerCertificate=True";
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<BankAppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // --- 2. IDENTITY SETUP ---
@@ -25,7 +25,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => {
     options.Password.RequireUppercase = false;
 })
 .AddRoles<ApplicationRole>()
-.AddEntityFrameworkStores<AppDbContext>()
+.AddEntityFrameworkStores<BankAppDbContext>()
 .AddDefaultTokenProviders();
 
 // --- 3. JWT & AUTHORIZATION ---
