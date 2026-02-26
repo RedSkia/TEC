@@ -16,6 +16,4 @@ public class Stock
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal CurrentPrice { get; set; }
-
-    public virtual ICollection<Investment> Investments { get; set; } = new List<Investment>();
 }

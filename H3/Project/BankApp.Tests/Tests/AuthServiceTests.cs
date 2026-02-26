@@ -35,7 +35,7 @@ public class AuthServiceTests
         _context.Database.EnsureCreated();
     }
 
-    [TestMethod, Priority(3)]
+    [TestMethod]
     public async Task AuthService_Register_CreatesUsersForAllRolesInDatabase()
     {
         // Check that every role defined in RoleType can actually be registered
@@ -53,7 +53,7 @@ public class AuthServiceTests
         }
     }
 
-    [TestMethod, Priority(3)]
+    [TestMethod]
     public async Task AuthService_Login_ReturnsValidJwtForExistingUsers()
     {
         var password = "Password123!";
@@ -76,7 +76,7 @@ public class AuthServiceTests
         }
     }
 
-    [TestMethod, Priority(3)]
+    [TestMethod]
     public async Task AuthService_Login_ReturnsNullForInvalidCredentials()
     {
         // Act: Attempt login with non-existent credentials
