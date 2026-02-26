@@ -7,7 +7,10 @@ public class ExchangeRate
 {
     [Key]
     public int Id { get; set; }
-    public string CurrencyCode { get; set; } = "USD";
+
+    [Required]
+    public string CurrencyCode { get; set; } = "EUR";
+
     [Column(TypeName = "decimal(18,4)")]
     public decimal Rate { get; set; } // Sættes af Admin
 }

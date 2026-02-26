@@ -13,12 +13,12 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<Address> Addresses { get; set; }
     public DbSet<LoginActivity> LoginActivities { get; set; }
     public DbSet<BankAccount> BankAccounts { get; set; }
-    public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Card> Cards { get; set; }
+    public DbSet<Transaction> Transactions { get; set; }
     public DbSet<LoanRequest> LoanRequests { get; set; }
-    public DbSet<Stock> Stocks { get; set; }
-    public DbSet<Investment> Investments { get; set; }
     public DbSet<ExchangeRate> ExchangeRates { get; set; }
+    public DbSet<Investment> Investments { get; set; }
+    public DbSet<Stock> Stocks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

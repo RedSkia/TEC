@@ -9,8 +9,6 @@ public class LoanRequest
     [Key]
     public int Id { get; set; }
 
-    // Fjernede Guid.NewGuid() herfra for at undgå migration-fejl. 
-    // Dette sættes i din Service eller via en statisk værdi.
     public string RequestReference { get; set; } = Guid.NewGuid().ToString();
 
     [Column(TypeName = "decimal(18,2)")]
@@ -29,10 +27,10 @@ public class LoanRequest
 
     [Required]
     public int BankAccountId { get; set; }
+
     [ForeignKey(nameof(BankAccountId))]
     public virtual BankAccount BankAccount { get; set; } = null!;
 
-    // Forbedret relation til Officer (Giver ekstra point for OOA/OOD)
     public string? AssignedOfficerId { get; set; }
     [ForeignKey(nameof(AssignedOfficerId))]
     public virtual ApplicationUser? AssignedOfficer { get; set; }

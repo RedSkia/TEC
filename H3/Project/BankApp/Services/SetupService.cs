@@ -4,7 +4,6 @@ using BankApp.Data.Entities.Market;
 
 namespace BankApp.Services;
 
-
 public static class SetupService
 {
     public static IServiceCollection AddProjectServices(this IServiceCollection services)

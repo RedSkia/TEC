@@ -2,7 +2,7 @@
 
 public enum TransactionType 
 { 
-    Transfer, 
+    Transfer = 1, 
     Withdraw, 
     Deposit, 
     LoanDisbursement 
