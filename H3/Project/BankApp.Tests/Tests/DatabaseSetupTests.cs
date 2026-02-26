@@ -16,36 +16,40 @@ public class DatabaseSetupTests
         var config = TestFactory.GetConfig();
         _context = TestFactory.CreateDbContext(config);
 
-        // Maintenance: Clear connections and reset schema
+        // Wipe connections and reset schema for a clean testing slate
         SqlConnection.ClearAllPools();
         _context.Database.EnsureDeleted();
         _context.Database.EnsureCreated();
     }
 
     [TestMethod, Priority(2)]
-    public void Database_CanConnect_And_TablesExist()
+    public void Database_CanConnect_Successfully()
     {
-        // Connectivity: Ensure SQL Server is reachable
-        Assert.IsTrue(_context.Database.CanConnect(), "Failed to connect to SQL Server.");
+        // Simply verifies the SQL Server is up and the connection string is valid
+        Assert.IsTrue(_context.Database.CanConnect(), "Failed to connect to the SQL Server.");
+    }
 
-        // Schema: [Entity] <-> [SQL Table]
-        // Loop through all mapped entities to verify physical table existence
-        var entityTypes = _context.Model.GetEntityTypes();
-        Assert.IsTrue(entityTypes.Any(), "No entities found in DbContext model!");
+    [TestMethod, Priority(2)]
+    public void Database_PhysicalTables_ExistInSchema()
+    {
+        // 1. Ensure the EF model actually has entities defined
+        var entityTypes = _context.Model.GetEntityTypes().ToList();
+        Assert.IsTrue(entityTypes.Any(), "No entities found in the DbContext model!");
 
+        // 2. Ping every physical table to confirm schema matches the code
         foreach (var entity in entityTypes)
         {
             var tableName = entity.GetTableName();
-            if (tableName == null) continue;
+            if (string.IsNullOrEmpty(tableName)) continue;
 
             try
             {
-                // Verify physical table via raw SQL ping
+                // Execute a zero-impact query to verify the table exists in SQL
                 _context.Database.ExecuteSqlRaw($"SELECT TOP 0 * FROM [{tableName}]");
             }
             catch (Exception ex)
             {
-                Assert.Fail($"Table [{tableName}] for Entity [{entity.ClrType.Name}] is missing. Error: {ex.Message}");
+                Assert.Fail($"Table [{tableName}] for Entity [{entity.ClrType.Name}] is missing in SQL. Error: {ex.Message}");
             }
         }
     }
@@ -53,8 +57,7 @@ public class DatabaseSetupTests
     [TestMethod, Priority(2)]
     public void Database_Roles_AreSeeded()
     {
-        // Seeding: RoleType Enum <-> AspNetRoles
-        // Verifies that the OnModelCreating seed data was applied
+        // Confirms that the OnModelCreating seed data for Roles was applied
         var roleCount = _context.Roles.Count();
         Assert.AreEqual(3, roleCount, "Seeded roles (Admin, Officer, Customer) are missing.");
     }

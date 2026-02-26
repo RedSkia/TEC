@@ -1,4 +1,5 @@
-﻿using BankApp.Data.Entities.Auth;
+﻿using BankApp.Data;
+using BankApp.Data.Entities.Auth;
 using BankApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -11,7 +12,7 @@ public class AuthServiceTests
 {
     private AuthService _authService = null!;
     private UserManager<ApplicationUser> _userManager = null!;
-    private BankApp.Data.BankAppDbContext _context = null!;
+    private BankAppDbContext _context = null!;
 
     [TestInitialize]
     public void Setup()
@@ -19,7 +20,7 @@ public class AuthServiceTests
         var config = TestFactory.GetConfig();
         _context = TestFactory.CreateDbContext(config);
 
-        // Correctly typed UserStore for custom ApplicationRole
+        // Setup Identity requirements: Store -> Manager -> Service
         var userStore = new UserStore<ApplicationUser, ApplicationRole, BankApp.Data.BankAppDbContext, string>(_context);
 
         _userManager = new UserManager<ApplicationUser>(
@@ -27,9 +28,9 @@ public class AuthServiceTests
             new IUserValidator<ApplicationUser>[0], new IPasswordValidator<ApplicationUser>[0],
             new UpperInvariantLookupNormalizer(), new IdentityErrorDescriber(), null, null);
 
-        var tokenService = new TokenService(config);
-        _authService = new AuthService(_userManager, tokenService);
+        _authService = new AuthService(_userManager, new TokenService(config));
 
+        // Ensure we start with a fresh, empty database schema
         _context.Database.EnsureDeleted();
         _context.Database.EnsureCreated();
     }
@@ -37,62 +38,51 @@ public class AuthServiceTests
     [TestMethod, Priority(3)]
     public async Task AuthService_Register_CreatesUsersForAllRolesInDatabase()
     {
-        // Arrange
-        var roles = Enum.GetValues<RoleType>();
-
-        foreach (var role in roles)
+        // Check that every role defined in RoleType can actually be registered
+        foreach (var role in Enum.GetValues<RoleType>())
         {
             var email = $"reg_{role.ToString().ToLower()}@test.dk";
-            var password = "Password123!";
-            var name = $"{role} Registration Test";
+            var result = await _authService.Register(email, "Password123!", "Registration Test", role);
 
-            // Act
-            var result = await _authService.Register(email, password, name, role);
-
-            // Assert
-            Assert.IsTrue(result, $"Register failed for role: {role}");
+            // Assert: Registration succeeded and user exists in SQL with the correct role
+            Assert.IsTrue(result, $"Register failed for: {role}");
 
             var user = await _userManager.FindByEmailAsync(email);
-            Assert.IsNotNull(user, $"User for {role} was not saved to SQL.");
-
-            var isInRole = await _userManager.IsInRoleAsync(user, role.ToString());
-            Assert.IsTrue(isInRole, $"User was created but not assigned to {role} in AspNetUserRoles.");
+            Assert.IsNotNull(user, $"User {role} not found in database.");
+            Assert.IsTrue(await _userManager.IsInRoleAsync(user, role.ToString()), $"Role assignment failed for {role}.");
         }
     }
 
     [TestMethod, Priority(3)]
     public async Task AuthService_Login_ReturnsValidJwtForExistingUsers()
     {
-        // Arrange
-        var roles = Enum.GetValues<RoleType>();
         var password = "Password123!";
 
-        // Pre-create users so Login has something to work with
-        foreach (var role in roles)
+        // 1. Arrange: Seed a user for every role
+        foreach (var role in Enum.GetValues<RoleType>())
         {
             var email = $"login_{role.ToString().ToLower()}@test.dk";
-            await _authService.Register(email, password, "Login Test User", role);
+            await _authService.Register(email, password, "Login Test", role);
         }
 
-        // Act & Assert
-        foreach (var role in roles)
+        // 2. Act & Assert: Verify login produces a valid 3-part JWT
+        foreach (var role in Enum.GetValues<RoleType>())
         {
             var email = $"login_{role.ToString().ToLower()}@test.dk";
-
             var token = await _authService.Login(email, password);
 
-            Assert.IsNotNull(token, $"Login failed to return token for role: {role}");
-            Assert.IsTrue(token.Split('.').Length == 3, "Returned token is not a valid JWT format.");
+            Assert.IsNotNull(token, $"Login failed to return token for: {role}");
+            Assert.AreEqual(3, token.Split('.').Length, "Token is not in valid JWT format (Header.Payload.Signature).");
         }
     }
 
     [TestMethod, Priority(3)]
     public async Task AuthService_Login_ReturnsNullForInvalidCredentials()
     {
-        // Act
+        // Act: Attempt login with non-existent credentials
         var result = await _authService.Login("nonexistent@test.dk", "WrongPassword123!");
 
-        // Assert
+        // Assert: Service should gracefully return null
         Assert.IsNull(result, "AuthService should return null for invalid credentials.");
     }
 

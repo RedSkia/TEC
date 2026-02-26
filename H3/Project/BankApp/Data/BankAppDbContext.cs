@@ -62,7 +62,7 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         // Relation: [BankAccount] 1 <-> N [LoanRequest]
         builder.Entity<LoanRequest>()
             .HasOne(l => l.BankAccount)
-            .WithMany(b => b.LoanTickets)
+            .WithMany(b => b.LoanRequests)
             .HasForeignKey(l => l.BankAccountId)
             .OnDelete(DeleteBehavior.Cascade);
     }
