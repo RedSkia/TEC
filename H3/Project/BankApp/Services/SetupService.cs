@@ -11,7 +11,7 @@ public static class SetupService
         // 1. Specielle Business Services (Dem du selv har bygget)
         services.AddHttpContextAccessor();
         services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<AuthService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         // 2. Den Generiske CRUD Motor (Alle dine tabeller)
         services.AddScoped<ICRUDService<Stock>, CRUDService<Stock>>();

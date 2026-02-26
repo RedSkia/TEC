@@ -11,14 +11,14 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. DATABASE SETUP ---
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Server=localhost;Database=BankAppDb;User Id=sa;Password=Pa$$w0rd!;TrustServerCertificate=True";
+var connectionString = builder.Configuration.GetConnectionString("ProdConnection");
 
 builder.Services.AddDbContext<BankAppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // --- 2. IDENTITY SETUP ---
-builder.Services.AddIdentityCore<ApplicationUser>(options => {
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
@@ -28,48 +28,53 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => {
 .AddEntityFrameworkStores<BankAppDbContext>()
 .AddDefaultTokenProviders();
 
-// --- 3. JWT & AUTHORIZATION ---
+// --- 3. JWT & AUTHENTICATION ---
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidIssuer = builder.Configuration["JWT:Issuer"],
-        ValidAudience = builder.Configuration["JWT:Audience"],
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!)),
-        ClockSkew = TimeSpan.Zero
-    };
-});
+        var key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!);
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = builder.Configuration["JWT:Issuer"],
+            ValidAudience = builder.Configuration["JWT:Audience"],
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
 builder.Services.AddAuthorization();
 
-// --- 4. CUSTOM PROJECT SERVICES ---
-// Her kalder vi din extension method fra SetupService.cs
-builder.Services.AddProjectServices();
+// --- 4. PROJECT SERVICES ---
+builder.Services.AddProjectServices(); // registers AuthService, TokenService, etc.
 
-// --- 5. UI & API SETUP ---
+// --- 5. UI & API ---
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// --- 6. DATABASE INITIALIZATION (SEEDING) ---
+// --- 6. DATABASE SEEDING ---
 using (var scope = app.Services.CreateScope())
 {
-    var authService = scope.ServiceProvider.GetRequiredService<AuthService>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
 
-    if (await userManager.FindByEmailAsync("admin@bank.dk") == null)
+    // Seed admin
+    if (await authService.Login("admin@bank.dk", "Admin123!") == null)
+    {
         await authService.Register("admin@bank.dk", "Admin123!", "System Admin", RoleType.Admin);
+    }
 
-    if (await userManager.FindByEmailAsync("officer@bank.dk") == null)
+    // Seed loan officer
+    if (await authService.Login("officer@bank.dk", "Officer123!") == null)
+    {
         await authService.Register("officer@bank.dk", "Officer123!", "Lånebehandler", RoleType.LoanOfficer);
+    }
 }
 
-// --- 7. PIPELINE / MIDDLEWARE ---
+// --- 7. MIDDLEWARE ---
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);

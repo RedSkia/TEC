@@ -24,15 +24,47 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     {
         base.OnModelCreating(builder);
 
-        // Seeding af roller via Enum
+        // Seeding Roles
         builder.Entity<ApplicationRole>().HasData(
             CreateRole(RoleType.Admin, "#c80000", "S1"),
             CreateRole(RoleType.LoanOfficer, "#00c800", "S2"),
             CreateRole(RoleType.Customer, "#00c8c8", "S3")
         );
 
-        builder.Entity<BankAccount>().HasMany(b => b.Transactions).WithOne(t => t.BankAccount).OnDelete(DeleteBehavior.Cascade);
-        builder.Entity<BankAccount>().HasMany(b => b.LoanTickets).WithOne(l => l.BankAccount).OnDelete(DeleteBehavior.Cascade);
+        // Eager Loading Configuration
+        builder.Entity<ApplicationUser>().Navigation(u => u.Address).AutoInclude();
+        builder.Entity<ApplicationUser>().Navigation(u => u.BankAccounts).AutoInclude();
+        builder.Entity<BankAccount>().Navigation(b => b.Transactions).AutoInclude();
+        builder.Entity<BankAccount>().Navigation(b => b.Cards).AutoInclude();
+        builder.Entity<BankAccount>().Navigation(b => b.Investments).AutoInclude();
+        builder.Entity<Investment>().Navigation(i => i.Stock).AutoInclude();
+
+        // Relation: [ApplicationUser] 1 <-> 1 [Address]
+        builder.Entity<Address>()
+            .HasOne(a => a.User)
+            .WithOne(u => u.Address)
+            .HasForeignKey<Address>(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Relation: [ApplicationUser] 1 <-> N [BankAccount]
+        builder.Entity<BankAccount>()
+            .HasOne(b => b.User)
+            .WithMany(u => u.BankAccounts)
+            .HasForeignKey(b => b.UserId);
+
+        // Relation: [BankAccount] 1 <-> N [Transaction]
+        builder.Entity<Transaction>()
+            .HasOne(t => t.BankAccount)
+            .WithMany(b => b.Transactions)
+            .HasForeignKey(t => t.BankAccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Relation: [BankAccount] 1 <-> N [LoanRequest]
+        builder.Entity<LoanRequest>()
+            .HasOne(l => l.BankAccount)
+            .WithMany(b => b.LoanTickets)
+            .HasForeignKey(l => l.BankAccountId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
     private static ApplicationRole CreateRole(RoleType role, string color, string stamp)
     {
