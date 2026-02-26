@@ -14,9 +14,8 @@ public class Address
     [Required]
     public string City { get; set; } = string.Empty;
 
-    // Tilføjer Postnummer (ZipCode)
     [Required]
-    [StringLength(10)] // Understøtter både danske (4 cifre) og internationale koder
+    [StringLength(4)]
     public string ZipCode { get; set; } = string.Empty;
 
     [Required]

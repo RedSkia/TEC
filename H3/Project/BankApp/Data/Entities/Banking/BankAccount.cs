@@ -9,6 +9,7 @@ public class BankAccount
 {
     [Key]
     public int Id { get; set; }
+
     [Required]
     public string AccountNumber { get; set; } = Guid.NewGuid().ToString();
 
@@ -17,10 +18,10 @@ public class BankAccount
 
     [Required]
     public string UserId { get; set; } = string.Empty;
+
     [ForeignKey(nameof(UserId))]
     public virtual ApplicationUser User { get; set; } = null!;
 
-    // Alt finansielt ejer kontoen
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     public virtual ICollection<Card> Cards { get; set; } = new List<Card>();
     public virtual ICollection<LoanRequest> LoanTickets { get; set; } = new List<LoanRequest>();

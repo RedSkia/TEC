@@ -168,4 +168,3 @@ D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\BankApp.csproj.AssemblyRefer
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\BankApp.csproj.Up2Date
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\rynp0wv6ut-{0}-ax6tuj8tun-ax6tuj8tun.gz
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\vzb17s3epx-{0}-zr4b1gdhaw-zr4b1gdhaw.gz
-D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

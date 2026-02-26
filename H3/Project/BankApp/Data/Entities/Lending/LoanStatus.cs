@@ -2,7 +2,7 @@
 
 public enum LoanStatus 
 { 
-    Open, 
+    Open = 1, 
     UnderReview, 
     Approved, 
     Denied, 

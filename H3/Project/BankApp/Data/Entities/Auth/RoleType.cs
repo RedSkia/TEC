@@ -2,7 +2,7 @@
 
 public enum RoleType
 {
-    Admin,
+    Admin = 1,
     LoanOfficer,
     Customer
 }
