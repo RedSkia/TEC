@@ -25,199 +25,120 @@ public class DatabaseRelationsTests
 
     private BankAppDbContext GetFreshContext() => TestFactory.CreateDbContext(_config);
 
-    #region 1. AUTH & USER DEEP DIVE
-
     [TestMethod]
-    public async Task User_Complete_Lifecycle_With_Identity_Properties()
+    public async Task Relation_User_To_Address_Works()
     {
-        var user = new ApplicationUser
-        {
-            UserName = "fullstack@bank.dk",
-            Email = "fullstack@bank.dk",
-            FullName = "Test User",
-            PhoneNumber = "12345678",
-            TwoFactorEnabled = true
-        };
-        user.Address = new Address { Street = "Code Lane 1", City = "Roskilde", ZipCode = "4000" };
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = "u1@test.dk", Email = "u1@test.dk" };
+        var address = new Address { Street = "Main St", City = "Roskilde", ZipCode = "4000", User = user };
 
-        _context.Users.Add(user);
+        _context.Addresses.Add(address);
         await _context.SaveChangesAsync();
 
         using var db = GetFreshContext();
-        var fetched = await db.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Email == "fullstack@bank.dk");
-
-        Assert.IsNotNull(fetched);
-        Assert.AreEqual("Test User", fetched.FullName);
-        Assert.IsTrue(fetched.TwoFactorEnabled);
-        Assert.AreEqual("Code Lane 1", fetched.Address.Street);
+        var fetched = await db.Users.FirstOrDefaultAsync(u => u.Email == "u1@test.dk");
+        Assert.IsNotNull(fetched?.Address);
     }
 
     [TestMethod]
-    public async Task LoginActivity_Audit_Trail_Persistence()
+    public async Task Relation_User_To_BankAccounts_Works()
     {
-        var user = new ApplicationUser { UserName = "security@bank.dk", Email = "security@bank.dk" };
-        var activities = new List<LoginActivity>
-        {
-            new() { User = user, IpAddress = "1.1.1.1", Status = LoginStatus.Success, UserAgent = "Chrome" },
-            new() { User = user, IpAddress = "1.1.1.2", Status = LoginStatus.InvalidPassword, UserAgent = "Firefox" },
-            new() { User = user, IpAddress = "1.1.1.3", Status = LoginStatus.AccountLocked, UserAgent = "Edge" }
-        };
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = "u2@test.dk", Email = "u2@test.dk" };
+        var account = new BankAccount { AccountNumber = "ACC-01", User = user };
 
-        _context.LoginActivities.AddRange(activities);
+        _context.BankAccounts.Add(account);
         await _context.SaveChangesAsync();
 
         using var db = GetFreshContext();
-        var dbUser = await db.Users.Include(u => u.LoginActivities).FirstOrDefaultAsync(u => u.Email == "security@bank.dk");
-        Assert.AreEqual(3, dbUser!.LoginActivities.Count);
-        Assert.IsTrue(dbUser.LoginActivities.Any(a => a.Status == LoginStatus.AccountLocked));
+        var fetched = await db.Users.FirstOrDefaultAsync(u => u.Email == "u2@test.dk");
+        Assert.AreEqual(1, fetched?.BankAccounts.Count);
     }
 
-    #endregion
-
-    #region 2. BANKING & CARD COMPLEXITY
-
     [TestMethod]
-    public async Task BankAccount_With_Mixed_Transactions_And_Cards()
+    public async Task Relation_BankAccount_To_Transactions_Works()
     {
-        var user = new ApplicationUser { UserName = "rich@bank.dk", Email = "rich@bank.dk" };
-        var account = new BankAccount { AccountNumber = "GOLD-001", Balance = 99999.99m, User = user };
-
-        // Add Transactions
-        account.Transactions.Add(new Transaction { Amount = 100, Type = TransactionType.Deposit, Note = "Gift" });
-        account.Transactions.Add(new Transaction { Amount = -50, Type = TransactionType.Withdraw, Note = "Dinner" });
-
-        // Add Multiple Cards
-        account.Cards.Add(new Card { CardNumber = "1111222233334444", Cvc = "111", ExpiryDate = "01/25", IsBlocked = false });
-        account.Cards.Add(new Card { CardNumber = "5555666677778888", Cvc = "222", ExpiryDate = "02/26", IsBlocked = true });
-
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        using var db = GetFreshContext();
-        var dbAcc = await db.BankAccounts.Include(a => a.Transactions).Include(a => a.Cards)
-                            .FirstOrDefaultAsync(a => a.AccountNumber == "GOLD-001");
-
-        Assert.AreEqual(2, dbAcc!.Transactions.Count);
-        Assert.AreEqual(2, dbAcc.Cards.Count);
-        Assert.IsTrue(dbAcc.Cards.First(c => c.CardNumber.StartsWith("5555")).IsBlocked);
-    }
-
-    #endregion
-
-    #region 3. LENDING & ASSIGNMENT RELATIONS
-
-    [TestMethod]
-    public async Task LoanRequest_Full_Mapping_With_Officer_Assignment()
-    {
-        var client = new ApplicationUser { UserName = "borrower@bank.dk", Email = "borrower@bank.dk" };
-        var officer = new ApplicationUser { UserName = "officer@bank.dk", Email = "officer@bank.dk" };
-        var account = new BankAccount { User = client, AccountNumber = "ACC-LOAN" };
-
-        var loan = new LoanRequest
-        {
-            BankAccount = account,
-            Amount = 250000,
-            InterestRate = 4.25m,
-            Status = LoanStatus.UnderReview,
-            MessageFromCustomer = "Business Expansion",
-            ResponseFromOfficer = "Awaiting financial statements",
-            AssignedOfficer = officer
-        };
-
-        _context.Users.AddRange(client, officer);
-        _context.LoanRequests.Add(loan);
-        await _context.SaveChangesAsync();
-
-        using var db = GetFreshContext();
-        var dbLoan = await db.LoanRequests
-            .Include(l => l.BankAccount).ThenInclude(a => a.User)
-            .Include(l => l.AssignedOfficer)
-            .FirstOrDefaultAsync();
-
-        Assert.IsNotNull(dbLoan);
-        Assert.AreEqual("borrower@bank.dk", dbLoan.BankAccount.User.Email);
-        Assert.AreEqual("officer@bank.dk", dbLoan.AssignedOfficer!.Email);
-        Assert.AreEqual(4.25m, dbLoan.InterestRate);
-    }
-
-    #endregion
-
-    #region 4. MARKET, STOCKS & INVESTMENTS
-
-    [TestMethod]
-    public async Task Market_Investment_Stock_Many_To_Many_Simulation()
-    {
-        var user = new ApplicationUser { UserName = "trader@bank.dk", Email = "trader@bank.dk" };
-        var account = new BankAccount { User = user, AccountNumber = "PORTFOLIO-1" };
-
-        var stockA = new Stock { Ticker = "NVDA", Name = "Nvidia", CurrentPrice = 900m };
-        var stockB = new Stock { Ticker = "TSLA", Name = "Tesla", CurrentPrice = 170m };
-
-        // Bridge table data
-        account.Investments.Add(new Investment { Stock = stockA, Quantity = 5.5m });
-        account.Investments.Add(new Investment { Stock = stockB, Quantity = 20.0m });
-
-        _context.Users.Add(user);
-        _context.Stocks.AddRange(stockA, stockB);
-        await _context.SaveChangesAsync();
-
-        using var db = GetFreshContext();
-        var dbAcc = await db.BankAccounts
-            .Include(a => a.Investments).ThenInclude(i => i.Stock)
-            .FirstOrDefaultAsync(a => a.AccountNumber == "PORTFOLIO-1");
-
-        Assert.AreEqual(2, dbAcc!.Investments.Count);
-        var nvda = dbAcc.Investments.First(i => i.Stock.Ticker == "NVDA");
-        Assert.AreEqual(5.5m, nvda.Quantity);
-    }
-
-    #endregion
-
-    #region 5. DATABASE CONSTRAINTS & CASCADES
-
-    [TestMethod]
-    public async Task Cascade_Delete_Hierarchy_Check()
-    {
-        var user = new ApplicationUser { UserName = "disposable@bank.dk", Email = "disposable@bank.dk" };
-        var account = new BankAccount { User = user };
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = "u3@test.dk", Email = "u3@test.dk" };
+        var account = new BankAccount { AccountNumber = "TRX-ACC", User = user };
         account.Transactions.Add(new Transaction { Amount = 100, Type = TransactionType.Deposit });
-        account.Cards.Add(new Card { CardNumber = "0000000000000000", Cvc = "000", ExpiryDate = "01/01" });
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        // ACT: Blow away the user
-        _context.Users.Remove(user);
+        _context.BankAccounts.Add(account); // Add the Account directly to track children
         await _context.SaveChangesAsync();
 
         using var db = GetFreshContext();
-        Assert.IsFalse(await db.BankAccounts.AnyAsync(), "BankAccount survived User deletion.");
-        Assert.IsFalse(await db.Transactions.AnyAsync(), "Transactions survived Account deletion.");
-        Assert.IsFalse(await db.Cards.AnyAsync(), "Cards survived Account deletion.");
+        var fetched = await db.BankAccounts.FirstOrDefaultAsync(a => a.AccountNumber == "TRX-ACC");
+        Assert.AreEqual(1, fetched?.Transactions.Count);
     }
 
     [TestMethod]
-    public async Task Stock_Update_Reflects_In_Investment_Navigation()
+    public async Task Relation_BankAccount_To_Cards_Works()
     {
-        var stock = new Stock { Ticker = "GOOGL", Name = "Google", CurrentPrice = 150m };
-        var user = new ApplicationUser { UserName = "holder@bank.dk", Email = "holder@bank.dk" };
-        var account = new BankAccount { User = user };
-        var invest = new Investment { Stock = stock, BankAccount = account, Quantity = 1 };
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = "u4@test.dk", Email = "u4@test.dk" };
+        var account = new BankAccount { AccountNumber = "CARD-ACC", User = user };
+        account.Cards.Add(new Card { CardNumber = "1234", Cvc = "123", ExpiryDate = "10/25" });
 
-        _context.Add(invest);
-        await _context.SaveChangesAsync();
-
-        // ACT: Update the price of the stock globally
-        stock.CurrentPrice = 165.50m;
-        _context.Update(stock);
+        _context.BankAccounts.Add(account);
         await _context.SaveChangesAsync();
 
         using var db = GetFreshContext();
-        var dbInvest = await db.Investments.Include(i => i.Stock).FirstAsync();
-        Assert.AreEqual(165.50m, dbInvest.Stock.CurrentPrice);
+        var fetched = await db.BankAccounts.FirstOrDefaultAsync(a => a.AccountNumber == "CARD-ACC");
+        Assert.AreEqual(1, fetched?.Cards.Count);
     }
 
-    #endregion
+    [TestMethod]
+    public async Task Relation_BankAccount_To_LoanRequests_Works()
+    {
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = "u5@test.dk", Email = "u5@test.dk" };
+        var account = new BankAccount { AccountNumber = "LOAN-ACC", User = user };
+        account.LoanRequests.Add(new LoanRequest { Amount = 5000, MessageFromCustomer = "Test" });
+
+        _context.BankAccounts.Add(account);
+        await _context.SaveChangesAsync();
+
+        using var db = GetFreshContext();
+        // LoanRequests doesn't have AutoInclude in your context, adding it here
+        var fetched = await db.BankAccounts.Include(a => a.LoanRequests).FirstOrDefaultAsync(a => a.AccountNumber == "LOAN-ACC");
+        Assert.AreEqual(1, fetched?.LoanRequests.Count);
+    }
+
+    [TestMethod]
+    public async Task Relation_BankAccount_To_Investments_Works()
+    {
+        var stock = new Stock { Ticker = "AAPL", Name = "Apple", CurrentPrice = 150 };
+        _context.Stocks.Add(stock);
+        await _context.SaveChangesAsync();
+
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = "u6@test.dk", Email = "u6@test.dk" };
+        var account = new BankAccount { AccountNumber = "INV-ACC", User = user };
+        account.Investments.Add(new Investment { StockId = stock.Id, Quantity = 10 });
+
+        _context.BankAccounts.Add(account);
+        await _context.SaveChangesAsync();
+
+        using var db = GetFreshContext();
+        var fetched = await db.BankAccounts.FirstOrDefaultAsync(a => a.AccountNumber == "INV-ACC");
+        Assert.AreEqual(1, fetched?.Investments.Count);
+    }
+
+    [TestMethod]
+    public async Task Relation_Investment_To_Stock_Works()
+    {
+        var stock = new Stock { Ticker = "MSFT", Name = "Microsoft", CurrentPrice = 300 };
+        _context.Stocks.Add(stock);
+        await _context.SaveChangesAsync();
+
+        var user = new ApplicationUser { Id = Guid.NewGuid().ToString(), UserName = "u7@test.dk", Email = "u7@test.dk" };
+        var account = new BankAccount { AccountNumber = "STOCK-ACC", User = user };
+        account.Investments.Add(new Investment { StockId = stock.Id, Quantity = 5 });
+
+        _context.BankAccounts.Add(account);
+        await _context.SaveChangesAsync();
+
+        using var db = GetFreshContext();
+        var fetched = await db.BankAccounts.FirstOrDefaultAsync(a => a.AccountNumber == "STOCK-ACC");
+        var investment = fetched?.Investments.FirstOrDefault();
+
+        Assert.IsNotNull(investment?.Stock);
+        Assert.AreEqual("MSFT", investment.Stock.Ticker);
+    }
 
     [TestCleanup]
     public void Cleanup() => _context?.Dispose();

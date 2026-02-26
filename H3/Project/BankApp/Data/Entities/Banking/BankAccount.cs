@@ -24,6 +24,6 @@ public class BankAccount
 
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     public virtual ICollection<Card> Cards { get; set; } = new List<Card>();
-    public virtual ICollection<LoanRequest> LoanTickets { get; set; } = new List<LoanRequest>();
+    public virtual ICollection<LoanRequest> LoanRequests { get; set; } = new List<LoanRequest>();
     public virtual ICollection<Investment> Investments { get; set; } = new List<Investment>();
 }
