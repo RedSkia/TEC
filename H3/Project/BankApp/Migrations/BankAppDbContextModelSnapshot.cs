@@ -88,7 +88,7 @@ namespace BankApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1",
+                            Id = "2",
                             ConcurrencyStamp = "S1",
                             Name = "Admin",
                             NormalizedName = "Admin",
@@ -96,7 +96,7 @@ namespace BankApp.Migrations
                         },
                         new
                         {
-                            Id = "2",
+                            Id = "3",
                             ConcurrencyStamp = "S2",
                             Name = "LoanOfficer",
                             NormalizedName = "LoanOfficer",
@@ -104,7 +104,7 @@ namespace BankApp.Migrations
                         },
                         new
                         {
-                            Id = "3",
+                            Id = "4",
                             ConcurrencyStamp = "S3",
                             Name = "Customer",
                             NormalizedName = "Customer",
