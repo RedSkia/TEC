@@ -32,6 +32,7 @@ public class LoanRequest
     public virtual BankAccount BankAccount { get; set; } = null!;
 
     public string? AssignedOfficerId { get; set; }
+
     [ForeignKey(nameof(AssignedOfficerId))]
     public virtual ApplicationUser? AssignedOfficer { get; set; }
 }

@@ -13,53 +13,47 @@ public class DatabaseSetupTests
     [TestInitialize]
     public void Setup()
     {
-        var config = TestFactory.GetConfig();
-        _context = TestFactory.CreateDbContext(config);
-
-        // Wipe connections and reset schema for a clean testing slate
+        _context = TestFactory.CreateDbContext(TestFactory.GetConfig());
         SqlConnection.ClearAllPools();
         _context.Database.EnsureDeleted();
         _context.Database.EnsureCreated();
     }
 
-    [TestMethod, Priority(2)]
-    public void Database_CanConnect_Successfully()
-    {
-        // Simply verifies the SQL Server is up and the connection string is valid
-        Assert.IsTrue(_context.Database.CanConnect(), "Failed to connect to the SQL Server.");
-    }
+    [TestMethod]
+    public void Database_Connection_IsAvailable()
+        => Assert.IsTrue(_context.Database.CanConnect(), "SQL Server is unreachable.");
 
-    [TestMethod, Priority(2)]
-    public void Database_PhysicalTables_ExistInSchema()
-    {
-        // 1. Ensure the EF model actually has entities defined
-        var entityTypes = _context.Model.GetEntityTypes().ToList();
-        Assert.IsTrue(entityTypes.Any(), "No entities found in the DbContext model!");
+    [TestMethod]
+    public void Database_Roles_Seeding_CorrectCount()
+        => Assert.AreEqual(3, _context.Roles.Count(), "Seeded roles (Admin, Officer, Customer) are missing.");
 
-        // 2. Ping every physical table to confirm schema matches the code
+    [TestMethod]
+    public void Database_Schema_AllPhysicalTablesExist()
+    {
+        // This is the "Smart Way": We ask EF Core for all entities it knows about.
+        // If you add a new DbSet in the future, this test automatically includes it!
+        var entityTypes = _context.Model.GetEntityTypes();
+
         foreach (var entity in entityTypes)
         {
             var tableName = entity.GetTableName();
+            var schema = entity.GetSchema();
+
+            // Skip "Shadow" or "View" entities that don't have tables
             if (string.IsNullOrEmpty(tableName)) continue;
+
+            string fullTableName = string.IsNullOrEmpty(schema) ? $"[{tableName}]" : $"[{schema}].[{tableName}]";
 
             try
             {
-                // Execute a zero-impact query to verify the table exists in SQL
-                _context.Database.ExecuteSqlRaw($"SELECT TOP 0 * FROM [{tableName}]");
+                // Ping the table. If it's missing, this throws an exception.
+                _context.Database.ExecuteSqlRaw($"SELECT TOP 0 * FROM {fullTableName}");
             }
             catch (Exception ex)
             {
-                Assert.Fail($"Table [{tableName}] for Entity [{entity.ClrType.Name}] is missing in SQL. Error: {ex.Message}");
+                Assert.Fail($"Database table {fullTableName} for entity {entity.ClrType.Name} is missing!\nError: {ex.Message}");
             }
         }
-    }
-
-    [TestMethod, Priority(2)]
-    public void Database_Roles_AreSeeded()
-    {
-        // Confirms that the OnModelCreating seed data for Roles was applied
-        var roleCount = _context.Roles.Count();
-        Assert.AreEqual(3, roleCount, "Seeded roles (Admin, Officer, Customer) are missing.");
     }
 
     [TestCleanup]

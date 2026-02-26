@@ -24,6 +24,7 @@ public class Transaction
 
     [Required]
     public int BankAccountId { get; set; }
+
     [ForeignKey(nameof(BankAccountId))]
     public virtual BankAccount BankAccount { get; set; } = null!;
 }
