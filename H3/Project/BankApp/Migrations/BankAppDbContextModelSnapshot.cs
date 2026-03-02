@@ -88,26 +88,26 @@ namespace BankApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "2",
+                            Id = "1",
                             ConcurrencyStamp = "S1",
                             Name = "Admin",
-                            NormalizedName = "Admin",
+                            NormalizedName = "ADMIN",
                             RoleColor = "#c80000"
                         },
                         new
                         {
-                            Id = "3",
+                            Id = "2",
                             ConcurrencyStamp = "S2",
                             Name = "LoanOfficer",
-                            NormalizedName = "LoanOfficer",
+                            NormalizedName = "LOANOFFICER",
                             RoleColor = "#00c800"
                         },
                         new
                         {
-                            Id = "4",
+                            Id = "3",
                             ConcurrencyStamp = "S3",
                             Name = "Customer",
-                            NormalizedName = "Customer",
+                            NormalizedName = "CUSTOMER",
                             RoleColor = "#00c8c8"
                         });
                 });
@@ -595,9 +595,9 @@ namespace BankApp.Migrations
                         .IsRequired();
 
                     b.HasOne("BankApp.Data.Entities.Market.Stock", "Stock")
-                        .WithMany("Investments")
+                        .WithMany()
                         .HasForeignKey("StockId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("BankAccount");
@@ -609,10 +609,11 @@ namespace BankApp.Migrations
                 {
                     b.HasOne("BankApp.Data.Entities.Auth.ApplicationUser", "AssignedOfficer")
                         .WithMany()
-                        .HasForeignKey("AssignedOfficerId");
+                        .HasForeignKey("AssignedOfficerId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("BankApp.Data.Entities.Banking.BankAccount", "BankAccount")
-                        .WithMany("LoanTickets")
+                        .WithMany("LoanRequests")
                         .HasForeignKey("BankAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -689,14 +690,9 @@ namespace BankApp.Migrations
 
                     b.Navigation("Investments");
 
-                    b.Navigation("LoanTickets");
+                    b.Navigation("LoanRequests");
 
                     b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("BankApp.Data.Entities.Market.Stock", b =>
-                {
-                    b.Navigation("Investments");
                 });
 #pragma warning restore 612, 618
         }

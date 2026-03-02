@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Components.Authorization
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -13,8 +14,11 @@
 </head>
 
 <body>
-    <Routes />
-    <ReconnectModal />
+    <CascadingAuthenticationState>
+        @* Add the render mode here *@
+        <Routes @rendermode="InteractiveServer" />
+        <ReconnectModal />
+    </CascadingAuthenticationState>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 

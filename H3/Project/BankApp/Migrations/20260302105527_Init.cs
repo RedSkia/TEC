@@ -302,7 +302,7 @@ namespace BankApp.Migrations
                         column: x => x.StockId,
                         principalTable: "Stocks",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -366,9 +366,9 @@ namespace BankApp.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName", "RoleColor" },
                 values: new object[,]
                 {
-                    { "2", "S1", "Admin", "Admin", "#c80000" },
-                    { "3", "S2", "LoanOfficer", "LoanOfficer", "#00c800" },
-                    { "4", "S3", "Customer", "Customer", "#00c8c8" }
+                    { "1", "S1", "Admin", "ADMIN", "#c80000" },
+                    { "2", "S2", "LoanOfficer", "LOANOFFICER", "#00c800" },
+                    { "3", "S3", "Customer", "CUSTOMER", "#00c8c8" }
                 });
 
             migrationBuilder.CreateIndex(
