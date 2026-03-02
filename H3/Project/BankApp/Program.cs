@@ -10,13 +10,14 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. DATABASE SETUP ---
+// --- 1. DATABASE SETUP (With Split Query Fix) ---
 var connectionString = builder.Configuration.GetConnectionString("ProdConnection");
 
 builder.Services.AddDbContext<BankAppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, o =>
+        o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))); // FIX 1: Performance
 
-// --- 2. IDENTITY SETUP ---
+// --- 2. IDENTITY SETUP (Fixed Role Management) ---
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
 {
     options.Password.RequireDigit = false;
@@ -24,7 +25,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
 })
-.AddRoles<ApplicationRole>()
+.AddRoles<ApplicationRole>() // Required for your RoleType logic
+.AddRoleManager<RoleManager<ApplicationRole>>() // FIX 2: Needed for AddToRoleAsync
 .AddEntityFrameworkStores<BankAppDbContext>()
 .AddDefaultTokenProviders();
 
@@ -41,37 +43,50 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["JWT:Audience"],
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.FromSeconds(30) // FIX 3: Prevents instant expiry if clocks differ
         };
     });
 
 builder.Services.AddAuthorization();
 
 // --- 4. PROJECT SERVICES ---
-builder.Services.AddProjectServices(); // registers AuthService, TokenService, etc.
+builder.Services.AddProjectServices();
 
 // --- 5. UI & API ---
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers();
 
+// ADD THIS LINE HERE:
+builder.Services.AddCascadingAuthenticationState();
+
 var app = builder.Build();
 
-// --- 6. DATABASE SEEDING ---
+// --- 6. DATABASE SEEDING (Lightweight Version) ---
 using (var scope = app.Services.CreateScope())
 {
-    var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    // Seed admin
-    if (await authService.Login("admin@bank.dk", "Admin123!") == null)
+    async Task SeedUser(string email, string name, string pass, RoleType role)
     {
-        await authService.Register("admin@bank.dk", "Admin123!", "System Admin", RoleType.Admin);
+        if (await userManager.FindByEmailAsync(email) == null)
+        {
+            var user = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                FullName = name,
+                EmailConfirmed = true
+            };
+            var result = await userManager.CreateAsync(user, pass);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, role.ToString());
+            }
+        }
     }
 
-    // Seed loan officer
-    if (await authService.Login("officer@bank.dk", "Officer123!") == null)
-    {
-        await authService.Register("officer@bank.dk", "Officer123!", "Lånebehandler", RoleType.LoanOfficer);
-    }
+    await SeedUser("admin@bank.dk", "System Admin", "Admin123!", RoleType.Admin);
+    await SeedUser("officer@bank.dk", "Lånebehandler", "Officer123!", RoleType.LoanOfficer);
 }
 
 // --- 7. MIDDLEWARE ---
@@ -84,7 +99,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseAuthentication();
+app.UseAuthentication(); // Must be before Authorization
 app.UseAuthorization();
 app.UseAntiforgery();
 
