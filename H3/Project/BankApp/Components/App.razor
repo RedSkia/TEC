@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <ResourcePreloader />
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["BankApp.styles.css"]" />
     <ImportMap />
@@ -15,10 +16,11 @@
 
 <body>
     <CascadingAuthenticationState>
-        @* Add the render mode here *@
         <Routes @rendermode="InteractiveServer" />
         <ReconnectModal />
     </CascadingAuthenticationState>
+
+    <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
