@@ -169,3 +169,8 @@ D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\BankApp.csproj.Up2Date
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\rynp0wv6ut-{0}-ax6tuj8tun-ax6tuj8tun.gz
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\vzb17s3epx-{0}-zr4b1gdhaw-zr4b1gdhaw.gz
 D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
+D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\net10.0\libman.json
+D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\jetkaic96d-{0}-026e6kk7rh-026e6kk7rh.gz
+D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\bls6ys9892-{0}-8odm1nyag1-8odm1nyag1.gz
+D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\po6bc3zd09-{0}-wvublzrdv8-wvublzrdv8.gz
+D:\Desktop\TEC\H3\Project\BankApp\obj\Debug\net10.0\compressed\t4undtvxuj-{0}-259makaqpv-259makaqpv.gz
