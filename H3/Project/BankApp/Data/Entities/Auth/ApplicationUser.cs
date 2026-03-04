@@ -6,7 +6,8 @@ namespace BankApp.Data.Entities.Auth;
 
 public class ApplicationUser : IdentityUser
 {
-    [Required]
+    [Required(ErrorMessage = "Full Name is required")]
+    [StringLength(100, MinimumLength = 2)]
     public string FullName { get; set; } = string.Empty;
     public virtual Address Address { get; set; } = null!;
     public virtual ICollection<BankAccount> BankAccounts { get; set; } = new List<BankAccount>();

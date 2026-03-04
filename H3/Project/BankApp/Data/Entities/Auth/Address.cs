@@ -8,13 +8,14 @@ public class Address
     [Key]
     public int Id { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Street name is required")]
     public string Street { get; set; } = string.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "City is required")]
     public string City { get; set; } = string.Empty;
 
-    [Required, StringLength(4)]
+    [Required(ErrorMessage = "Zip Code is required")]
+    [RegularExpression(@"^\d{4}$", ErrorMessage = "Zip Code must be 4 digits")]
     public string ZipCode { get; set; } = string.Empty;
 
     [Required]

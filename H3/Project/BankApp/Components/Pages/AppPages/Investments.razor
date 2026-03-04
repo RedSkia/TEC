@@ -1,0 +1,153 @@
+﻿@page "/investments"
+@using BankApp.Data.Entities.Auth
+@using BankApp.Data.Entities.Market
+@using BankApp.Data.Entities.Banking
+@using BankApp.Services
+@using Microsoft.EntityFrameworkCore @* <--- ADD THIS LINE *@
+@rendermode InteractiveServer
+@inject IAuthService AuthService
+@inject BankApp.Data.BankAppDbContext DbContext
+
+<div class="container py-5">
+    @if (user == null || availableStocks == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-grow text-success" role="status"></div>
+            <p class="mt-3 text-muted">Fetching live market data...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @* --- LEFT: MARKET LIST --- *@
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-graph-up-arrow text-success me-2"></i>Market Overview</h5>
+                        <span class="badge bg-light text-dark border">Live Updates</span>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        @foreach (var stock in availableStocks)
+                        {
+                            <div class="list-group-item list-group-item-action p-4 border-0 border-bottom">
+                                <div class="row align-items-center">
+                                    <div class="col-2">
+                                        <div class="bg-dark text-white rounded p-2 text-center fw-bold">
+                                            @stock.Ticker
+                                        </div>
+                                    </div>
+                                    <div class="col-5">
+                                        <h6 class="mb-0 fw-bold">@stock.Name</h6>
+                                        <small class="text-muted">Technology Sector</small>
+                                    </div>
+                                    <div class="col-3 text-end">
+                                        <div class="fw-bold">@stock.CurrentPrice.ToString("C2")</div>
+                                        <small class="text-success small">+1.24%</small>
+                                    </div>
+                                    <div class="col-2 text-end">
+                                        <button class="btn btn-primary btn-sm rounded-pill px-3">Buy</button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* --- RIGHT: PORTFOLIO --- *@
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm bg-dark text-white mb-4">
+                    <div class="card-body p-4 text-center">
+                        <h6 class="text-uppercase small opacity-75 fw-bold mb-3">Total Portfolio Value</h6>
+                        <h2 class="display-6 fw-bold">@CalculatePortfolioValue().ToString("C2")</h2>
+                        <div class="mt-3">
+                            <span class="badge bg-success px-3 py-2">+ @((CalculatePortfolioValue() * 0.05m).ToString("C2")) (All Time)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="fw-bold mb-0">Your Holdings</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        @{
+                            var userInvestments = user.BankAccounts?.SelectMany(a => a.Investments).ToList() ?? new();
+                        }
+
+                        @if (!userInvestments.Any())
+                        {
+                            <div class="p-5 text-center">
+                                <i class="bi bi-safe2 fs-1 text-muted opacity-25"></i>
+                                <p class="text-muted mt-2 small">You don't own any stocks yet.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr class="text-muted small">
+                                        <th class="ps-3 border-0">Asset</th>
+                                        <th class="border-0">Qty</th>
+                                        <th class="text-end pe-3 border-0">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var inv in userInvestments)
+                                    {
+                                        <tr>
+                                            <td class="ps-3">
+                                                <div class="fw-bold">@inv.Stock?.Ticker</div>
+                                                <div class="smaller text-muted">@inv.Stock?.Name</div>
+                                            </td>
+                                            <td>@inv.Quantity.ToString("N2")</td>
+                                            <td class="text-end pe-3 fw-bold">
+                                                @((inv.Quantity * (inv.Stock?.CurrentPrice ?? 0)).ToString("C2"))
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .smaller {
+        font-size: 0.75rem;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    private ApplicationUser? user;
+    private List<Stock>? availableStocks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Get the current user
+        user = await AuthService.GetCurrentUser();
+
+        // 2. Get all stocks available in the market
+        // This requires @using Microsoft.EntityFrameworkCore
+        availableStocks = await DbContext.Stocks.ToListAsync();
+    }
+
+    private decimal CalculatePortfolioValue()
+    {
+        if (user?.BankAccounts == null) return 0;
+
+        return user.BankAccounts
+            .SelectMany(a => a.Investments)
+            .Where(i => i.Stock != null)
+            .Sum(i => i.Quantity * i.Stock.CurrentPrice);
+    }
+}

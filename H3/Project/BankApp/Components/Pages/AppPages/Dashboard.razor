@@ -1,0 +1,189 @@
+﻿@page "/dashboard"
+@using BankApp.Data.Entities.Auth
+@using BankApp.Data.Entities.Banking
+@using BankApp.Services
+@rendermode InteractiveServer
+@inject IAuthService AuthService
+
+<div class="container-fluid py-5 bg-light min-vh-100">
+    <div class="container">
+        @if (user == null)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3 text-muted">Synchronizing with secure servers...</p>
+            </div>
+        }
+        else
+        {
+            @* --- TOP STATS BAR --- *@
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2 class="fw-bold text-dark">Welcome, @user.FullName</h2>
+                    <p class="text-muted">You have @user.BankAccounts.Count active accounts.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button class="btn btn-dark rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-plus-lg me-2"></i>Open New Account
+                    </button>
+                </div>
+            </div>
+
+            @* --- HORIZONTAL ACCOUNT CARDS --- *@
+            <div class="row g-4 mb-5">
+                @foreach (var account in user.BankAccounts)
+                {
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card h-100 border-0 shadow-sm account-card overflow-hidden">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between mb-4">
+                                    <div class="icon-shape bg-primary-subtle text-primary rounded-3 p-3">
+                                        <i class="bi bi-wallet2 fs-4"></i>
+                                    </div>
+                                    <span class="badge bg-success-subtle text-success align-self-start px-3 py-2 rounded-pill">Active</span>
+                                </div>
+
+                                <h6 class="text-muted mb-1 small text-uppercase fw-bold">Account Number</h6>
+                                <p class="mb-4 font-monospace fw-bold">@FormatAccountNumber(account.AccountNumber)</p>
+
+                                <h3 class="fw-bold mb-0">@account.Balance.ToString("C2")</h3>
+                                <p class="text-muted small">Current Balance</p>
+
+                                <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                                    <div class="small">
+                                        <i class="bi bi-credit-card me-1"></i> @account.Cards.Count Cards
+                                    </div>
+                                    <button class="btn btn-link btn-sm text-decoration-none fw-bold p-0">Details <i class="bi bi-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            @* Visual accent line *@
+                            <div class="bg-primary shadow-sm" style="height: 4px;"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="row g-4">
+                @* --- RECENT TRANSACTIONS (Combined from all accounts) --- *@
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0">Unified Transactions</h5>
+                            <button class="btn btn-sm btn-outline-secondary">Export CSV</button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4 border-0">Reference</th>
+                                            <th class="border-0">Account</th>
+                                            <th class="border-0">Date</th>
+                                            <th class="border-0 text-end pe-4">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var tx in user.BankAccounts.SelectMany(a => a.Transactions).OrderByDescending(t => t.CreatedAt).Take(8))
+                                        {
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="tx-icon @(tx.Amount < 0 ? "bg-danger-subtle text-danger" : "bg-success-subtle text-success") me-3">
+                                                            <i class="bi @(tx.Amount < 0 ? "bi-arrow-down-left" : "bi-arrow-up-right")"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold small">@tx.Note</div>
+                                                            <div class="text-muted smaller">#@tx.TransactionReference.Substring(0, 8)</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="small text-muted">..@tx.BankAccount.AccountNumber.Substring(Math.Max(0, tx.BankAccount.AccountNumber.Length - 4))</td>
+                                                <td class="small">@tx.CreatedAt.ToString("dd MMM, yyyy")</td>
+                                                <td class="text-end pe-4 fw-bold @(tx.Amount < 0 ? "text-danger" : "text-success")">
+                                                    @tx.Amount.ToString("C2")
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- QUICK CARDS VIEW --- *@
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm bg-dark text-white">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-4">Active Cards</h6>
+                            @foreach (var card in user.BankAccounts.SelectMany(a => a.Cards))
+                            {
+                                <div class="mb-4 p-3 rounded-3 border border-secondary border-opacity-50">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <i class="bi bi-chip fs-3 text-warning"></i>
+                                        <i class="bi bi-wifi fs-4 opacity-50"></i>
+                                    </div>
+                                    <div class="fs-5 mb-2 font-monospace">**** **** **** @card.CardNumber.Substring(card.CardNumber.Length - 4)</div>
+                                    <div class="d-flex justify-content-between small opacity-75">
+                                        <span>EXP: @card.ExpiryDate</span>
+                                        <span class="text-uppercase">@user.FullName</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .account-card {
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+        .account-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 1rem 3rem rgba(0,0,0,.12) !important;
+            cursor: pointer;
+        }
+
+    .tx-icon {
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        rounded: 8px;
+        border-radius: 8px;
+    }
+
+    .smaller {
+        font-size: 0.75rem;
+    }
+
+    .icon-shape {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+@code {
+    private ApplicationUser? user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await AuthService.GetCurrentUser();
+    }
+
+    private string FormatAccountNumber(string raw)
+    {
+        if (string.IsNullOrEmpty(raw) || raw.Length < 4) return raw;
+        // Just for sexier formatting (e.g., 1234-5678-9012)
+        return raw.Length >= 12 ? string.Join("-", Enumerable.Range(0, raw.Length / 4).Select(i => raw.Substring(i * 4, 4))) : raw;
+    }
+}

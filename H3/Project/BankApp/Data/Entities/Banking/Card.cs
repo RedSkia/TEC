@@ -8,15 +8,18 @@ public class Card
     [Key]
     public int Id { get; set; }
 
-    [Required, StringLength(16)]
+    [Required]
+    [CreditCard(ErrorMessage = "Invalid Card Number format")]
     public string CardNumber { get; set; } = string.Empty;
 
     public bool IsBlocked { get; set; } = false;
 
-    [Required, RegularExpression(@"^\d{2}/\d{2}$", ErrorMessage = "Expiry must be in MM/YY format")]
+    [Required]
+    [RegularExpression(@"^(0[1-9]|1[0-2])\/\d{2}$", ErrorMessage = "Use MM/YY format")]
     public string ExpiryDate { get; set; } = string.Empty;
 
-    [Required, StringLength(3, MinimumLength = 3)]
+    [Required]
+    [StringLength(3, MinimumLength = 3, ErrorMessage = "CVC must be 3 digits")]
     public string Cvc { get; set; } = string.Empty;
 
     [Required]
