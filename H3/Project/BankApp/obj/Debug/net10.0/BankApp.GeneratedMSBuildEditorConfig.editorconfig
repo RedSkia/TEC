@@ -34,8 +34,36 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Desktop/TEC/H3/Project/BankApp/Components/Elements/Account.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xBY2NvdW50LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Desktop/TEC/H3/Project/BankApp/Components/Elements/InputForm.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xJbnB1dEZvcm0ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Desktop/TEC/H3/Project/BankApp/Components/Elements/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xMb2dpbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Desktop/TEC/H3/Project/BankApp/Components/Elements/Navbar.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xOYXZiYXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Desktop/TEC/H3/Project/BankApp/Components/Elements/Register.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xSZWdpc3Rlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Desktop/TEC/H3/Project/BankApp/Components/Pages/AppPages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xEYXNoYm9hcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Desktop/TEC/H3/Project/BankApp/Components/Pages/AppPages/Investments.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xJbnZlc3RtZW50cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Desktop/TEC/H3/Project/BankApp/Components/Pages/AppPages/Market.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xNYXJrZXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Desktop/TEC/H3/Project/BankApp/Components/Pages/Error.razor]

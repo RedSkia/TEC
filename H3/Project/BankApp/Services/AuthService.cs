@@ -1,78 +1,95 @@
-﻿using BankApp.Data.Entities.Auth;
+﻿using BankApp.Data;
+using BankApp.Data.Entities.Auth;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace BankApp.Services;
 
-public interface ITokenService
-{
-    string CreateToken(ApplicationUser user, IList<string> roles);
-}
-
-public class TokenService(IConfiguration config) : ITokenService
-{
-    public string CreateToken(ApplicationUser user, IList<string> roles)
-    {
-        var claims = new List<Claim> {
-            new Claim(JwtRegisteredClaimNames.NameId, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email!)
-        };
-        foreach (var role in roles) claims.Add(new Claim(ClaimTypes.Role, role));
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JWT:Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-        var token = new JwtSecurityToken(
-            issuer: config["JWT:Issuer"],
-            audience: config["JWT:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddDays(1),
-            signingCredentials: creds
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-}
-
-
 public interface IAuthService
 {
-    Task<string?> Login(string email, string password);
-    Task<bool> Register(string email, string password, string name, RoleType role);
+    Task<string?> Login(string username, string password);
+    Task<IEnumerable<string>?> Register(string email, string password, string name, RoleType role, string username);
+    Task<ApplicationUser?> GetCurrentUser();
 }
 
-public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService) : IAuthService
+public class AuthService(
+    UserManager<ApplicationUser> userManager,
+    ITokenService tokenService,
+    AuthenticationStateProvider authStateProvider,
+    BankAppDbContext dbContext, // Inject DB Context
+    IHttpContextAccessor httpContextAccessor) : IAuthService // To get IP Address
 {
-    public async Task<string?> Login(string email, string password)
+    public async Task<string?> Login(string username, string password)
     {
-        var user = await userManager.FindByEmailAsync(email);
-        if (user == null || !await userManager.CheckPasswordAsync(user, password))
-            return null;
+        var user = await userManager.FindByNameAsync(username);
+        var ip = httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
+        var userAgent = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString();
 
+        // 1. Handle user not found
+        if (user == null) return null;
+
+        // 2. Check password
+        var isPasswordValid = await userManager.CheckPasswordAsync(user, password);
+
+        // 3. LOG THE ACTIVITY
+        var activity = new LoginActivity
+        {
+            UserId = user.Id,
+            IpAddress = ip,
+            UserAgent = userAgent,
+            LoginTime = DateTime.UtcNow,
+            Status = isPasswordValid ? LoginStatus.Success : LoginStatus.Failed
+        };
+
+        dbContext.LoginActivities.Add(activity);
+        await dbContext.SaveChangesAsync();
+
+        if (!isPasswordValid) return null;
+
+        // 4. Generate Token on success
         var roles = await userManager.GetRolesAsync(user);
         return tokenService.CreateToken(user, roles);
     }
 
-    public async Task<bool> Register(string email, string password, string name, RoleType role)
+    public async Task<ApplicationUser?> GetCurrentUser()
+    {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var userPrincipal = authState.User;
+
+        // Check if authenticated
+        if (userPrincipal.Identity?.IsAuthenticated != true)
+            return null;
+
+        // Identity stores the User ID in NameIdentifier claim
+        var userId = userPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+            return null;
+
+        // Fetch user and include any related data if necessary
+        return await userManager.FindByIdAsync(userId);
+    }
+
+    public async Task<IEnumerable<string>?> Register(string email, string password, string name, RoleType role, string username)
     {
         var user = new ApplicationUser
         {
-            UserName = email,
+            UserName = username,
             Email = email,
             FullName = name,
-            EmailConfirmed = true
+            EmailConfirmed = true,
         };
 
+        // Identity handles all Program.cs validation rules here automatically
         var result = await userManager.CreateAsync(user, password);
 
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(user, role.ToString());
-            return true;
+            return null; // Null means success
         }
-        return false;
+
+        // Return the specific reasons why it failed
+        return result.Errors.Select(e => e.Description);
     }
 }

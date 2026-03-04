@@ -14,6 +14,7 @@ public class BankAccount
     public string AccountNumber { get; set; } = Guid.NewGuid().ToString();
 
     [Column(TypeName = "decimal(18,2)")]
+    [Range(0, 999999999, ErrorMessage = "Balance cannot be negative")]
     public decimal Balance { get; set; }
 
     [Required]

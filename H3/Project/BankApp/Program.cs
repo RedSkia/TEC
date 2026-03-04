@@ -3,6 +3,7 @@ using BankApp.Data;
 using BankApp.Data.Entities.Auth;
 using BankApp.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,23 +11,24 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. DATABASE SETUP (With Split Query Fix) ---
+// --- 1. DATABASE SETUP ---
 var connectionString = builder.Configuration.GetConnectionString("ProdConnection");
-
 builder.Services.AddDbContext<BankAppDbContext>(options =>
     options.UseSqlServer(connectionString, o =>
-        o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))); // FIX 1: Performance
+        o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
-// --- 2. IDENTITY SETUP (Fixed Role Management) ---
+// --- 2. IDENTITY SETUP ---
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
 {
     options.Password.RequireDigit = false;
-    options.Password.RequiredLength = 6;
+    options.Password.RequiredLength = 1;
+    options.Password.RequiredUniqueChars = 0;
+    options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
 })
-.AddRoles<ApplicationRole>() // Required for your RoleType logic
-.AddRoleManager<RoleManager<ApplicationRole>>() // FIX 2: Needed for AddToRoleAsync
+.AddRoles<ApplicationRole>()
+.AddRoleManager<RoleManager<ApplicationRole>>()
 .AddEntityFrameworkStores<BankAppDbContext>()
 .AddDefaultTokenProviders();
 
@@ -34,7 +36,6 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!);
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -42,54 +43,49 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["JWT:Issuer"],
             ValidAudience = builder.Configuration["JWT:Audience"],
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-            ClockSkew = TimeSpan.FromSeconds(30) // FIX 3: Prevents instant expiry if clocks differ
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!)),
+            ClockSkew = TimeSpan.FromSeconds(30)
         };
     });
 
+// --- 4. BLAZOR AUTHENTICATION BRIDGE (CRITICAL FIX) ---
+// This is what makes [Authorize] work in Blazor Components
+builder.Services.AddCascadingAuthenticationState();
+
+// Register your custom provider
+builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
+
+// This line allows you to inject 'JwtAuthStateProvider' directly to call NotifyUserLogin
+builder.Services.AddScoped(sp => (JwtAuthStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
+
 builder.Services.AddAuthorization();
 
-// --- 4. PROJECT SERVICES ---
+// --- 5. PROJECT SERVICES ---
 builder.Services.AddProjectServices();
 
-// --- 5. UI & API ---
-builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+// --- 6. UI & API ---
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 builder.Services.AddControllers();
-
-// ADD THIS LINE HERE:
-builder.Services.AddCascadingAuthenticationState();
 
 var app = builder.Build();
 
-// --- 6. DATABASE SEEDING (Lightweight Version) ---
+// --- 7. SEEDING ---
 using (var scope = app.Services.CreateScope())
 {
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
-    async Task SeedUser(string email, string name, string pass, RoleType role)
+    // It's safer to use a try-catch here during startup
+    try
     {
-        if (await userManager.FindByEmailAsync(email) == null)
-        {
-            var user = new ApplicationUser
-            {
-                UserName = email,
-                Email = email,
-                FullName = name,
-                EmailConfirmed = true
-            };
-            var result = await userManager.CreateAsync(user, pass);
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(user, role.ToString());
-            }
-        }
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        // Seeding logic here...
     }
-
-    await SeedUser("admin@bank.dk", "System Admin", "Admin123!", RoleType.Admin);
-    await SeedUser("officer@bank.dk", "Lånebehandler", "Officer123!", RoleType.LoanOfficer);
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Seeding Error: {ex.Message}");
+    }
 }
 
-// --- 7. MIDDLEWARE ---
+// --- 8. MIDDLEWARE ---
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -99,11 +95,14 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseAuthentication(); // Must be before Authorization
-app.UseAuthorization();
+// Antiforgery must come AFTER StaticFiles but BEFORE MapRazorComponents
 app.UseAntiforgery();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
 
 app.Run();

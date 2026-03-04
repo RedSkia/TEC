@@ -19,4 +19,8 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+  </ItemGroup>
+
 </Project>

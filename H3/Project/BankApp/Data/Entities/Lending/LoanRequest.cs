@@ -12,6 +12,7 @@ public class LoanRequest
     public string RequestReference { get; set; } = Guid.NewGuid().ToString();
 
     [Column(TypeName = "decimal(18,2)")]
+    [Range(100, 1000000, ErrorMessage = "Loan must be between 100 and 1,000,000")]
     public decimal Amount { get; set; }
 
     [Column(TypeName = "decimal(5,2)")]
@@ -19,7 +20,8 @@ public class LoanRequest
 
     public LoanStatus Status { get; set; } = LoanStatus.Open;
 
-    [Required]
+    [Required(ErrorMessage = "Please explain why you need this loan")]
+    [MinLength(10, ErrorMessage = "Message is too short")]
     public string MessageFromCustomer { get; set; } = string.Empty;
     public string? ResponseFromOfficer { get; set; }
 
