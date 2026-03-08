@@ -1,0 +1,112 @@
+﻿@using BankApp.Data.Constants
+@using BankApp.Data.Entities.Auth
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.Authorization
+@using BankApp.Services
+@inject IRouteNavigator RouteNav
+
+<footer class="text-white pt-5 pb-4 border-top border-white border-opacity-10 mt-auto" style="background: #050505;">
+    <div class="container">
+        <div class="row g-4">
+            @* --- BRAND COLUMN --- *@
+            <div class="col-lg-5 text-center text-lg-start">
+                <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-3" style="cursor: pointer;" @onclick='() => RouteNav.NavigateTo(AppRoutes.Index)'>
+                    @* Grayscale removed - Logo is now full color *@
+                    <img src="assets/logo.png" alt="RedSkia" height="50" class="me-2">
+                    <div class="lh-1">
+                        <h5 class="fw-bold mb-0 tracking-tight">REDSKIA <span class="text-danger">BANKING</span></h5>
+                        <small class="text-white-50 tiny-text uppercase tracking-widest" style="font-size: 0.6rem;">SECURE ASSET MANAGEMENT</small>
+                    </div>
+                </div>
+                <p class="small text-white-50 w-75 mx-auto mx-lg-0 mb-4">
+                    Institutional-grade security. Next-generation speed. The premier vault for global digital assets and liquidity.
+                </p>
+                @* Social Icons *@
+                <div class="d-flex justify-content-center justify-content-lg-start gap-3 opacity-50">
+                    <i class="bi bi-twitter-x pointer hover-white"></i>
+                    <i class="bi bi-linkedin pointer hover-white"></i>
+                    <i class="bi bi-github pointer hover-white"></i>
+                </div>
+            </div>
+
+            @* --- SITEMAP COLUMN --- *@
+            <div class="col-6 col-lg-3 offset-lg-1 text-start">
+                <h6 class="small fw-bold text-uppercase mb-4 text-danger ls-wide">Sitemap</h6>
+                <ul class="list-unstyled small">
+                    <AuthorizeView>
+                        <Authorized>
+                            @foreach (var route in GetFilteredRoutes(context.User))
+                            {
+                                <li class="mb-2">
+                                    <span class="text-white-50 text-decoration-none hover-white pointer d-inline-block transition-transform"
+                                          @onclick="() => RouteNav.NavigateTo(route.Value)">
+                                        @route.Key.Replace("Route", "")
+                                    </span>
+                                </li>
+                            }
+                        </Authorized>
+                        <Authorizing>
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                <li class="mb-2"><div class="placeholder-shimmer rounded opacity-10" style="width: 80px; height: 10px;"></div></li>
+                            }
+                        </Authorizing>
+                        <NotAuthorized>
+                            @foreach (var route in GetFilteredRoutes(null))
+                            {
+                                <li class="mb-2">
+                                    <span class="text-white-50 text-decoration-none hover-white pointer d-inline-block transition-transform"
+                                          @onclick="() => RouteNav.NavigateTo(route.Value)">
+                                        @route.Key.Replace("Route", "")
+                                    </span>
+                                </li>
+                            }
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </ul>
+            </div>
+
+            @* --- STATUS COLUMN --- *@
+            <div class="col-6 col-lg-3 text-start">
+                <h6 class="small fw-bold text-uppercase mb-4 text-danger ls-wide">System</h6>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="rounded-circle bg-success animate-pulse" style="width: 8px; height: 8px;"></div>
+                    <span class="small text-white-50">All Systems Operational</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-patch-check-fill text-primary small"></i>
+                    <span class="small text-white-50">Tier 4 Data Center</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-lock-fill text-white-50 small"></i>
+                    <span class="small text-white-50">AES-256 Encrypted</span>
+                </div>
+            </div>
+        </div>
+
+        @* --- COPYRIGHT BAR --- *@
+        <div class="text-center mt-5 pt-4 border-top border-white border-opacity-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <p class="small text-white-50 mb-0">&copy; @DateTime.Now.Year <span class="text-white fw-bold">RedSkia Banking Inc.</span></p>
+                <div class="d-flex gap-4 small text-white-50">
+                    <span class="pointer hover-white">Privacy Policy</span>
+                    <span class="pointer hover-white">Terms of Service</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+@code {
+    private IEnumerable<KeyValuePair<string, string>> GetFilteredRoutes(System.Security.Claims.ClaimsPrincipal? user)
+    {
+        var fields = typeof(AppRoutes).GetFields(BindingFlags.Public | BindingFlags.Static).Where(f => f.IsLiteral);
+        foreach (var field in fields)
+        {
+            var routeValue = field.GetValue(null)?.ToString() ?? "#";
+            var attr = field.GetCustomAttribute<RouteRoleAttribute>();
+            if (attr == null || (user != null && (user.IsInRole("Admin") || user.IsInRole(attr.Role.ToString()))))
+                yield return new KeyValuePair<string, string>(field.Name, routeValue);
+        }
+    }
+}

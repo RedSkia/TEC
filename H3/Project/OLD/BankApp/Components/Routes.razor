@@ -1,0 +1,26 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using BankApp.Components.Pages
+@inject NavigationManager Nav
+
+<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(BankApp.Components.Layout.MainLayout)">
+            <NotAuthorized>
+                @{ Nav.NavigateTo("login"); }
+            </NotAuthorized>
+            <Authorizing>
+                <div class="vh-100 d-flex flex-column align-items-center justify-content-center bg-black text-white">
+                    <div class="spinner-border text-danger mb-3" style="width: 3rem; height: 3rem;"></div>
+                    <h5 class="fw-bold ls-wide opacity-50 animate-pulse">ENCRYPTING SESSION...</h5>
+                </div>
+            </Authorizing>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+
+    <NotFound>
+        <LayoutView Layout="@typeof(BankApp.Components.Layout.MainLayout)">
+            <Error StatusCode="404" />
+        </LayoutView>
+    </NotFound>
+</Router>

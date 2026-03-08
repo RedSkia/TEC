@@ -1,0 +1,92 @@
+name: dockercompose11790265661367496852
+services:
+  blazorapp:
+    build:
+      context: D:\Desktop\TEC\H3\Project\BankApp
+      dockerfile: BlazorApp/Dockerfile
+    depends_on:
+      database:
+        condition: service_started
+        required: true
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ASPNETCORE_HTTPS_PORTS: "8081"
+      ASPNETCORE_URLS: http://+:8080
+    image: blazorapp
+    networks:
+      bank-net: null
+    ports:
+      - mode: ingress
+        target: 8080
+        published: "8080"
+        protocol: tcp
+      - mode: ingress
+        target: 8080
+        protocol: tcp
+      - mode: ingress
+        target: 8081
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: D:\Desktop\TEC\H3\Project\BankApp\dockervolumes\temp-keys
+        target: /app/temp-keys
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\AppData\Roaming/Microsoft/UserSecrets
+        target: /home/app/.microsoft/usersecrets
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\AppData\Roaming/Microsoft/UserSecrets
+        target: /root/.microsoft/usersecrets
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\AppData\Roaming/ASP.NET/Https
+        target: /home/app/.aspnet/https
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\AppData\Roaming/ASP.NET/Https
+        target: /root/.aspnet/https
+        read_only: true
+        bind:
+          create_host_path: true
+  database:
+    container_name: bankapp-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: BankAppPassword123
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    networks:
+      bank-net: null
+    ports:
+      - mode: ingress
+        target: 1433
+        published: "1433"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: D:\Desktop\TEC\H3\Project\BankApp\dockervolumes\mssql\data
+        target: /var/opt/mssql/data
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Desktop\TEC\H3\Project\BankApp\dockervolumes\mssql\log
+        target: /var/opt/mssql/log
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Desktop\TEC\H3\Project\BankApp\dockervolumes\mssql\secrets
+        target: /var/opt/mssql/secrets
+        bind:
+          create_host_path: true
+networks:
+  bank-net:
+    name: dockercompose11790265661367496852_bank-net
+    driver: bridge

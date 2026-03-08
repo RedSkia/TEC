@@ -1,0 +1,45 @@
+﻿@page "/notfound"
+@layout BlazorApp.Components.Layout.MainLayout
+@inject NavigationManager Nav
+
+<div class="container min-vh-100 d-flex align-items-center justify-content-center animate-fade-in">
+    <div class="text-center position-relative">
+        @* Large subtle 'Ghost' background text *@
+        <h1 class="position-absolute top-50 start-50 translate-middle fw-black text-white opacity-05"
+            style="font-size: clamp(10rem, 20vw, 15rem); z-index: 1; letter-spacing: -10px; pointer-events: none;">
+            404
+        </h1>
+
+        <div class="position-relative" style="z-index: 2;">
+            <div class="mb-4">
+                <div class="bg-danger bg-opacity-10 d-inline-flex p-4 rounded-circle border border-danger border-opacity-25 shadow-lg">
+                    <i class="bi bi-shield-slash text-danger" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+
+            <h2 class="display-4 fw-bold text-white tracking-tight mb-2">CONNECTION TERMINATED</h2>
+
+            <div class="mb-4">
+                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 ls-wide small fw-bold">
+                    ERROR: UNKNOWN_COORDINATES
+                </span>
+            </div>
+
+            <p class="text-white-50 mx-auto mb-5 lead" style="max-width: 550px;">
+                The requested terminal coordinate does not exist within the RedSkia network.
+                Your access attempt has been logged for security purposes.
+            </p>
+
+            <div class="d-flex justify-content-center gap-3">
+                <button class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-lg transition-all"
+                        @onclick='() => Nav.NavigateTo("/")'>
+                    <i class="bi bi-house-door-fill me-2"></i>RETURN TO TERMINAL
+                </button>
+                <button class="btn btn-outline-light rounded-pill px-5 py-3 fw-bold opacity-50 transition-all"
+                        onclick="history.back()">
+                    PREVIOUS SECTOR
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
