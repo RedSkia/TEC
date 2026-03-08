@@ -1,0 +1,38 @@
+name: BankApp
+
+services:
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: bankapp-sql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=BankAppPassword123
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./dockervolumes/mssql/data:/var/opt/mssql/data
+      - ./dockervolumes/mssql/log:/var/opt/mssql/log
+      - ./dockervolumes/mssql/secrets:/var/opt/mssql/secrets
+    networks:
+      - bank-net
+
+  blazorapp:
+    image: ${DOCKER_REGISTRY-}blazorapp
+    build:
+      context: .
+      dockerfile: BlazorApp/Dockerfile
+    depends_on:
+      - database
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dockervolumes/temp-keys:/app/temp-keys
+    networks:
+      - bank-net
+
+networks:
+  bank-net:
+    driver: bridge
