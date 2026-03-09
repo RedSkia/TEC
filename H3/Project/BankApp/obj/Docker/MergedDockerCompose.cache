@@ -13,10 +13,6 @@ services:
       ASPNETCORE_HTTP_PORTS: "8080"
       ASPNETCORE_HTTPS_PORTS: "8081"
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__ProdConnection: Server=database;Database=BankAppDb;User Id=sa;Password=Passw0rd!;TrustServerCertificate=True
-      JWT__Audience: BankApp
-      JWT__Issuer: BankApp
-      JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'
     image: blazorapp
     networks:
       bank-net: null
@@ -65,7 +61,7 @@ services:
     container_name: bankapp-sql
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: Passw0rd!
+      MSSQL_SA_PASSWORD: BankAppPassword123
     image: mcr.microsoft.com/mssql/server:2022-latest
     networks:
       bank-net: null

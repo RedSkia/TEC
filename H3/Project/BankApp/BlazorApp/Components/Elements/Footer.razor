@@ -105,7 +105,7 @@
         {
             var routeValue = field.GetValue(null)?.ToString() ?? "#";
             var attr = field.GetCustomAttribute<RouteRoleAttribute>();
-            if (attr == null || (user != null && (user.IsInRole("Admin") || user.IsInRole(attr.Role.ToString()))))
+            if (attr == null || (user != null && (user.IsInRole(RoleType.Admin.ToString()) || user.IsInRole(attr.Role.ToString()))))
                 yield return new KeyValuePair<string, string>(field.Name, routeValue);
         }
     }

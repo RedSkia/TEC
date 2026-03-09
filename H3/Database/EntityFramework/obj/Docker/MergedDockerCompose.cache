@@ -1,0 +1,33 @@
+name: dockercompose901884794942813352
+services:
+  consoleapp:
+    build:
+      context: D:\Desktop\TEC\H3\Database\EntityFramework
+      dockerfile: ConsoleApp/Dockerfile
+    container_name: consoleapp_service
+    depends_on:
+      mssql:
+        condition: service_started
+        required: true
+    environment:
+      DOTNET_CONNECTIONSTRING: Server=mssql;Database=TEC;User Id=sa;Password=DbPassw0rd;Encrypt=False;
+    networks:
+      default: null
+    stdin_open: true
+    tty: true
+  mssql:
+    container_name: mssql_db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: DbPassw0rd
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 1433
+        published: "1433"
+        protocol: tcp
+networks:
+  default:
+    name: dockercompose901884794942813352_default
