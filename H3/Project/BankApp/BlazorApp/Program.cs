@@ -83,18 +83,18 @@ using (var scope = app.Services.CreateScope())
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
 
-            if (!await roleManager.RoleExistsAsync("Admin"))
+            if (!await roleManager.RoleExistsAsync(RoleType.Admin.ToString()))
             {
-                await roleManager.CreateAsync(new ApplicationRole { Name = "Admin", RoleColor = "#FF0000" });
+                await roleManager.CreateAsync(new ApplicationRole { Name = RoleType.Admin.ToString(), RoleColor = "#FF0000" });
             }
 
-            var adminUser = await userManager.FindByNameAsync("admin");
+            var adminUser = await userManager.FindByNameAsync(RoleType.Admin.ToString().ToLowerInvariant());
             if (adminUser == null)
             {
-                var newAdmin = new ApplicationUser { UserName = "admin", Email = "admin@bank.com", FullName = "Admin", EmailConfirmed = true };
-                await userManager.CreateAsync(newAdmin, "Passw0rd123!");
-                await userManager.AddToRoleAsync(newAdmin, "Admin");
-                Console.WriteLine(">>> Admin Seeded: admin / Passw0rd123!");
+                var newAdmin = new ApplicationUser { UserName = RoleType.Admin.ToString().ToLowerInvariant(), Email = "admin@bank.com", FullName = RoleType.Admin.ToString(), EmailConfirmed = true };
+                await userManager.CreateAsync(newAdmin, "1");
+                await userManager.AddToRoleAsync(newAdmin, RoleType.Admin.ToString());
+                Console.WriteLine(">>> Admin Seeded: admin / 1");
             }
             break;
         }

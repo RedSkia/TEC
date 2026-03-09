@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql_db
+    environment:
+      SA_PASSWORD: "DbPassw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+
+  consoleapp:
+    build:
+      context: .
+      dockerfile: ConsoleApp/Dockerfile
+    container_name: consoleapp_service
+    depends_on:
+      - mssql
+    environment:
+      DOTNET_CONNECTIONSTRING: "Server=mssql;Database=TEC;User Id=sa;Password=DbPassw0rd;Encrypt=False;"
+    stdin_open: true # Gør det muligt at vælge øvelse i konsollen (docker attach consoleapp_service)
+    tty: true
