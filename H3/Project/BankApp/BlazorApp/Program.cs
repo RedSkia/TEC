@@ -13,6 +13,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. DATABASE SETUP ---
+
 var connectionString = builder.Configuration.GetConnectionString("ProdConnection");
 builder.Services.AddDbContextFactory<BankAppDbContext>(options =>
     options.UseSqlServer(connectionString, o =>
