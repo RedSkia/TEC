@@ -1,0 +1,39 @@
+﻿@if (IsVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-body p-4 text-center">
+                    <i class="bi @IconClass display-4 mb-3 @TextColor"></i>
+                    <h4 class="fw-bold">@Title</h4>
+                    <p class="text-muted">@Message</p>
+                    <div class="d-grid gap-2 mt-4">
+                        <button class="btn @BtnClass py-2 fw-bold" @onclick="OnConfirm" disabled="@IsLoading">
+                            @if (IsLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            @ConfirmText
+                        </button>
+                        <button class="btn btn-light py-2 fw-bold" @onclick="OnCancel">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string Title { get; set; } = "Confirm Action";
+    [Parameter] public string Message { get; set; } = "Are you sure?";
+    [Parameter] public string ConfirmText { get; set; } = "CONFIRM";
+    [Parameter] public string IconClass { get; set; } = "bi-exclamation-circle";
+    [Parameter] public string TextColor { get; set; } = "text-dark";
+    [Parameter] public string BtnClass { get; set; } = "btn-dark";
+
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}

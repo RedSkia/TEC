@@ -1,0 +1,113 @@
+﻿@attribute [Route(AppRoutes.Login)]
+@using BlazorApp.Components.Elements
+@using BankApp.Data.Entities.Auth
+@using Microsoft.AspNetCore.Components.Routing
+@inject IAuthService AuthService
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<div class="auth-container d-flex align-items-center justify-content-center min-vh-100 bg-black">
+    <div style="width: 100%; max-width: 400px;">
+
+        <InputForm TItem="string"
+                   Model="username"
+                   OnSubmit="HandleLogin"
+                   ButtonText="LOGIN"
+                   LoadingText="AUTHENTICATING..."
+                   IsLoading="busy"
+                   ButtonClass="btn-outline-danger border-2 fw-bold"
+                   FormName="login-form"
+                   Class="bg-dark border border-secondary border-opacity-50 rounded-0 shadow-lg">
+
+            <HeaderContent>
+                <div class="text-center mb-4">
+                    <h4 class="fw-bold text-white mb-1">
+                        USER <span class="text-danger">LOGIN</span>
+                    </h4>
+                    <p class="text-muted small text-uppercase mb-0" style="letter-spacing: 2px;">
+                        Secure Access Portal
+                    </p>
+                </div>
+
+                @if (error != null)
+                {
+                    <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small rounded-0 mb-4 py-2">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @error
+                    </div>
+                }
+            </HeaderContent>
+
+            <ChildContent>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Username</label>
+                    <InputText @bind-Value="username"
+                               class="form-control bg-black border-secondary text-info rounded-0 shadow-none"
+                               placeholder="Enter Username"
+                               autocomplete="username" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label text-muted small fw-bold text-uppercase">Password</label>
+                    <InputText @bind-Value="password"
+                               type="password"
+                               class="form-control bg-black border-secondary text-info rounded-0 shadow-none"
+                               placeholder="••••••••"
+                               autocomplete="current-password" />
+                </div>
+            </ChildContent>
+
+        </InputForm>
+
+        <div class="d-flex justify-content-between mt-3 px-1">
+            @* NavLink prevents full page reload *@
+            <NavLink href="login/register" class="link-secondary text-decoration-none small fw-bold text-uppercase" style="font-size: 0.7rem;">
+                <i class="bi bi-person-plus me-1"></i>Create Account
+            </NavLink>
+
+            <NavLink href="login/reset" class="link-secondary text-decoration-none small fw-bold text-uppercase" style="font-size: 0.7rem;">
+                <i class="bi bi-shield-lock me-1"></i>Forgot Password?
+            </NavLink>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string username = "";
+    private string password = "";
+    private bool busy;
+    private string? error;
+
+    async Task HandleLogin()
+    {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            error = "CREDENTIALS REQUIRED";
+            return;
+        }
+
+        busy = true;
+        error = null;
+
+        try
+        {
+            var token = await AuthService.Login(username, password);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                Nav.NavigateTo("/");
+            }
+            else
+            {
+                error = "INVALID CREDENTIALS";
+            }
+        }
+        catch (Exception)
+        {
+            error = "CONNECTION ERROR";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

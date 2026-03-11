@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql_db
+    environment:
+      SA_PASSWORD: "DbPassw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+
+  consoleapp:
+    build:
+      context: .
+      dockerfile: ConsoleApp/Dockerfile
+    container_name: consoleapp_service
+    depends_on:
+      - mssql

@@ -1,0 +1,159 @@
+﻿@attribute [Route(AppRoutes.LoginRegister)]
+@using BlazorApp.Components.Elements
+@using BankApp.Data.Entities.Auth
+@inject IAuthService AuthService
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<div class="container-fluid py-5 bg-light min-vh-100">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <InputForm Model="user"
+                           OnSubmit="HandleRegister"
+                           ButtonText="Open Account"
+                           IsLoading="busy"
+                           FormName="register-form">
+
+                    <HeaderContent>
+                        <div class="text-center mb-4">
+                            <h3 class="fw-bold">Join the Bank</h3>
+                            <p class="text-muted small">All fields are mandatory</p>
+                        </div>
+
+                        @if (error != null)
+                        {
+                            <div class="alert alert-danger py-2 small border-0 shadow-sm mb-3 animate-fade-in">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> @error
+                            </div>
+                        }
+                    </HeaderContent>
+
+                    <ChildContent>
+                        @* 1. Full Name *@
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-person"></i></span>
+                                <InputText @bind-Value="user.FullName" class="form-control border-start-0" placeholder="John Doe" />
+                            </div>
+                        </div>
+
+                        @* 2. Email *@
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope"></i></span>
+                                <InputText @bind-Value="user.Email" class="form-control border-start-0" placeholder="name@bank.com" />
+                            </div>
+                        </div>
+
+                        @* 3. Street Address *@
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Street Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-house"></i></span>
+                                <InputText @bind-Value="user.Address.Street" class="form-control border-start-0" placeholder="123 Nordic Way" />
+                            </div>
+                        </div>
+
+                        @* Address Helpers (City/Zip) - Necessary for Entity Validation *@
+                        <div class="row mb-3">
+                            <div class="col-7">
+                                <label class="form-label small fw-bold">City</label>
+                                <InputText @bind-Value="user.Address.City" class="form-control" placeholder="City" />
+                            </div>
+                            <div class="col-5">
+                                <label class="form-label small fw-bold">Zip Code</label>
+                                <InputText @bind-Value="user.Address.ZipCode" class="form-control" placeholder="0000" />
+                            </div>
+                        </div>
+
+                        @* 4. Username *@
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-at"></i></span>
+                                <InputText @bind-Value="user.UserName" class="form-control border-start-0" placeholder="Enter Username" />
+                            </div>
+                        </div>
+
+                        @* 5. Password *@
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock"></i></span>
+                                <InputText @bind-Value="password" type="password" class="form-control border-start-0" placeholder="••••••••" />
+                            </div>
+                        </div>
+                    </ChildContent>
+                </InputForm>
+
+                <div class="text-center mt-3">
+                    <p class="small text-muted">
+                        Already have an account? <a href="/login" class="text-primary text-decoration-none fw-bold">Sign In</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ApplicationUser user = new() { Address = new Address() };
+    private string password = "";
+    private bool busy;
+    private string? error;
+
+    async Task HandleRegister()
+    {
+        // Strict Mandatory Field Check
+        if (string.IsNullOrWhiteSpace(user.FullName) ||
+            string.IsNullOrWhiteSpace(user.Email) ||
+            string.IsNullOrWhiteSpace(user.UserName) ||
+            string.IsNullOrWhiteSpace(user.Address.Street) ||
+            string.IsNullOrWhiteSpace(user.Address.City) ||
+            string.IsNullOrWhiteSpace(user.Address.ZipCode) ||
+            string.IsNullOrWhiteSpace(password))
+        {
+            error = "Please fill in all fields to proceed.";
+            return;
+        }
+
+        busy = true;
+        error = null;
+
+        try
+        {
+            // Note: Update your AuthService.Register to also take City/Zip
+            // or modify the service to use these values from the user object.
+            var validationErrors = await AuthService.Register(
+                user.Email,
+                password,
+                RoleType.Customer,
+                user.UserName,
+                user.FullName,
+                user.Address.Street,
+                user.Address.City,
+                user.Address.ZipCode
+            );
+
+            if (validationErrors == null)
+            {
+                Nav.NavigateTo("/login");
+            }
+            else
+            {
+                error = string.Join(" ", validationErrors);
+            }
+        }
+        catch (Exception)
+        {
+            error = "Server connection lost. Please try again.";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

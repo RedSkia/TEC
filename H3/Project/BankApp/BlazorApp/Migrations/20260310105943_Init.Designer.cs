@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorApp.Migrations
 {
     [DbContext(typeof(BankAppDbContext))]
-    [Migration("20260308150241_Init")]
+    [Migration("20260310105943_Init")]
     partial class Init
     {
         /// <inheritdoc />

@@ -1,25 +1,27 @@
 using BankApp.Data;
-using BlazorApp.Components;
 using BankApp.Data.Entities.Auth;
+using BankApp.Data.Entities.Banking;
+using BankApp.Data.Entities.Lending;
+using BankApp.Data.Entities.Market;
 using BankApp.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authorization; // Added
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.DataProtection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. DATABASE SETUP ---
+// --- 1. DATABASE & IDENTITY FOUNDATION ---
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-var connectionString = builder.Configuration.GetConnectionString("ProdConnection");
 builder.Services.AddDbContextFactory<BankAppDbContext>(options =>
     options.UseSqlServer(connectionString, o =>
         o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
-// --- 2. IDENTITY SETUP ---
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
     options.Password.RequireDigit = false;
@@ -32,7 +34,10 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 .AddEntityFrameworkStores<BankAppDbContext>()
 .AddDefaultTokenProviders();
 
-// --- 3. JWT & AUTHENTICATION ---
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IDbContextFactory<BankAppDbContext>>().CreateDbContext());
+
+// --- 2. AUTHENTICATION (JWT) ---
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -52,28 +57,60 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// --- 4. DATA PROTECTION (Persistent Keys) ---
-// Using absolute path /app/temp-keys to match the Docker Volume mount
+// --- 3. PROJECT SERVICES ---
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddControllers();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+builder.Services.AddScoped<TokenStorageService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRouteNavigator, RouteNavigator>();
+
+builder.Services.AddScoped<JwtAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
+    sp.GetRequiredService<JwtAuthStateProvider>());
+
+// --- UPDATED AUTHORIZATION POLICIES ---
+builder.Services.AddAuthorizationCore(options =>
+{
+    // FIX: This ensures [Authorize] attributes use the JWT scheme
+    options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+        .RequireAuthenticatedUser()
+        .Build();
+
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole(RoleType.Admin.ToString()));
+    options.AddPolicy("StaffOnly", policy => policy.RequireRole(RoleType.Admin.ToString(), RoleType.LoanOfficer.ToString()));
+});
+
+// CRUD Services
+builder.Services.AddTransient<ICRUDService<Stock>, CRUDService<Stock>>();
+builder.Services.AddTransient<ICRUDService<ExchangeRate>, CRUDService<ExchangeRate>>();
+builder.Services.AddTransient<ICRUDService<Card>, CRUDService<Card>>();
+builder.Services.AddTransient<ICRUDService<Transaction>, CRUDService<Transaction>>();
+builder.Services.AddTransient<ICRUDService<Address>, CRUDService<Address>>();
+builder.Services.AddTransient<ICRUDService<LoginActivity>, CRUDService<LoginActivity>>();
+builder.Services.AddTransient<ICRUDService<BankAccount>, CRUDService<BankAccount>>();
+builder.Services.AddTransient<ICRUDService<LoanRequest>, CRUDService<LoanRequest>>();
+builder.Services.AddTransient<ICRUDService<Investment>, CRUDService<Investment>>();
+
+// --- 4. DATA PROTECTION ---
 var keysPath = "/app/temp-keys";
 if (!Directory.Exists(keysPath)) Directory.CreateDirectory(keysPath);
-
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
     .SetApplicationName("BankApp");
 
-builder.Services.AddProjectServices();
-builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.AddControllers();
-
 var app = builder.Build();
 
-// --- 5. DATABASE AUTO-SETUP ---
+// --- 5. DB AUTO-MIGRATION & SEEDING ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var contextFactory = services.GetRequiredService<IDbContextFactory<BankAppDbContext>>();
-
     int retryCount = 15;
+
     while (retryCount > 0)
     {
         try
@@ -86,40 +123,45 @@ using (var scope = app.Services.CreateScope())
 
             if (!await roleManager.RoleExistsAsync(RoleType.Admin.ToString()))
             {
-                await roleManager.CreateAsync(new ApplicationRole { Name = RoleType.Admin.ToString(), RoleColor = "#FF0000" });
+                await roleManager.CreateAsync(new ApplicationRole
+                {
+                    Name = RoleType.Admin.ToString(),
+                    RoleColor = "#FF0000"
+                });
             }
 
-            var adminUser = await userManager.FindByNameAsync(RoleType.Admin.ToString().ToLowerInvariant());
+            var adminName = RoleType.Admin.ToString().ToLowerInvariant();
+            var adminUser = await userManager.FindByNameAsync(adminName);
             if (adminUser == null)
             {
-                var newAdmin = new ApplicationUser { UserName = RoleType.Admin.ToString().ToLowerInvariant(), Email = "admin@bank.com", FullName = RoleType.Admin.ToString(), EmailConfirmed = true };
+                var newAdmin = new ApplicationUser
+                {
+                    UserName = adminName,
+                    Email = "admin@bank.com",
+                    FullName = "System Admin",
+                    EmailConfirmed = true
+                };
                 await userManager.CreateAsync(newAdmin, "1");
                 await userManager.AddToRoleAsync(newAdmin, RoleType.Admin.ToString());
-                Console.WriteLine(">>> Admin Seeded: admin / 1");
             }
             break;
         }
         catch (Exception ex)
         {
             retryCount--;
-            Console.WriteLine($">>> DB Wait... {ex.Message}");
+            Console.WriteLine($">>> Database connecting... {retryCount} attempts left.");
             await Task.Delay(5000);
         }
     }
 }
 
-app.UseStatusCodePagesWithReExecute("/error/{0}");
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/error", createScopeForErrors: true);
-    app.UseHsts();
-}
-
+// --- 6. MIDDLEWARE ---
 app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapRazorComponents<BlazorApp.Components.App>()
+   .AddInteractiveServerRenderMode();
 
 app.Run();
