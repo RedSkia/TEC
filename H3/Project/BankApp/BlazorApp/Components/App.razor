@@ -28,9 +28,9 @@
 </head>
 
 <body class="bg-black">
-    <CascadingAuthenticationState>
-        <Routes @rendermode="InteractiveServer" />
-    </CascadingAuthenticationState>
+    @* REMOVED CascadingAuthenticationState tag - it's already a service in Program.cs *@
+    @* DISABLED Prerendering to prevent JS/LocalStorage timing issues *@
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
@@ -40,23 +40,5 @@
 
     <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="_framework/blazor.web.js"></script>
-
-    @* --- SECURITY SCRIPTS --- *@
-    @*     <script>
-        // Disable Right-Click
-        document.addEventListener('contextmenu', e => e.preventDefault());
-
-        // Disable DevTools Shortcuts
-        document.onkeydown = function (e) {
-            if (e.keyCode == 123 ||
-                (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) ||
-                (e.ctrlKey && e.keyCode == 85)) {
-                return false;
-            }
-        };
-
-        // Anti-Inspection Console Clear
-        setInterval(() => { console.clear(); }, 2000);
-    </script> *@
 </body>
 </html>

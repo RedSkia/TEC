@@ -1,0 +1,123 @@
+﻿@attribute [Route(AppRoutes.LoginReset)]
+@using BankApp.Services
+@using BankApp.Data.Entities.Auth
+@using BlazorApp.Components.Elements
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAuthService AuthService
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<div class="container-fluid py-5 bg-light min-vh-100">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+
+                <div class="mb-4 text-center">
+                    <a href="/" class="text-decoration-none small text-muted">
+                        <i class="bi bi-arrow-left"></i> Back to Home
+                    </a>
+                </div>
+
+                <AuthorizeView Roles="@RoleType.Customer.ToString()">
+                    <Authorized>
+                        @* CASE 1: LOGGED IN - Direct Override *@
+                        <InputForm Model="this" OnSubmit="HandleOverride" ButtonText="Override My Password" IsLoading="isBusy">
+                            <HeaderContent>
+                                <h3 class="fw-bold text-center">Security Override</h3>
+                                <p class="text-muted small text-center">Enter your new password below to update your account.</p>
+                                @RenderStatus()
+                            </HeaderContent>
+                            <ChildContent>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">New Password</label>
+                                    <InputText @bind-Value="newPassword" type="password" class="form-control" placeholder="Enter new password" />
+                                </div>
+                            </ChildContent>
+                        </InputForm>
+                    </Authorized>
+
+                    <NotAuthorized>
+                        @* CASE 2: GUEST - Reset by Username *@
+                        <InputForm Model="this" OnSubmit="HandleGuestReset" ButtonText="Reset Account" IsLoading="isBusy">
+                            <HeaderContent>
+                                <h3 class="fw-bold text-center">Account Recovery</h3>
+                                <p class="text-muted small text-center">Enter your username and new password.</p>
+                                @RenderStatus()
+                            </HeaderContent>
+                            <ChildContent>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Username</label>
+                                    <InputText @bind-Value="targetUsername" class="form-control" placeholder="Username" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">New Password</label>
+                                    <InputText @bind-Value="newPassword" type="password" class="form-control" placeholder="New password" />
+                                </div>
+                            </ChildContent>
+                        </InputForm>
+                    </NotAuthorized>
+                </AuthorizeView>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string targetUsername = "";
+    private string newPassword = "";
+    private bool isBusy;
+    private string? statusMessage;
+    private bool isError;
+
+    // Logged-in: Get the current user's name and force the reset
+    private async Task HandleOverride()
+    {
+        if (string.IsNullOrWhiteSpace(newPassword)) return;
+        isBusy = true;
+
+        var user = await AuthService.GetCurrentApplicationUser();
+        if (user != null)
+        {
+            var result = await AuthService.ForcePasswordReset(user.UserName!, newPassword);
+            ProcessResult(result.Succeeded, result.Succeeded ? "Password updated successfully!" : GetError(result));
+        }
+        else
+        {
+            ProcessResult(false, "Session expired. Please log in again.");
+        }
+    }
+
+    // Guest: Use the provided username to force the reset
+    private async Task HandleGuestReset()
+    {
+        if (string.IsNullOrWhiteSpace(targetUsername) || string.IsNullOrWhiteSpace(newPassword)) return;
+        isBusy = true;
+
+        var result = await AuthService.ForcePasswordReset(targetUsername, newPassword);
+        ProcessResult(result.Succeeded, result.Succeeded ? "Account recovered! You can now log in." : GetError(result));
+    }
+
+    private void ProcessResult(bool success, string msg)
+    {
+        isError = !success;
+        statusMessage = msg;
+        if (success) { newPassword = targetUsername = ""; }
+        isBusy = false;
+    }
+
+    private string GetError(Microsoft.AspNetCore.Identity.IdentityResult result)
+        => string.Join(" ", result.Errors.Select(e => e.Description));
+
+    RenderFragment RenderStatus() => __builder =>
+    {
+        if (statusMessage != null)
+        {
+            <div class="alert @(isError ? "alert-danger" : "alert-success") border-0 py-2 small mb-3 animate-fade-in">
+                <i class="bi @(isError ? "bi-exclamation-circle" : "bi-check-circle") me-2"></i>
+                @statusMessage
+            </div>
+        }
+    };
+}

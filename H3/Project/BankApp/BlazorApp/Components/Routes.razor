@@ -6,7 +6,9 @@
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(BlazorApp.Components.Layout.MainLayout)">
             <NotAuthorized>
-                @{ Nav.NavigateTo("login"); }
+                @{
+                    Nav.NavigateTo("login");
+                }
             </NotAuthorized>
             <Authorizing>
                 <div class="vh-100 d-flex flex-column align-items-center justify-content-center bg-black text-white">
@@ -20,7 +22,11 @@
 
     <NotFound>
         <LayoutView Layout="@typeof(BlazorApp.Components.Layout.MainLayout)">
-            <Error StatusCode="404" />
+            @* Ensure you have an Error component or replace with a div *@
+            <div class="text-white p-5 text-center">
+                <h1>404</h1>
+                <p>Vault entry denied. Resource not found.</p>
+            </div>
         </LayoutView>
     </NotFound>
 </Router>

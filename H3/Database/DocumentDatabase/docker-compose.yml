@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql_db
+    environment:
+      SA_PASSWORD: "DbPassw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_db
+    ports:
+      - "27017:27017"
+
+  consoleapp:
+    build:
+      context: .
+      dockerfile: ConsoleApp/Dockerfile
+    depends_on:
+      - mssql
+      - mongodb
+    environment:
+      SQL_CONN: "Server=mssql;Database=WebShopDb;User Id=sa;Password=DbPassw0rd;Encrypt=False;"
+      MONGO_CONN: "mongodb://mongodb:27017"
+    stdin_open: true
+    tty: true

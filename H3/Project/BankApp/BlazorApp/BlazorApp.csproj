@@ -28,4 +28,14 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="BankApp.Data.Constants" />
+    <Using Include="BankApp.Data.Entities.Auth" />
+    <Using Include="BankApp.Services" />
+    <Using Include="BlazorApp.Components" />
+    <Using Include="BlazorApp.Components.Elements" />
+    <Using Include="Microsoft.AspNetCore.Authorization" />
+    <Using Include="Microsoft.AspNetCore.Components.Forms" />
+  </ItemGroup>
+
 </Project>

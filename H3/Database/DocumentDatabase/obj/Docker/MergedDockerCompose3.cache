@@ -1,0 +1,106 @@
+name: dockercompose16420099263099283605
+services:
+  consoleapp:
+    build:
+      context: D:\Desktop\TEC\H3\Database\DocumentDatabase
+      dockerfile: ConsoleApp/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Debug
+        LAUNCHING_FROM_VS: "true"
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: ConsoleApp
+      target: base
+    depends_on:
+      mongodb:
+        condition: service_started
+        required: true
+      mssql:
+        condition: service_started
+        required: true
+    entrypoint:
+      - dotnet
+      - --roll-forward
+      - Major
+      - /VSTools/DistrolessHelper/DistrolessHelper.dll
+      - --wait
+    environment:
+      MONGO_CONN: mongodb://mongodb:27017
+      NUGET_FALLBACK_PACKAGES: /.nuget/fallbackpackages
+      SQL_CONN: Server=mssql;Database=WebShopDb;User Id=sa;Password=DbPassw0rd;Encrypt=False;
+    image: consoleapp:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /.nuget/packages --additionalProbingPath /.nuget/fallbackpackages  "/app/bin/Debug/net10.0/ConsoleApp.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: dotnet --roll-forward Major /VSTools/DistrolessHelper/DistrolessHelper.dll --stop dotnet
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    networks:
+      default: null
+    stdin_open: true
+    tty: true
+    volumes:
+      - type: bind
+        source: D:\Desktop\TEC\H3\Database\DocumentDatabase\ConsoleApp
+        target: /app
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Desktop\TEC\H3\Database\DocumentDatabase
+        target: /src
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\vsdbg\vs2017u5
+        target: /remote_debugger
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Software\Microsoft\VisualStudio\2026\MSBuild\Sdks\Microsoft.Docker.Sdk\tools\linux-x64\net6.0
+        target: /VSTools
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Software\Microsoft\VisualStudio\2026\Common7\IDE\extensions\Microsoft\managedprojectsystem\HotReload
+        target: /HotReloadAgent
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\.nuget\packages
+        target: /.nuget/packages
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Software\Microsoft\VisualStudio\Shared\NuGetPackages
+        target: /.nuget/fallbackpackages
+        read_only: true
+        bind:
+          create_host_path: true
+  mongodb:
+    container_name: mongodb_db
+    image: mongo:latest
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 27017
+        published: "27017"
+        protocol: tcp
+  mssql:
+    container_name: mssql_db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: DbPassw0rd
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 1433
+        published: "1433"
+        protocol: tcp
+networks:
+  default:
+    name: dockercompose16420099263099283605_default

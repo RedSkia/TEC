@@ -168,10 +168,10 @@ D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.bu
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.development.json
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.build.endpoints.json
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\swae.build.ex.cache
-D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.csproj.Up2Date
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\refint\BlazorApp.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.pdb
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.genruntimeconfig.cache
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\ref\BlazorApp.dll
+D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

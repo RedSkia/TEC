@@ -1,0 +1,46 @@
+name: dockercompose16420099263099283605
+services:
+  consoleapp:
+    build:
+      context: D:\Desktop\TEC\H3\Database\DocumentDatabase
+      dockerfile: ConsoleApp/Dockerfile
+    depends_on:
+      mongodb:
+        condition: service_started
+        required: true
+      mssql:
+        condition: service_started
+        required: true
+    environment:
+      MONGO_CONN: mongodb://mongodb:27017
+      SQL_CONN: Server=mssql;Database=WebShopDb;User Id=sa;Password=DbPassw0rd;Encrypt=False;
+    networks:
+      default: null
+    stdin_open: true
+    tty: true
+  mongodb:
+    container_name: mongodb_db
+    image: mongo:latest
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 27017
+        published: "27017"
+        protocol: tcp
+  mssql:
+    container_name: mssql_db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: DbPassw0rd
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 1433
+        published: "1433"
+        protocol: tcp
+networks:
+  default:
+    name: dockercompose16420099263099283605_default

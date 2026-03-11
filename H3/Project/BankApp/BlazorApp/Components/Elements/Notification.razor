@@ -1,0 +1,111 @@
+﻿@implements IDisposable
+
+<div class="toast-container position-fixed p-3 d-flex @GetContainerClasses()" style="z-index: 9999; gap: 0.75rem;">
+    @foreach (var toast in GetOrderedToasts())
+    {
+        <div class="toast show border-0 shadow-sm" role="alert"
+             @onmouseenter="() => toast.IsHovered = true"
+             @onmouseleave="() => toast.IsHovered = false"
+             style="transition: all 0.3s ease;">
+            <div class="toast-header @GetBg(toast.Level) text-white border-0 d-flex align-items-center">
+                <i class="@GetIcon(toast.Level) me-2"></i>
+                <strong class="me-auto">@toast.Level</strong>
+                <button type="button" class="btn-close btn-close-white ms-2" @onclick="() => Remove(toast.Id)"></button>
+            </div>
+            <div class="toast-body bg-white py-3">@toast.Message</div>
+            <div class="progress" style="height: 3px; background: #eee; border-radius: 0;">
+                <div class="progress-bar @GetBg(toast.Level)"
+                     style="width: @(toast.Progress)%; transition: width 0.1s linear;"></div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    public enum DockLocation { TopRight, TopLeft, BottomRight, BottomLeft }
+    public enum ToastLevel { Info, Success, Warning, Error }
+
+    [Parameter] public double DisplayTime { get; set; } = 5.0;
+    [Parameter] public DockLocation Location { get; set; } = DockLocation.TopRight;
+
+    private class ToastMessage
+    {
+        public Guid Id { get; } = Guid.NewGuid();
+        public string Message { get; set; } = "";
+        public ToastLevel Level { get; set; }
+        public double Progress { get; set; } = 100;
+        public bool IsHovered { get; set; }
+    }
+
+    private List<ToastMessage> Toasts = new();
+    private System.Timers.Timer? _timer;
+
+    public void Show(string msg, ToastLevel lvl = ToastLevel.Info)
+    {
+        Toasts.Add(new ToastMessage { Message = msg, Level = lvl });
+        if (_timer == null) Start();
+        StateHasChanged();
+    }
+
+    private void Remove(Guid id) { Toasts.RemoveAll(t => t.Id == id); StateHasChanged(); }
+
+    private void Start()
+    {
+        _timer = new(100);
+        _timer.Elapsed += async (_, _) =>
+        {
+            if (!Toasts.Any()) { Stop(); return; }
+
+            double step = 100 / (DisplayTime / 0.1);
+            bool changed = false;
+
+            foreach (var t in Toasts.ToList())
+            {
+                if (t.IsHovered)
+                {
+                    if (t.Progress < 100) { t.Progress = 100; changed = true; }
+                    continue;
+                }
+
+                t.Progress -= step;
+                changed = true;
+                if (t.Progress <= 0) Toasts.Remove(t);
+            }
+            if (changed) await InvokeAsync(StateHasChanged);
+        };
+        _timer.Start();
+    }
+
+    private void Stop() { _timer?.Dispose(); _timer = null; }
+    public void Dispose() => Stop();
+
+    // Stack management: Newest on top for Bottom docks, newest on bottom for Top docks
+    private IEnumerable<ToastMessage> GetOrderedToasts() =>
+        Location == DockLocation.BottomRight || Location == DockLocation.BottomLeft
+        ? Toasts.AsEnumerable().Reverse()
+        : Toasts;
+
+    private string GetContainerClasses() => Location switch
+    {
+        DockLocation.TopLeft => "top-0 start-0 flex-column",
+        DockLocation.BottomRight => "bottom-0 end-0 flex-column-reverse",
+        DockLocation.BottomLeft => "bottom-0 start-0 flex-column-reverse",
+        _ => "top-0 end-0 flex-column" // TopRight
+    };
+
+    private string GetBg(ToastLevel l) => l switch
+    {
+        ToastLevel.Success => "bg-success",
+        ToastLevel.Error => "bg-danger",
+        ToastLevel.Warning => "bg-warning",
+        _ => "bg-dark"
+    };
+
+    private string GetIcon(ToastLevel l) => l switch
+    {
+        ToastLevel.Success => "bi-check-circle",
+        ToastLevel.Error => "bi-x-circle",
+        ToastLevel.Warning => "bi-exclamation-triangle",
+        _ => "bi-info-circle"
+    };
+}

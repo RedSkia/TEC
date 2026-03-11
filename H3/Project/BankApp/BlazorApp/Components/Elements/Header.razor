@@ -7,7 +7,8 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top border-bottom border-white border-opacity-10 shadow-lg py-2 bg-black">
     <div class="container">
-        <div class="navbar-brand d-flex align-items-center py-0" style="cursor: pointer;" @onclick='() => Nav.NavigateTo(AppRoutes.Index)'>
+        @* --- BRAND / LOGO --- *@
+        <div class="navbar-brand d-flex align-items-center py-0" role="button" @onclick='() => Nav.NavigateTo(AppRoutes.Index)'>
             <img src="assets/logo.png" alt="RedSkia Logo" style="height: 50px; width: auto;" class="me-2 me-md-3 object-fit-contain">
             <div class="lh-1">
                 <span class="fw-bolder fs-4 fs-md-2 text-white d-block tracking-tight" style="letter-spacing: -1.5px;">REDSKIA</span>
@@ -20,40 +21,54 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
+            @* --- NAVIGATION LINKS --- *@
             <ul class="navbar-nav me-auto ms-lg-5 py-3 py-lg-0 border-top border-white border-opacity-10 border-top-lg-0">
                 <li class="nav-item">
-                    <NavLink class="nav-link px-lg-3 py-2 fw-bold text-uppercase small tracking-widest text-center text-lg-start" href="@AppRoutes.Dashboard">Dashboard</NavLink>
+                    <NavLink class="nav-link px-lg-3 py-2 fw-bold text-uppercase small tracking-widest text-center text-lg-start" href="@AppRoutes.Dashboard" Match="NavLinkMatch.All">Dashboard</NavLink>
                 </li>
                 <li class="nav-item">
                     <NavLink class="nav-link px-lg-3 py-2 fw-bold text-uppercase small tracking-widest text-center text-lg-start" href="@AppRoutes.Market">Market</NavLink>
                 </li>
             </ul>
 
-            <div class="d-flex flex-column flex-lg-row gap-3 align-items-center align-items-lg-center py-3 py-lg-0 border-top border-white border-opacity-10 border-top-lg-0">
+            @* --- AUTH SECTION --- *@
+            <div class="d-flex flex-column flex-lg-row gap-3 align-items-center py-3 py-lg-0 border-top border-white border-opacity-10 border-top-lg-0">
                 <AuthorizeView>
                     <Authorized>
                         <div class="d-flex flex-column flex-lg-row align-items-center gap-3 ps-lg-3">
-                            <div class="d-flex align-items-center gap-3 order-1 order-lg-0">
-                                <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm"
-                                     style="width: 42px; height: 42px; background-color: @(currentRole?.RoleColor ?? "#c80000"); flex-shrink: 0; border: 2px solid rgba(255,255,255,0.1);">
+
+                            @* --- PROFILE LINK (MODIFIED) --- *@
+                            @* role="button" adds the pointer cursor via Bootstrap *@
+                            <div class="d-flex align-items-center gap-3 order-1 order-lg-0 border border-white border-opacity-10 rounded-3 p-2 transition-base"
+                                 role="button"
+                                 @onclick='() => Nav.NavigateTo("/account")'>
+
+                                @* Avatar Circle *@
+                                <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm border border-white border-opacity-25"
+                                     style="width: 42px; height: 42px; background-color: @(currentRole?.RoleColor ?? "#c80000"); flex-shrink: 0;">
                                     @GetInitials(currentUser?.FullName)
                                 </div>
+
+                                @* Info Text *@
                                 <div class="text-center text-lg-end">
-                                    <div class="text-white fw-bold lh-1 mb-1">@currentUser?.FullName</div>
-                                    <span class="badge smaller fw-bolder px-2 py-1"
-                                          style="background-color: @(currentRole?.RoleColor ?? "#808080")33; color: @(currentRole?.RoleColor ?? "#808080"); border: 1px solid @(currentRole?.RoleColor ?? "#808080")66; font-size: 0.65rem;">
+                                    <div class="text-white fw-bold lh-1 mb-1" style="font-size: 0.9rem;">@currentUser?.FullName</div>
+                                    <span class="badge rounded-pill fw-bolder px-2 py-1"
+                                          style="background-color: @(currentRole?.RoleColor ?? "#808080")33; color: @(currentRole?.RoleColor ?? "#808080"); border: 1px solid @(currentRole?.RoleColor ?? "#808080")66; font-size: 0.6rem;">
                                         @(currentRole?.Name?.ToUpper() ?? "CLIENT")
                                     </span>
                                 </div>
                             </div>
 
-                            <button class="btn btn-outline-danger btn-sm rounded-pill px-4 py-2 py-lg-1 order-0 order-lg-1 w-100 w-lg-auto" @onclick="HandleLogout">Logout</button>
+                            <button class="btn btn-outline-danger btn-sm rounded-pill px-4 py-2 py-lg-1 order-0 order-lg-1 w-100 w-lg-auto fw-bold" @onclick="HandleLogout">
+                                LOGOUT
+                            </button>
                         </div>
                     </Authorized>
+
                     <NotAuthorized>
                         <div class="d-flex flex-column flex-lg-row gap-2 w-100 w-lg-auto text-center">
                             <button class="btn btn-link text-white-50 text-decoration-none fw-bold small py-3 py-lg-2" @onclick='() => Nav.NavigateTo(AppRoutes.Login)'>LOGIN</button>
-                            <button class="btn btn-primary rounded-pill px-4 py-3 py-lg-2 shadow-lg fw-bold w-100 w-lg-auto" @onclick='() => Nav.NavigateTo(AppRoutes.Register)'>SIGN UP</button>
+                            <button class="btn btn-primary rounded-pill px-4 py-3 py-lg-2 shadow-lg fw-bold w-100 w-lg-auto text-uppercase" @onclick='() => Nav.NavigateTo(AppRoutes.LoginRegister)'>Sign Up</button>
                         </div>
                     </NotAuthorized>
                 </AuthorizeView>
@@ -74,14 +89,32 @@
             var authState = await AuthStateTask;
             if (authState.User.Identity?.IsAuthenticated == true)
             {
-                currentUser = await AuthService.GetCurrentApplicationUser();
-                currentRole = await AuthService.GetCurrentApplicationRole();
+                // Prevent duplicate fetches if the user is already loaded
+                if (currentUser == null)
+                {
+                    currentUser = await AuthService.GetCurrentApplicationUser();
+                    currentRole = await AuthService.GetCurrentApplicationRole();
+                }
+            }
+            else
+            {
+                currentUser = null;
+                currentRole = null;
             }
         }
     }
 
-    private string GetInitials(string? name) =>
-        string.IsNullOrWhiteSpace(name) ? "??" : string.Concat(name.Split(' ').Select(x => x[0])).ToUpper().Substring(0, Math.Min(name.Split(' ').Length, 2));
+    private string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "??";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var initials = parts.Select(x => x[0]);
+        return string.Concat(initials).ToUpper().Substring(0, Math.Min(parts.Length, 2));
+    }
 
-    private async Task HandleLogout() { await AuthService.Logout(); Nav.NavigateTo(AppRoutes.Index, true); }
+    private async Task HandleLogout()
+    {
+        await AuthService.Logout();
+        Nav.NavigateTo(AppRoutes.Index, true);
+    }
 }

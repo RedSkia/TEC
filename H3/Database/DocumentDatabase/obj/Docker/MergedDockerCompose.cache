@@ -1,0 +1,12 @@
+name: dockercompose16420099263099283605
+services:
+  consoleapp:
+    build:
+      context: D:\Desktop\TEC\H3\Database\DocumentDatabase
+      dockerfile: ConsoleApp/Dockerfile
+    image: consoleapp
+    networks:
+      default: null
+networks:
+  default:
+    name: dockercompose16420099263099283605_default

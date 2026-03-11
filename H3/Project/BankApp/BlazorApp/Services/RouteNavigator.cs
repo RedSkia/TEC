@@ -13,36 +13,34 @@ public interface IRouteNavigator
 
 public class RouteNavigator(NavigationManager nav, IAuthService auth) : IRouteNavigator
 {
+    // Static cache so we only perform Reflection once for the entire app lifetime
+    private static readonly Dictionary<string, RoleType?> RouteCache = typeof(AppRoutes)
+        .GetFields(BindingFlags.Public | BindingFlags.Static)
+        .ToDictionary(
+            f => f.GetValue(null)?.ToString() ?? "",
+            f => f.GetCustomAttribute<RouteRoleAttribute>()?.Role
+        );
+
     public async Task NavigateTo(string route)
     {
-        // 1. Find the field in AppRoutes
-        var field = typeof(AppRoutes).GetFields()
-            .FirstOrDefault(f => f.GetValue(null)?.ToString() == route);
-
-        var attr = field?.GetCustomAttribute<RouteRoleAttribute>();
-
-        // 2. Public page check
-        if (attr == null)
+        // 1. Fast lookup
+        if (!RouteCache.TryGetValue(route, out var requiredRole))
         {
-            nav.NavigateTo(route);
+            nav.NavigateTo(route); // Public page
             return;
         }
 
-        // 3. Get User Role String (from Database)
-        var userRole = await auth.GetCurrentApplicationRole(); // Returns ApplicationRole entity
+        var userRole = await auth.GetCurrentApplicationRole();
 
-        // 4. Convert String to Enum for comparison
-        if (Enum.TryParse<RoleType>(userRole?.Name, out var userRoleEnum))
+        if (userRole != null && Enum.TryParse<RoleType>(userRole.Name, out var userRoleEnum))
         {
-            // 5. Authorization Check
-            if (userRoleEnum == RoleType.Admin || userRoleEnum == attr.Role)
+            // Admin bypass or matching role
+            if (userRoleEnum == RoleType.Admin || userRoleEnum == requiredRole)
             {
                 nav.NavigateTo(route);
+                return;
             }
-            else
-            {
-                nav.NavigateTo(AppRoutes.Index);
-            }
+            nav.NavigateTo(AppRoutes.Index);
         }
         else
         {
