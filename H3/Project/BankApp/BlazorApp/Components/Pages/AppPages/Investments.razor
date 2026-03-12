@@ -72,7 +72,7 @@
                     </div>
                     <div class="card-body p-0">
                         @{
-                            var userInvestments = user.BankAccounts?.SelectMany(a => a.Investments).ToList() ?? new();
+                            var userInvestments = user.BankAccount.Investments.ToList() ?? new();
                         }
 
                         @if (!userInvestments.Any())
@@ -143,10 +143,9 @@
 
     private decimal CalculatePortfolioValue()
     {
-        if (user?.BankAccounts == null) return 0;
+        if (user?.BankAccount == null) return 0;
 
-        return user.BankAccounts
-            .SelectMany(a => a.Investments)
+        return user.BankAccount.Investments
             .Where(i => i.Stock != null)
             .Sum(i => i.Quantity * i.Stock.CurrentPrice);
     }

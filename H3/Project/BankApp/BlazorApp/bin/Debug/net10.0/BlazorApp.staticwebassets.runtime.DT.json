@@ -3,7 +3,7 @@
     "/src/BlazorApp/wwwroot/",
     "/src/BlazorApp/obj/Debug/net10.0/compressed/",
     "/src/BlazorApp/obj/Debug/net10.0/scopedcss/bundle/",
-    "/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.3/_framework/",
+    "/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.4/_framework/",
     "/src/BlazorApp/"
   ],
   "Root": {
@@ -54,7 +54,7 @@
             "Children": null,
             "Asset": {
               "ContentRootIndex": 1,
-              "SubPath": "e2p7e3doxt-{0}-zr4b1gdhaw-zr4b1gdhaw.gz"
+              "SubPath": "e2p7e3doxt-{0}-dy8h75y8gn-dy8h75y8gn.gz"
             },
             "Patterns": null
           },
@@ -70,7 +70,7 @@
             "Children": null,
             "Asset": {
               "ContentRootIndex": 1,
-              "SubPath": "0txged01c1-{0}-ax6tuj8tun-ax6tuj8tun.gz"
+              "SubPath": "0txged01c1-{0}-mgww215af1-mgww215af1.gz"
             },
             "Patterns": null
           }

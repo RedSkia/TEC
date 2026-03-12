@@ -55,7 +55,7 @@ namespace BlazorApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ExchangeRates",
+                name: "CurrencyTypes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -65,7 +65,7 @@ namespace BlazorApp.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ExchangeRates", x => x.Id);
+                    table.PrimaryKey("PK_CurrencyTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -212,27 +212,6 @@ namespace BlazorApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BankAccounts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    AccountNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BankAccounts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_BankAccounts_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "LoginActivities",
                 columns: table => new
                 {
@@ -256,24 +235,29 @@ namespace BlazorApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Cards",
+                name: "BankAccounts",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CardNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsBlocked = table.Column<bool>(type: "bit", nullable: false),
-                    ExpiryDate = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Cvc = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    BankAccountId = table.Column<int>(type: "int", nullable: false)
+                    AccountNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CurrencyTypeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cards", x => x.Id);
+                    table.PrimaryKey("PK_BankAccounts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Cards_BankAccounts_BankAccountId",
-                        column: x => x.BankAccountId,
-                        principalTable: "BankAccounts",
+                        name: "FK_BankAccounts_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BankAccounts_CurrencyTypes_CurrencyTypeId",
+                        column: x => x.CurrencyTypeId,
+                        principalTable: "CurrencyTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -302,7 +286,7 @@ namespace BlazorApp.Migrations
                         column: x => x.StockId,
                         principalTable: "Stocks",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -313,6 +297,7 @@ namespace BlazorApp.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RequestReference = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CurrencyTypeId = table.Column<int>(type: "int", nullable: false),
                     InterestRate = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     MessageFromCustomer = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -335,6 +320,12 @@ namespace BlazorApp.Migrations
                         principalTable: "BankAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LoanRequests_CurrencyTypes_CurrencyTypeId",
+                        column: x => x.CurrencyTypeId,
+                        principalTable: "CurrencyTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -348,7 +339,8 @@ namespace BlazorApp.Migrations
                     Type = table.Column<int>(type: "int", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    BankAccountId = table.Column<int>(type: "int", nullable: false)
+                    BankAccountId = table.Column<int>(type: "int", nullable: false),
+                    CurrencyTypeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -359,6 +351,12 @@ namespace BlazorApp.Migrations
                         principalTable: "BankAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transactions_CurrencyTypes_CurrencyTypeId",
+                        column: x => x.CurrencyTypeId,
+                        principalTable: "CurrencyTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.InsertData(
@@ -369,6 +367,16 @@ namespace BlazorApp.Migrations
                     { "1", "S1", "Admin", "ADMIN", "#c80000" },
                     { "2", "S2", "LoanOfficer", "LOANOFFICER", "#00c800" },
                     { "3", "S3", "Customer", "CUSTOMER", "#00c8c8" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "CurrencyTypes",
+                columns: new[] { "Id", "CurrencyCode", "Rate" },
+                values: new object[,]
+                {
+                    { 1, "EUR", 1.0000m },
+                    { 2, "USD", 1.0800m },
+                    { 3, "DKK", 7.4500m }
                 });
 
             migrationBuilder.CreateIndex(
@@ -417,14 +425,15 @@ namespace BlazorApp.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BankAccounts_UserId",
+                name: "IX_BankAccounts_CurrencyTypeId",
                 table: "BankAccounts",
-                column: "UserId");
+                column: "CurrencyTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cards_BankAccountId",
-                table: "Cards",
-                column: "BankAccountId");
+                name: "IX_BankAccounts_UserId",
+                table: "BankAccounts",
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Investments_BankAccountId",
@@ -447,6 +456,11 @@ namespace BlazorApp.Migrations
                 column: "BankAccountId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_LoanRequests_CurrencyTypeId",
+                table: "LoanRequests",
+                column: "CurrencyTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_LoginActivities_UserId",
                 table: "LoginActivities",
                 column: "UserId");
@@ -455,6 +469,11 @@ namespace BlazorApp.Migrations
                 name: "IX_Transactions_BankAccountId",
                 table: "Transactions",
                 column: "BankAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_CurrencyTypeId",
+                table: "Transactions",
+                column: "CurrencyTypeId");
         }
 
         /// <inheritdoc />
@@ -479,12 +498,6 @@ namespace BlazorApp.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Cards");
-
-            migrationBuilder.DropTable(
-                name: "ExchangeRates");
-
-            migrationBuilder.DropTable(
                 name: "Investments");
 
             migrationBuilder.DropTable(
@@ -507,6 +520,9 @@ namespace BlazorApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "CurrencyTypes");
         }
     }
 }

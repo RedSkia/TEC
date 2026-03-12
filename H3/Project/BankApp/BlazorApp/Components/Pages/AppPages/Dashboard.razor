@@ -1,12 +1,10 @@
 ﻿@attribute [Route(AppRoutes.Dashboard)]
-@using BankApp.Data.Entities.Auth
-@using BankApp.Data.Entities.Banking
+
 @using BankApp.Services
 @rendermode InteractiveServer
 @inject IAuthService AuthService
 
-<div class="bg-black text-white min-vh-100 pb-5">
-    @* --- TOP NAVIGATION STYLE BAR --- *@
+@* <div class="bg-black text-white min-vh-100 pb-5">
     <div class="border-bottom border-white border-opacity-10 py-4 mb-5 bg-black sticky-top">
         <div class="container d-flex justify-content-between align-items-center">
             <div>
@@ -30,11 +28,10 @@
         else
         {
             <div class="row g-4 mb-5">
-                @* --- LEFT COL: ACCOUNTS & CARDS --- *@
                 <div class="col-lg-8">
                     <h5 class="text-uppercase tracking-widest text-danger small fw-bold mb-4">Financial Assets</h5>
                     <div class="row g-4 mb-5">
-                        @foreach (var account in user.BankAccounts)
+                        @foreach (var account in user.BankAccount)
                         {
                             <div class="col-md-6">
                                 <div class="glass-card p-4 h-100">
@@ -67,7 +64,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var tx in user.BankAccounts.SelectMany(a => a.Transactions).OrderByDescending(t => t.CreatedAt).Take(8))
+                                    @foreach (var tx in user.BankAccount.SelectMany(a => a.Transactions).OrderByDescending(t => t.CreatedAt).Take(8))
                                     {
                                         <tr class="border-bottom border-white border-opacity-5">
                                             <td class="ps-4 py-3">
@@ -91,10 +88,9 @@
                     </div>
                 </div>
 
-                @* --- RIGHT COL: CARDS & STATS --- *@
                 <div class="col-lg-4">
                     <h5 class="text-uppercase tracking-widest text-danger small fw-bold mb-4">Secured Hardware</h5>
-                    @foreach (var card in user.BankAccounts.SelectMany(a => a.Cards))
+                    @foreach (var card in user.BankAccount.SelectMany(a => a.Cards))
                     {
                         <div class="glass-card p-4 mb-4 border border-danger border-opacity-10">
                             <div class="d-flex justify-content-between mb-5">
@@ -141,9 +137,9 @@
     }
     .tracking-tighter { letter-spacing: -2px; }
     .smaller { font-size: 0.7rem; }
-</style>
+</style> *@
 
-@code {
+@* @code {
     private ApplicationUser? user;
 
     protected override async Task OnInitializedAsync() {
@@ -154,4 +150,4 @@
         if (string.IsNullOrEmpty(raw) || raw.Length < 4) return raw;
         return raw.Length >= 12 ? string.Join("-", Enumerable.Range(0, raw.Length / 4).Select(i => raw.Substring(i * 4, 4))) : raw;
     }
-}
+} *@

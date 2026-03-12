@@ -159,8 +159,8 @@ D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\8tw2osb
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\xh0z4usiiv-{0}-wvublzrdv8-wvublzrdv8.gz
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\fxa0awfm04-{0}-259makaqpv-259makaqpv.gz
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\hsa0fwp5ls-{0}-abdmv1u4y3-abdmv1u4y3.gz
-D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\0txged01c1-{0}-ax6tuj8tun-ax6tuj8tun.gz
-D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\e2p7e3doxt-{0}-zr4b1gdhaw-zr4b1gdhaw.gz
+D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\0txged01c1-{0}-mgww215af1-mgww215af1.gz
+D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\e2p7e3doxt-{0}-dy8h75y8gn-dy8h75y8gn.gz
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\8v4adbxxmx-{0}-5cqymeo4ki-5cqymeo4ki.gz
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\compressed\rrzzv9ip5o-{0}-5cqymeo4ki-5cqymeo4ki.gz
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.build.json

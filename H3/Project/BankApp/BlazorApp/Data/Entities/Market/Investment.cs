@@ -1,5 +1,4 @@
 ﻿using BankApp.Data.Entities.Banking;
-using BankApp.Data.Entities.Market;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

@@ -1,8 +1,4 @@
 using BankApp.Data;
-using BankApp.Data.Entities.Auth;
-using BankApp.Data.Entities.Banking;
-using BankApp.Data.Entities.Lending;
-using BankApp.Data.Entities.Market;
 using BankApp.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -12,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using BankApp.Data.Entities.Market;
+using BankApp.Data.Entities.Banking;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,6 +65,8 @@ builder.Services.AddScoped<TokenStorageService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRouteNavigator, RouteNavigator>();
+builder.Services.AddScoped<ICurrencyService, CurrencyService>();
+builder.Services.AddScoped<ITransferService, TransferService>();
 
 builder.Services.AddScoped<JwtAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
@@ -86,8 +86,7 @@ builder.Services.AddAuthorizationCore(options =>
 
 // CRUD Services
 builder.Services.AddTransient<ICRUDService<Stock>, CRUDService<Stock>>();
-builder.Services.AddTransient<ICRUDService<ExchangeRate>, CRUDService<ExchangeRate>>();
-builder.Services.AddTransient<ICRUDService<Card>, CRUDService<Card>>();
+builder.Services.AddTransient<ICRUDService<CurrencyType>, CRUDService<CurrencyType>>();
 builder.Services.AddTransient<ICRUDService<Transaction>, CRUDService<Transaction>>();
 builder.Services.AddTransient<ICRUDService<Address>, CRUDService<Address>>();
 builder.Services.AddTransient<ICRUDService<LoginActivity>, CRUDService<LoginActivity>>();
