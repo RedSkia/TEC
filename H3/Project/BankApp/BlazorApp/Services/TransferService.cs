@@ -34,9 +34,10 @@ public class TransferService(IDbContextFactory<BankAppDbContext> dbFactory) : IT
             {
                 BankAccountId = sender.Id,
                 Amount = -amount,
-                CurrencyTypeId = sender.CurrencyTypeId, // EXPLICIT ID
+                CurrencyTypeId = sender.CurrencyTypeId,
+                TransactionReference = Guid.NewGuid().ToString("N").ToUpper().Substring(0, 12),
                 Type = TransactionType.Transfer,
-                Note = "Transfer Out",
+                Note = $"Transfer to {recipient.AccountNumber}",
                 CreatedAt = DateTime.UtcNow
             });
 
@@ -44,9 +45,10 @@ public class TransferService(IDbContextFactory<BankAppDbContext> dbFactory) : IT
             {
                 BankAccountId = recipient.Id,
                 Amount = receivedAmount,
-                CurrencyTypeId = recipient.CurrencyTypeId, // EXPLICIT ID
+                CurrencyTypeId = recipient.CurrencyTypeId,
+                TransactionReference = Guid.NewGuid().ToString("N").ToUpper().Substring(0, 12),
                 Type = TransactionType.Transfer,
-                Note = "Transfer In",
+                Note = $"Transfer from {sender.AccountNumber}",
                 CreatedAt = DateTime.UtcNow
             });
 
@@ -54,6 +56,10 @@ public class TransferService(IDbContextFactory<BankAppDbContext> dbFactory) : IT
             await transaction.CommitAsync();
             return (true, "Success");
         }
-        catch (Exception ex) { return (false, ex.Message); }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return (false, "System error during transfer.");
+        }
     }
 }

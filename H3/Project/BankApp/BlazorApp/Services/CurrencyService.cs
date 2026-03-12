@@ -34,24 +34,22 @@ public class CurrencyService(IDbContextFactory<BankAppDbContext> dbFactory) : IC
             if (account == null || target == null || account.CurrencyTypeId == targetCurrencyId)
                 return false;
 
-            // 1. Calculate Balance
+            decimal oldBalance = account.Balance;
             decimal baseBalance = account.Balance / account.CurrencyType.Rate;
             decimal newBalance = baseBalance * target.Rate;
 
-            // 2. Update Account
             string oldCode = account.CurrencyType.CurrencyCode;
             account.Balance = Math.Round(newBalance, 2);
             account.CurrencyTypeId = target.Id;
 
-            // 3. Log the Exchange - FIXED: Added required fields
             db.Transactions.Add(new Transaction
             {
                 BankAccountId = account.Id,
-                Amount = 0, // Exchange doesn't change value, just currency
-                CurrencyTypeId = target.Id, // REQUIRED
-                TransactionReference = Guid.NewGuid().ToString("N").ToUpper().Substring(0, 12), // REQUIRED
+                Amount = account.Balance - oldBalance,
+                CurrencyTypeId = target.Id,
+                TransactionReference = Guid.NewGuid().ToString("N").ToUpper().Substring(0, 12),
                 Type = TransactionType.Exchange,
-                Note = $"Converted from {oldCode} to {target.CurrencyCode} (Rate: {target.Rate:F4})",
+                Note = $"Swap: {oldCode} -> {target.CurrencyCode}",
                 CreatedAt = DateTime.UtcNow
             });
 
