@@ -31,6 +31,10 @@
   <ItemGroup>
     <Using Include="BankApp.Data.Constants" />
     <Using Include="BankApp.Data.Entities.Auth" />
+    <Using Include="BankApp.Data.Entities.Auth" />
+    <Using Include="BankApp.Data.Entities.Banking" />
+    <Using Include="BankApp.Data.Entities.Lending" />
+    <Using Include="BankApp.Data.Entities.Market" />
     <Using Include="BankApp.Services" />
     <Using Include="BlazorApp.Components" />
     <Using Include="BlazorApp.Components.Elements" />

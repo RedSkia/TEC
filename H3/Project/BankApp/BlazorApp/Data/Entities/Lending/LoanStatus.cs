@@ -6,5 +6,6 @@ public enum LoanStatus
     UnderReview, 
     Approved, 
     Denied, 
-    Closed 
+    Closed,
+    Paid,
 }

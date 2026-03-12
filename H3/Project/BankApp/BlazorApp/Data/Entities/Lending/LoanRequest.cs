@@ -1,8 +1,7 @@
-﻿using BankApp.Data.Entities.Auth; // Tilføjet
-using BankApp.Data.Entities.Banking;
-using BankApp.Data.Entities.Lending;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
+namespace BankApp.Data.Entities.Lending;
 
 public class LoanRequest
 {
@@ -15,6 +14,14 @@ public class LoanRequest
     [Range(100, 1000000, ErrorMessage = "Loan must be between 100 and 1,000,000")]
     public decimal Amount { get; set; }
 
+    // --- NEW FIELDS ---
+    [Required(ErrorMessage = "Please select a currency")]
+    public int CurrencyTypeId { get; set; }
+
+    [ForeignKey(nameof(CurrencyTypeId))]
+    public virtual CurrencyType CurrencyType { get; set; } = null!;
+    // ------------------
+
     [Column(TypeName = "decimal(5,2)")]
     public decimal InterestRate { get; set; }
 
@@ -23,8 +30,8 @@ public class LoanRequest
     [Required(ErrorMessage = "Please explain why you need this loan")]
     [MinLength(10, ErrorMessage = "Message is too short")]
     public string MessageFromCustomer { get; set; } = string.Empty;
-    public string? ResponseFromOfficer { get; set; }
 
+    public string? ResponseFromOfficer { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [Required]

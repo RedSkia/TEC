@@ -1,6 +1,4 @@
-﻿using BankApp.Data.Entities.Auth;
-
-namespace BankApp.Data.Constants;
+﻿namespace BankApp.Data.Constants;
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public class RouteRoleAttribute(RoleType role) : Attribute

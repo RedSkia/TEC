@@ -1,165 +1,90 @@
 ﻿@page "/account"
+@using BankApp.Data
 @using BankApp.Data.Entities.Auth
 @using BankApp.Data.Entities.Banking
+@using BankApp.Data.Entities.Lending
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
 @using BankApp.Services
+@using System.Security.Claims
 @using BlazorApp.Components.Elements
-@using Microsoft.AspNetCore.Components.Forms
 @rendermode InteractiveServer
-@inject IAuthService AuthService
+
+@inject IDbContextFactory<BankAppDbContext> DbFactory
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
+@inject ICurrencyService CurrencyService
+@inject ITransferService TransferService
 
-@* --- COMPONENT INSTANCES --- *@
-<Notification @ref="notifier"
-              DisplayTime="4.0"
-              Location="Notification.DockLocation.BottomLeft" />
+<Notification @ref="notifier" DisplayTime="4.0" Location="Notification.DockLocation.BottomLeft" />
 
-<Modal IsVisible="showConfirmModal"
+<Modal IsVisible="ActiveTab == AccountTab.CloseAccount"
        IsLoading="isSubmitting"
        Title="Seal the Vault?"
-       Message="Closing your account is permanent. This action is irreversible and will wipe all access to your records."
+       Message="Closing your profile is permanent and will delete your bank account. Your balance must be zero."
        ConfirmText="YES, DELETE EVERYTHING"
        IconClass="bi-shield-exclamation"
        TextColor="text-danger"
        BtnClass="btn-danger shadow"
-       OnConfirm="HandleCloseAccount"
-       OnCancel="() => showConfirmModal = false" />
+       OnConfirm="HandleCloseProfile"
+       OnCancel="() => ActiveTab = AccountTab.Overview" />
 
-<div class="container-fluid py-4 bg-light min-vh-100">
+<div class="container-fluid py-5 bg-light min-vh-100">
     <div class="container">
         @if (user == null)
         {
             <div class="d-flex flex-column align-items-center justify-content-center py-5">
-                <div class="spinner-border text-danger mb-3" role="status"></div>
-                <h5 class="text-muted fw-light">Accessing Secure Vault...</h5>
+                <div class="spinner-grow text-dark mb-3" role="status"></div>
+                <h5 class="text-muted fw-light">Securing Session...</h5>
             </div>
         }
         else
         {
-            <div class="row mb-4 align-items-center">
-                <div class="col-md-6">
-                    <h2 class="fw-bold mb-0 text-dark">Account Management</h2>
-                    <p class="text-muted mb-0">Manage your profile, security, and finances.</p>
-                </div>
-            </div>
-
             <div class="row g-4">
-                @* --- TAB NAVIGATION --- *@
+                @* --- LEFT SIDEBAR --- *@
                 <div class="col-lg-3">
-                    <div class="list-group border-0 shadow-sm rounded-3 overflow-hidden">
-                        <button class="list-group-item list-group-item-action border-0 py-3 @(ActiveTab == AccountTab.Overview ? "bg-dark text-white" : "")" @onclick='() => ActiveTab = AccountTab.Overview'>
-                            <i class="bi bi-speedometer2 me-2"></i> Overview
-                        </button>
-                        <button class="list-group-item list-group-item-action border-0 py-3 @(ActiveTab == AccountTab.Profile ? "bg-dark text-white" : "")" @onclick='() => ActiveTab = AccountTab.Profile'>
-                            <i class="bi bi-person-gear me-2"></i> Profile & Address
-                        </button>
-                        <button class="list-group-item list-group-item-action border-0 py-3 @(ActiveTab == AccountTab.Security ? "bg-dark text-white" : "")" @onclick='() => ActiveTab = AccountTab.Security'>
-                            <i class="bi bi-shield-lock me-2"></i> Password & Security
-                        </button>
-                        <button class="list-group-item list-group-item-action border-0 py-3 text-danger @(ActiveTab == AccountTab.CloseAccount ? "bg-danger text-white" : "")" @onclick='() => ActiveTab = AccountTab.CloseAccount'>
-                            <i class="bi bi-exclamation-triangle me-2"></i> Close Account
-                        </button>
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                        <div class="card-body text-center pt-5 pb-4 bg-white">
+                            <div class="rounded-circle bg-dark text-white d-inline-flex align-items-center justify-content-center mb-3 shadow-sm"
+                                 style="width: 80px; height: 80px; font-size: 2rem; font-weight: 600;">
+                                @user.FullName[0]
+                            </div>
+                            <h5 class="fw-bold mb-1">@user.FullName</h5>
+                            <p class="text-muted small mb-3">@user.Email</p>
+
+                            <div class="bg-light rounded-3 p-2 mb-4 mx-2">
+                                <small class="text-uppercase text-muted fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">Vault ID</small>
+                                <div class="font-monospace small">@user.BankAccount?.AccountNumber</div>
+                            </div>
+
+                            <div class="list-group list-group-flush text-start">
+                                @RenderNavButton(AccountTab.Overview, "bi-grid-1x2-fill", "Overview")
+                                @RenderNavButton(AccountTab.Transfer, "bi-send-fill", "Transfer")
+                                @RenderNavButton(AccountTab.Lending, "bi-cash-coin", "Loans")
+                                @RenderNavButton(AccountTab.Profile, "bi-person-vcard-fill", "Profile")
+                                @RenderNavButton(AccountTab.CloseAccount, "bi-slash-circle-fill", "Terminate", "text-danger")
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                        <h6 class="fw-bold small text-muted text-uppercase mb-3">Vault Currency</h6>
+                        <select class="form-select form-select-sm border-0 bg-light" @onchange="HandleCurrencyChange">
+                            @foreach (var curr in availableCurrencies)
+                            {
+                                <option value="@curr.Id" selected="@(curr.Id == user.BankAccount?.CurrencyTypeId)">
+                                    @curr.CurrencyCode (@curr.Rate.ToString("N2"))
+                                </option>
+                            }
+                        </select>
                     </div>
                 </div>
 
-                @* --- CONTENT AREA --- *@
+                @* --- MAIN CONTENT --- *@
                 <div class="col-lg-9">
-                    <div class="card border-0 shadow-sm rounded-3">
-                        <div class="card-body p-4">
-
-                            @if (ActiveTab == AccountTab.Overview)
-                            {
-                                <div class="bg-primary text-white p-4 rounded-3 shadow-sm mb-4">
-                                    <small class="text-white-50 text-uppercase fw-bold">Total Combined Balance</small>
-                                    <h1 class="display-5 fw-bold mb-3">@TotalBalance.ToString("C2")</h1>
-                                    <button class="btn btn-light fw-bold px-4 rounded-pill shadow-sm" @onclick='() => Nav.NavigateTo("transfer")'>Transfer</button>
-                                </div>
-                            }
-                            else if (ActiveTab == AccountTab.Profile)
-                            {
-                                <EditForm Model="user" OnValidSubmit="HandleUpdateProfile">
-                                    <DataAnnotationsValidator />
-                                    <h5 class="fw-bold mb-4">Update Profile Details</h5>
-                                    <div class="row g-3">
-                                        <div class="col-md-12">
-                                            <label class="form-label small fw-bold text-muted text-uppercase">Full Name</label>
-                                            <InputText @bind-Value="user.FullName" class="form-control bg-light border-0 py-2" />
-                                            <ValidationMessage For="@(() => user.FullName)" class="text-danger small" />
-                                        </div>
-
-                                        @if (user.Address != null)
-                                        {
-                                            <div class="col-12 mt-4">
-                                                <h6 class="fw-bold mb-3 border-bottom pb-2">Physical Address</h6>
-                                            </div>
-                                            <div class="col-12">
-                                                <label class="form-label small fw-bold text-muted text-uppercase">Street Address</label>
-                                                <InputText @bind-Value="user.Address.Street" class="form-control bg-light border-0 py-2" />
-                                                <ValidationMessage For="@(() => user.Address.Street)" class="text-danger small" />
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold text-muted text-uppercase">City</label>
-                                                <InputText @bind-Value="user.Address.City" class="form-control bg-light border-0 py-2" />
-                                                <ValidationMessage For="@(() => user.Address.City)" class="text-danger small" />
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label small fw-bold text-muted text-uppercase">Zip Code</label>
-                                                <InputText @bind-Value="user.Address.ZipCode" class="form-control bg-light border-0 py-2" />
-                                                <ValidationMessage For="@(() => user.Address.ZipCode)" class="text-danger small" />
-                                            </div>
-                                        }
-
-                                        <div class="col-12 mt-4">
-                                            <button type="submit" class="btn btn-dark px-4 py-2 rounded-pill fw-bold" disabled="@isSubmitting">
-                                                @if (isSubmitting) { <span class="spinner-border spinner-border-sm me-2"></span> }
-                                                SAVE CHANGES
-                                            </button>
-                                        </div>
-                                    </div>
-                                </EditForm>
-                            }
-                            else if (ActiveTab == AccountTab.Security)
-                            {
-                                <h5 class="fw-bold mb-4">Security Settings</h5>
-                                <div class="card bg-light border-0 p-3 mb-4 shadow-sm">
-                                    <div class="d-flex align-items-center">
-                                        <div class="p-3 bg-white rounded-circle me-3">
-                                            <i class="bi bi-key-fill text-primary"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-0 fw-bold">Update Password</h6>
-                                            <p class="text-muted small mb-0">Change your security credentials immediately.</p>
-                                        </div>
-                                        <NavLink href="login/reset" class="btn btn-outline-dark btn-sm ms-auto fw-bold px-3 py-2 rounded-pill">
-                                            RESET PASSWORD
-                                        </NavLink>
-                                    </div>
-                                </div>
-                            }
-                            else if (ActiveTab == AccountTab.CloseAccount)
-                            {
-                                <div class="text-center py-4">
-                                    <div class="bg-danger-subtle text-danger rounded-circle d-inline-flex p-4 mb-3">
-                                        <i class="bi bi-exclamation-octagon fs-1"></i>
-                                    </div>
-                                    <h5 class="fw-bold">Seal the Vault?</h5>
-                                    <p class="text-muted mx-auto mb-4" style="max-width: 400px;">
-                                        Closing your account is permanent.
-                                    </p>
-
-                                    @if (TotalBalance > 0)
-                                    {
-                                        <div class="alert alert-warning border-0 small">
-                                            Cannot close account with remaining balance of @TotalBalance.ToString("C2")
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <button class="btn btn-danger fw-bold px-5 py-2 rounded-pill shadow-sm" @onclick="() => showConfirmModal = true">
-                                            CLOSE ACCOUNT
-                                        </button>
-                                    }
-                                </div>
-                            }
+                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                        <div class="card-body p-4 p-md-5">
+                            @CurrentTabContent
                         </div>
                     </div>
                 </div>
@@ -169,82 +94,293 @@
 </div>
 
 @code {
-    private Notification notifier = default!; // Reference to the toast component
     private ApplicationUser? user;
+    private List<ApplicationUser> allUsers = new();
+    private List<CurrencyType> availableCurrencies = new();
+    private ApplicationUser? selectedRecipient;
+    private Notification notifier = default!;
+    private string transferSearchValue = "";
     private bool isSubmitting = false;
-    private bool showConfirmModal = false;
+    private LoanRequest loanRequest = new();
 
-    private enum AccountTab { Overview, Profile, Security, CloseAccount }
+    // --- ENFORCED DECIMAL LOGIC ---
+    private decimal _transferAmount;
+    private decimal transferAmount
+    {
+        get => _transferAmount;
+        set
+        {
+            var maxBalance = user?.BankAccount?.Balance ?? 0;
+            // Clamp between 0 and balance, then truncate to exactly 2 decimals
+            var clamped = Math.Clamp(value, 0, maxBalance);
+            _transferAmount = Math.Floor(clamped * 100) / 100;
+        }
+    }
+
+    private enum AccountTab { Overview, Transfer, Lending, Profile, CloseAccount }
     private AccountTab ActiveTab { get; set; } = AccountTab.Overview;
-
-    private decimal TotalBalance => user?.BankAccounts?.Sum(a => a.Balance) ?? 0;
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        await LoadData();
+        availableCurrencies = await CurrencyService.GetAvailableCurrencies();
+        if (user?.BankAccount != null) loanRequest.CurrencyTypeId = user.BankAccount.CurrencyTypeId;
+
+        using var db = DbFactory.CreateDbContext();
+        allUsers = await db.Users.Where(u => u.Id != user!.Id).ToListAsync();
+    }
+
+    private async Task LoadData()
+    {
+        using var db = DbFactory.CreateDbContext();
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId != null)
         {
-            user = await AuthService.GetCurrentApplicationUser();
-            if (user != null && user.Address == null)
-            {
-                user.Address = new Address { UserId = user.Id };
-            }
+            user = await db.Users
+                .Include(u => u.Address)
+                .Include(u => u.BankAccount).ThenInclude(a => a.CurrencyType)
+                .Include(u => u.BankAccount).ThenInclude(a => a.Transactions).ThenInclude(t => t.CurrencyType)
+                .Include(u => u.BankAccount).ThenInclude(a => a.LoanRequests).ThenInclude(l => l.CurrencyType)
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
-        catch (Exception ex)
+    }
+
+    private RenderFragment CurrentTabContent => ActiveTab switch
+    {
+        AccountTab.Overview => RenderOverview(),
+        AccountTab.Transfer => user?.BankAccount == null ? RenderNoAccountAlert("transfer") : RenderTransfer(),
+        AccountTab.Lending => user?.BankAccount == null ? RenderNoAccountAlert("loans") : RenderLending(),
+        AccountTab.Profile => RenderProfile(),
+        _ => __builder => { }
+    };
+
+    private RenderFragment RenderNavButton(AccountTab tab, string icon, string label, string extraClass = "") => __builder =>
+    {
+        var isActive = ActiveTab == tab;
+        <button class="list-group-item list-group-item-action border-0 rounded-3 py-3 mb-1 @(isActive ? "bg-dark text-white shadow" : "text-muted") @extraClass"
+                @onclick="() => ActiveTab = tab">
+            <i class="bi @icon me-3"></i> @label
+        </button>
+    };
+
+    private RenderFragment RenderNoAccountAlert(string action) => __builder =>
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-triangle display-1 text-warning mb-4"></i>
+            <h3>Account Required</h3>
+            <p class="text-muted">You need an active bank account for @action.</p>
+        </div>
+    };
+
+    private RenderFragment RenderOverview() => __builder =>
+    {
+        <h4 class="fw-bold mb-4">Vault Overview</h4>
+        @if (user?.BankAccount != null)
         {
-            // Initial load error can still use notifier once it's rendered
-            Console.WriteLine(ex.Message);
+            <div class="bg-dark text-white p-5 rounded-5 shadow-lg mb-5 position-relative overflow-hidden">
+                <div class="position-absolute top-0 end-0 p-5 opacity-10">
+                    <i class="bi bi-bank" style="font-size: 7rem;"></i>
+                </div>
+                <small class="text-white-50 text-uppercase fw-bold">Available Balance</small>
+                <h1 class="display-3 fw-bold my-2">
+                    @user.BankAccount.Balance.ToString("N2")
+                    <span class="fs-4 fw-light text-white-50">@user.BankAccount.CurrencyType?.CurrencyCode</span>
+                </h1>
+                <div class="mt-4">
+                    <button class="btn btn-primary rounded-pill px-4 py-2 fw-bold" @onclick="() => ActiveTab = AccountTab.Transfer">SEND MONEY</button>
+                </div>
+            </div>
+
+            <h5 class="fw-bold mb-4">Recent Activity</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <tbody>
+                        @foreach (var tx in user.BankAccount.Transactions.OrderByDescending(t => t.CreatedAt).Take(8))
+                        {
+                            <tr>
+                                <td style="width: 50px">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="bi @(tx.Amount < 0 ? "bi-arrow-up-right text-danger" : "bi-arrow-down-left text-success")"></i>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">@tx.Type</div>
+                                    <small class="text-muted">@tx.Note</small>
+                                </td>
+                                <td class="text-muted small">@tx.CreatedAt.ToString("MMM dd")</td>
+                                <td class="text-end fw-bold @(tx.Amount < 0 ? "text-danger" : "text-success")">
+                                    @(tx.Amount < 0 ? "-" : "+") @Math.Abs(tx.Amount).ToString("N2")
+                                    <span class="small opacity-75">@tx.CurrencyType?.CurrencyCode</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         }
+    };
+
+    private RenderFragment RenderTransfer() => __builder =>
+    {
+        <h4 class="fw-bold mb-4">Instant Transfer</h4>
+        <div class="row g-4">
+            <div class="col-md-7">
+                <div class="mb-4">
+                    <label class="small fw-bold text-muted text-uppercase mb-2">Recipient</label>
+                    <InputAutoControl TItem="ApplicationUser"
+                                      Data="allUsers"
+                                      Placeholder="Search name..."
+                                      SearchSelector="@(u => u.FullName)"
+                                      @bind-Value="transferSearchValue"
+                                      OnItemSelected="@(u => selectedRecipient = u)">
+                        <ItemTemplate Context="u">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-dark text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">@u.FullName[0]</div>
+                                <div><div class="fw-bold small">@u.FullName</div><div class="text-muted small">@@@u.UserName</div></div>
+                            </div>
+                        </ItemTemplate>
+                    </InputAutoControl>
+                </div>
+
+                @if (selectedRecipient != null)
+                {
+                    <div class="alert bg-light border-0 d-flex align-items-center mb-4 p-3 rounded-4">
+                        <div class="bg-success text-white rounded-circle p-2 me-3"><i class="bi bi-check-lg"></i></div>
+                        <div><small class="text-muted d-block">Recipient Authorized</small><span class="fw-bold">@selectedRecipient.FullName</span></div>
+                        <button class="btn btn-sm ms-auto" @onclick="() => { selectedRecipient = null; transferSearchValue = string.Empty; }"><i class="bi bi-x-circle-fill text-muted"></i></button>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="small fw-bold text-muted text-uppercase mb-2">Amount</label>
+                        <input type="number"
+                               step="0.01"
+                               max="@(user?.BankAccount?.Balance ?? 0)"
+                               class="form-control form-control-lg border-0 bg-light rounded-4 py-3"
+                               @bind="transferAmount"
+                               @bind:event="oninput"
+                               placeholder="0.00" />
+                        <div class="mt-2 d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Vault Max: @user?.BankAccount?.Balance.ToString("N2")</small>
+                            <button class="btn btn-link btn-sm p-0 text-decoration-none fw-bold" @onclick="HandleSetMax">MAX</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-dark w-100 py-3 rounded-pill fw-bold" @onclick="HandleTransfer" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        EXECUTE TRANSFER
+                    </button>
+                }
+            </div>
+        </div>
+    };
+
+    private RenderFragment RenderLending() => __builder =>
+    {
+        <h4 class="fw-bold mb-4">Credit Facilities</h4>
+        <EditForm Model="loanRequest" OnValidSubmit="HandleLoanApplication" class="row g-4">
+            <DataAnnotationsValidator />
+            <div class="col-md-6"><label class="small fw-bold text-muted">Amount</label><InputNumber @bind-Value="loanRequest.Amount" class="form-control bg-light border-0" /></div>
+            <div class="col-md-6">
+                <label class="small fw-bold text-muted">Currency</label><InputSelect @bind-Value="loanRequest.CurrencyTypeId" class="form-select bg-light border-0">
+                    @foreach (var curr in availableCurrencies)
+                    {
+                        <option value="@curr.Id">@curr.CurrencyCode</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-12"><label class="small fw-bold text-muted">Reason</label><InputTextArea @bind-Value="loanRequest.MessageFromCustomer" class="form-control bg-light border-0" rows="3" /></div>
+            <div class="col-12"><button type="submit" class="btn btn-dark px-5 py-2 rounded-pill fw-bold" disabled="@isSubmitting">APPLY</button></div>
+        </EditForm>
+    };
+
+    private RenderFragment RenderProfile() => __builder =>
+    {
+        <h4 class="fw-bold mb-4">Profile Settings</h4>
+        <div class="row g-3">
+            <div class="col-md-6"><label class="small fw-bold text-muted">Full Name</label><input type="text" class="form-control" @bind="user!.FullName" /></div>
+            <div class="col-md-6"><label class="small fw-bold text-muted">Street</label><input type="text" class="form-control" @bind="user.Address.Street" /></div>
+            <div class="col-md-6"><label class="small fw-bold text-muted">City</label><input type="text" class="form-control" @bind="user.Address.City" /></div>
+            <div class="col-md-6"><label class="small fw-bold text-muted">Zip</label><input type="text" class="form-control" @bind="user.Address.ZipCode" /></div>
+            <div class="col-12 mt-4"><button class="btn btn-dark px-5 py-2 rounded-pill fw-bold" @onclick="HandleUpdateProfile" disabled="@isSubmitting">SAVE CHANGES</button></div>
+        </div>
+    };
+
+    // --- LOGIC ---
+
+    private void HandleSetMax()
+    {
+        if (user?.BankAccount != null)
+        {
+            transferAmount = user.BankAccount.Balance;
+        }
+    }
+
+    private async Task HandleTransfer()
+    {
+        if (user?.BankAccount == null || selectedRecipient == null || transferAmount <= 0) return;
+        isSubmitting = true;
+        var result = await TransferService.ExecuteTransferAsync(user.Id, selectedRecipient.Id, transferAmount);
+        if (result.Success)
+        {
+            notifier.Show("Success!", Notification.ToastLevel.Success);
+            await LoadData();
+            transferAmount = 0; selectedRecipient = null; transferSearchValue = string.Empty; ActiveTab = AccountTab.Overview;
+        }
+        else notifier.Show(result.Message, Notification.ToastLevel.Error);
+        isSubmitting = false;
+    }
+
+    private async Task HandleCurrencyChange(ChangeEventArgs e)
+    {
+        if (user == null || isSubmitting) return;
+        if (int.TryParse(e.Value?.ToString(), out int targetId))
+        {
+            isSubmitting = true;
+            if (await CurrencyService.UpdateAccountCurrency(user.Id, targetId)) { notifier.Show("Currency Updated", Notification.ToastLevel.Success); await LoadData(); }
+            isSubmitting = false;
+        }
+    }
+
+    private async Task HandleLoanApplication()
+    {
+        if (user?.BankAccount == null) return;
+        isSubmitting = true;
+        using var db = DbFactory.CreateDbContext();
+        loanRequest.BankAccountId = user.BankAccount.Id; loanRequest.InterestRate = 5.5m;
+        db.LoanRequests.Add(loanRequest); await db.SaveChangesAsync();
+        notifier.Show("Request Submitted.", Notification.ToastLevel.Success);
+        loanRequest = new(); isSubmitting = false; await LoadData();
     }
 
     private async Task HandleUpdateProfile()
     {
-        if (user == null) return;
         isSubmitting = true;
-
-        try
+        using var db = DbFactory.CreateDbContext();
+        var dbUser = await db.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == user!.Id);
+        if (dbUser != null)
         {
-            var result = await AuthService.UpdateUserProfile(user);
-            if (result)
-                notifier.Show("Profile updated successfully.", Notification.ToastLevel.Success);
-            else
-                notifier.Show("Update failed. Please check your details.", Notification.ToastLevel.Error);
+            dbUser.FullName = user!.FullName; dbUser.Address.Street = user.Address.Street;
+            dbUser.Address.City = user.Address.City; dbUser.Address.ZipCode = user.Address.ZipCode;
+            await db.SaveChangesAsync(); notifier.Show("Profile Saved.", Notification.ToastLevel.Success);
         }
-        catch (Exception ex)
-        {
-            notifier.Show($"Error: {ex.Message}", Notification.ToastLevel.Error);
-        }
-        finally
-        {
-            isSubmitting = false;
-        }
+        isSubmitting = false;
     }
 
-    private async Task HandleCloseAccount()
+    private async Task HandleCloseProfile()
     {
-        if (user == null || TotalBalance > 0) return;
         isSubmitting = true;
-        try
+        using var db = DbFactory.CreateDbContext();
+        var dbUser = await db.Users.Include(u => u.BankAccount).FirstOrDefaultAsync(u => u.Id == user!.Id);
+        if (dbUser != null && (dbUser.BankAccount == null || dbUser.BankAccount.Balance == 0))
         {
-            var result = await AuthService.CloseAccount(user.Id);
-            if (result)
-            {
-                await AuthService.Logout();
-                Nav.NavigateTo("/", true);
-            }
-            else
-            {
-                notifier.Show("Failed to close account.", Notification.ToastLevel.Error);
-                showConfirmModal = false;
-            }
+            db.Users.Remove(dbUser); await db.SaveChangesAsync(); Nav.NavigateTo("/", true);
         }
-        catch (Exception ex)
-        {
-            notifier.Show($"Error: {ex.Message}", Notification.ToastLevel.Error);
-            showConfirmModal = false;
-        }
-        finally
-        {
-            isSubmitting = false;
-        }
+        else { notifier.Show("Balance must be zero.", Notification.ToastLevel.Error); ActiveTab = AccountTab.Overview; }
+        isSubmitting = false;
     }
 }

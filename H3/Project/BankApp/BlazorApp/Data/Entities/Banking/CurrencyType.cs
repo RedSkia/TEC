@@ -1,16 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BankApp.Data.Entities.Market;
+namespace BankApp.Data.Entities.Banking;
 
-public class ExchangeRate
+public class CurrencyType
 {
     [Key]
     public int Id { get; set; }
 
     [Required]
-    public string CurrencyCode { get; set; } = "EUR";
+    public string CurrencyCode { get; set; } = string.Empty;
 
-    [Column(TypeName = "decimal(18,4)")]
+    [Required, Column(TypeName = "decimal(18,4)")]
     public decimal Rate { get; set; } // Sættes af Admin
 }

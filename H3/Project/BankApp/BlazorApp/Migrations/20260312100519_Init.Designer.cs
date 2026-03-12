@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorApp.Migrations
 {
     [DbContext(typeof(BankAppDbContext))]
-    [Migration("20260310105943_Init")]
+    [Migration("20260312100519_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -231,18 +231,24 @@ namespace BlazorApp.Migrations
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("CurrencyTypeId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("CurrencyTypeId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("BankAccounts");
                 });
 
-            modelBuilder.Entity("BankApp.Data.Entities.Banking.Card", b =>
+            modelBuilder.Entity("BankApp.Data.Entities.Banking.CurrencyType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -250,30 +256,36 @@ namespace BlazorApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BankAccountId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CardNumber")
+                    b.Property<string>("CurrencyCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Cvc")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<string>("ExpiryDate")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsBlocked")
-                        .HasColumnType("bit");
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(18,4)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BankAccountId");
+                    b.ToTable("CurrencyTypes");
 
-                    b.ToTable("Cards");
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CurrencyCode = "EUR",
+                            Rate = 1.0000m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CurrencyCode = "USD",
+                            Rate = 1.0800m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CurrencyCode = "DKK",
+                            Rate = 7.4500m
+                        });
                 });
 
             modelBuilder.Entity("BankApp.Data.Entities.Banking.Transaction", b =>
@@ -293,6 +305,9 @@ namespace BlazorApp.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("CurrencyTypeId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Note")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -308,10 +323,12 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("BankAccountId");
 
+                    b.HasIndex("CurrencyTypeId");
+
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("BankApp.Data.Entities.Market.ExchangeRate", b =>
+            modelBuilder.Entity("BankApp.Data.Entities.Lending.LoanRequest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -319,16 +336,47 @@ namespace BlazorApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CurrencyCode")
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("AssignedOfficerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("BankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CurrencyTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("InterestRate")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("MessageFromCustomer")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,4)");
+                    b.Property<string>("RequestReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResponseFromOfficer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ExchangeRates");
+                    b.HasIndex("AssignedOfficerId");
+
+                    b.HasIndex("BankAccountId");
+
+                    b.HasIndex("CurrencyTypeId");
+
+                    b.ToTable("LoanRequests");
                 });
 
             modelBuilder.Entity("BankApp.Data.Entities.Market.Investment", b =>
@@ -380,52 +428,6 @@ namespace BlazorApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Stocks");
-                });
-
-            modelBuilder.Entity("LoanRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("AssignedOfficerId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("BankAccountId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("InterestRate")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<string>("MessageFromCustomer")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestReference")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResponseFromOfficer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssignedOfficerId");
-
-                    b.HasIndex("BankAccountId");
-
-                    b.ToTable("LoanRequests");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -558,24 +560,21 @@ namespace BlazorApp.Migrations
 
             modelBuilder.Entity("BankApp.Data.Entities.Banking.BankAccount", b =>
                 {
-                    b.HasOne("BankApp.Data.Entities.Auth.ApplicationUser", "User")
-                        .WithMany("BankAccounts")
-                        .HasForeignKey("UserId")
+                    b.HasOne("BankApp.Data.Entities.Banking.CurrencyType", "CurrencyType")
+                        .WithMany()
+                        .HasForeignKey("CurrencyTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("BankApp.Data.Entities.Auth.ApplicationUser", "User")
+                        .WithOne("BankAccount")
+                        .HasForeignKey("BankApp.Data.Entities.Banking.BankAccount", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CurrencyType");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("BankApp.Data.Entities.Banking.Card", b =>
-                {
-                    b.HasOne("BankApp.Data.Entities.Banking.BankAccount", "BankAccount")
-                        .WithMany("Cards")
-                        .HasForeignKey("BankAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BankAccount");
                 });
 
             modelBuilder.Entity("BankApp.Data.Entities.Banking.Transaction", b =>
@@ -586,7 +585,40 @@ namespace BlazorApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BankApp.Data.Entities.Banking.CurrencyType", "CurrencyType")
+                        .WithMany()
+                        .HasForeignKey("CurrencyTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("BankAccount");
+
+                    b.Navigation("CurrencyType");
+                });
+
+            modelBuilder.Entity("BankApp.Data.Entities.Lending.LoanRequest", b =>
+                {
+                    b.HasOne("BankApp.Data.Entities.Auth.ApplicationUser", "AssignedOfficer")
+                        .WithMany()
+                        .HasForeignKey("AssignedOfficerId");
+
+                    b.HasOne("BankApp.Data.Entities.Banking.BankAccount", "BankAccount")
+                        .WithMany("LoanRequests")
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BankApp.Data.Entities.Banking.CurrencyType", "CurrencyType")
+                        .WithMany()
+                        .HasForeignKey("CurrencyTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AssignedOfficer");
+
+                    b.Navigation("BankAccount");
+
+                    b.Navigation("CurrencyType");
                 });
 
             modelBuilder.Entity("BankApp.Data.Entities.Market.Investment", b =>
@@ -600,30 +632,12 @@ namespace BlazorApp.Migrations
                     b.HasOne("BankApp.Data.Entities.Market.Stock", "Stock")
                         .WithMany()
                         .HasForeignKey("StockId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("BankAccount");
 
                     b.Navigation("Stock");
-                });
-
-            modelBuilder.Entity("LoanRequest", b =>
-                {
-                    b.HasOne("BankApp.Data.Entities.Auth.ApplicationUser", "AssignedOfficer")
-                        .WithMany()
-                        .HasForeignKey("AssignedOfficerId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("BankApp.Data.Entities.Banking.BankAccount", "BankAccount")
-                        .WithMany("LoanRequests")
-                        .HasForeignKey("BankAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AssignedOfficer");
-
-                    b.Navigation("BankAccount");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -682,15 +696,14 @@ namespace BlazorApp.Migrations
                     b.Navigation("Address")
                         .IsRequired();
 
-                    b.Navigation("BankAccounts");
+                    b.Navigation("BankAccount")
+                        .IsRequired();
 
                     b.Navigation("LoginActivities");
                 });
 
             modelBuilder.Entity("BankApp.Data.Entities.Banking.BankAccount", b =>
                 {
-                    b.Navigation("Cards");
-
                     b.Navigation("Investments");
 
                     b.Navigation("LoanRequests");

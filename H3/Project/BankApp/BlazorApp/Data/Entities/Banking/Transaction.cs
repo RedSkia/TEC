@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BankApp.Data.Entities.Banking;
@@ -27,4 +25,10 @@ public class Transaction
 
     [ForeignKey(nameof(BankAccountId))]
     public virtual BankAccount BankAccount { get; set; } = null!;
+
+    [Required]
+    public int CurrencyTypeId { get; set; }
+
+    [ForeignKey(nameof(CurrencyTypeId))]
+    public virtual CurrencyType CurrencyType { get; set; } = null!;
 }

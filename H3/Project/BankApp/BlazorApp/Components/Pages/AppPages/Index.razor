@@ -156,8 +156,6 @@
 
     private ApplicationUser GetMockUser() => new ApplicationUser {
         FullName = "Alexander Standard",
-        BankAccounts = new List<BankAccount> {
-            new BankAccount { AccountNumber = "CH-9911", Balance = 12450.00m }
-        }
+        BankAccount = new BankAccount { AccountNumber = "CH-9911", Balance = 12450.00m }
     };
 }
