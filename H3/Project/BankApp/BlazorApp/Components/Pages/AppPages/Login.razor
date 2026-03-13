@@ -6,7 +6,7 @@
 @inject NavigationManager Nav
 @rendermode InteractiveServer
 
-<div class="auth-container d-flex align-items-center justify-content-center min-vh-100 bg-black">
+<div class="auth-container d-flex align-items-center justify-content-center min-vh-100">
     <div style="width: 100%; max-width: 400px;">
 
         <InputForm TItem="string"
@@ -15,42 +15,45 @@
                    ButtonText="LOGIN"
                    LoadingText="AUTHENTICATING..."
                    IsLoading="busy"
-                   ButtonClass="btn-outline-danger border-2 fw-bold"
+                   ButtonClass="btn-outline-danger border-2 fw-bold rounded-0"
                    FormName="login-form"
-                   Class="bg-dark border border-secondary border-opacity-50 rounded-0 shadow-lg">
+                   Class="bg-dark bg-opacity-75 border border-secondary border-opacity-25 rounded-0 shadow-lg p-4"
+                   style="backdrop-filter: blur(10px);">
 
             <HeaderContent>
                 <div class="text-center mb-4">
-                    <h4 class="fw-bold text-white mb-1">
-                        USER <span class="text-danger">LOGIN</span>
+                    <h4 class="fw-bold text-white mb-1" style="letter-spacing: -1px;">
+                        USER <span class="text-danger">LOGIN.</span>
                     </h4>
-                    <p class="text-muted small text-uppercase mb-0" style="letter-spacing: 2px;">
+                    <p class="text-secondary small text-uppercase mb-0" style="letter-spacing: 2px; font-size: 0.65rem;">
                         Secure Access Portal
                     </p>
                 </div>
 
                 @if (error != null)
                 {
-                    <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small rounded-0 mb-4 py-2">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @error
+                    <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small rounded-0 mb-4 py-2 fw-bold text-uppercase text-center">
+                        <i class="bi bi-shield-lock-fill me-2"></i> @error
                     </div>
                 }
             </HeaderContent>
 
             <ChildContent>
                 <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold text-uppercase">Username</label>
+                    <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Username</label>
                     <InputText @bind-Value="username"
-                               class="form-control bg-black border-secondary text-info rounded-0 shadow-none"
+                               class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
+                               style="border-left: 3px solid #dc3545;"
                                placeholder="Enter Username"
                                autocomplete="username" />
                 </div>
 
-                <div class="mb-2">
-                    <label class="form-label text-muted small fw-bold text-uppercase">Password</label>
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Password</label>
                     <InputText @bind-Value="password"
                                type="password"
-                               class="form-control bg-black border-secondary text-info rounded-0 shadow-none"
+                               class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
+                               style="border-left: 3px solid #dc3545;"
                                placeholder="••••••••"
                                autocomplete="current-password" />
                 </div>
@@ -59,19 +62,39 @@
         </InputForm>
 
         <div class="d-flex justify-content-between mt-3 px-1">
-            @* NavLink prevents full page reload *@
-            <NavLink href="login/register" class="link-secondary text-decoration-none small fw-bold text-uppercase" style="font-size: 0.7rem;">
+            <NavLink href="login/register" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
                 <i class="bi bi-person-plus me-1"></i>Create Account
             </NavLink>
 
-            <NavLink href="login/reset" class="link-secondary text-decoration-none small fw-bold text-uppercase" style="font-size: 0.7rem;">
+            <NavLink href="login/reset" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
                 <i class="bi bi-shield-lock me-1"></i>Forgot Password?
             </NavLink>
         </div>
     </div>
 </div>
 
+<style>
+    /* Clean overrides for the new look */
+    .form-control:focus {
+        background-color: #000 !important;
+        border-color: #dc3545 !important;
+        color: #fff !important;
+    }
+
+    .form-control::placeholder {
+        color: #444 !important;
+        font-size: 0.8rem;
+    }
+
+    .hover-danger:hover {
+        color: #dc3545 !important;
+        transition: 0.2s ease;
+    }
+</style>
+
 @code {
+    [CascadingParameter] public Notification? Toast { get; set; }
+
     private string username = "";
     private string password = "";
     private bool busy;
@@ -82,6 +105,7 @@
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
             error = "CREDENTIALS REQUIRED";
+            Toast?.Show(error, Notification.ToastLevel.Warning);
             return;
         }
 
@@ -94,16 +118,19 @@
 
             if (!string.IsNullOrEmpty(token))
             {
+                Toast?.Show($"Welcome, {username}. Access Granted.", Notification.ToastLevel.Success);
                 Nav.NavigateTo("/");
             }
             else
             {
                 error = "INVALID CREDENTIALS";
+                Toast?.Show(error, Notification.ToastLevel.Error);
             }
         }
         catch (Exception)
         {
             error = "CONNECTION ERROR";
+            Toast?.Show("System Offline: Server connection failed.", Notification.ToastLevel.Error);
         }
         finally
         {

@@ -3,19 +3,24 @@
 <div class="toast-container position-fixed p-3 d-flex @GetContainerClasses()" style="z-index: 9999; gap: 0.75rem;">
     @foreach (var toast in GetOrderedToasts())
     {
-        <div class="toast show border-0 shadow-sm" role="alert"
+        <div class="toast show border border-secondary border-opacity-25 shadow-lg" role="alert"
              @onmouseenter="() => toast.IsHovered = true"
              @onmouseleave="() => toast.IsHovered = false"
-             style="transition: all 0.3s ease;">
-            <div class="toast-header @GetBg(toast.Level) text-white border-0 d-flex align-items-center">
-                <i class="@GetIcon(toast.Level) me-2"></i>
-                <strong class="me-auto">@toast.Level</strong>
-                <button type="button" class="btn-close btn-close-white ms-2" @onclick="() => Remove(toast.Id)"></button>
+             style="transition: all 0.3s ease; background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(10px); min-width: 300px; border-radius: 0;">
+
+            <div class="toast-header @GetBg(toast.Level) text-white border-0 d-flex align-items-center py-2" style="border-radius: 0;">
+                <i class="bi @GetIcon(toast.Level) me-2"></i>
+                <strong class="me-auto small fw-bold text-uppercase" style="letter-spacing: 1px;">@toast.Level</strong>
+                <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.6rem;" @onclick="() => Remove(toast.Id)"></button>
             </div>
-            <div class="toast-body bg-white py-3">@toast.Message</div>
-            <div class="progress" style="height: 3px; background: #eee; border-radius: 0;">
+
+            <div class="toast-body text-white py-3 small fw-medium">
+                @toast.Message
+            </div>
+
+            <div class="progress" style="height: 2px; background: rgba(255,255,255,0.1); border-radius: 0;">
                 <div class="progress-bar @GetBg(toast.Level)"
-                     style="width: @(toast.Progress)%; transition: width 0.1s linear;"></div>
+                     style="width: @(toast.Progress)%; transition: width 0.1s linear; box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);"></div>
             </div>
         </div>
     }
@@ -79,7 +84,6 @@
     private void Stop() { _timer?.Dispose(); _timer = null; }
     public void Dispose() => Stop();
 
-    // Stack management: Newest on top for Bottom docks, newest on bottom for Top docks
     private IEnumerable<ToastMessage> GetOrderedToasts() =>
         Location == DockLocation.BottomRight || Location == DockLocation.BottomLeft
         ? Toasts.AsEnumerable().Reverse()
@@ -90,7 +94,7 @@
         DockLocation.TopLeft => "top-0 start-0 flex-column",
         DockLocation.BottomRight => "bottom-0 end-0 flex-column-reverse",
         DockLocation.BottomLeft => "bottom-0 start-0 flex-column-reverse",
-        _ => "top-0 end-0 flex-column" // TopRight
+        _ => "top-0 end-0 flex-column"
     };
 
     private string GetBg(ToastLevel l) => l switch
@@ -98,14 +102,14 @@
         ToastLevel.Success => "bg-success",
         ToastLevel.Error => "bg-danger",
         ToastLevel.Warning => "bg-warning",
-        _ => "bg-dark"
+        _ => "bg-danger" // Using Danger for Redskia theme brand consistency
     };
 
     private string GetIcon(ToastLevel l) => l switch
     {
-        ToastLevel.Success => "bi-check-circle",
-        ToastLevel.Error => "bi-x-circle",
-        ToastLevel.Warning => "bi-exclamation-triangle",
-        _ => "bi-info-circle"
+        ToastLevel.Success => "bi-check-lg",
+        ToastLevel.Error => "bi-shield-lock-fill",
+        ToastLevel.Warning => "bi-exclamation-octagon-fill",
+        _ => "bi-info-square-fill"
     };
 }

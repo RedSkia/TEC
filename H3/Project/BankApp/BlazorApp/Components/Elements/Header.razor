@@ -33,34 +33,37 @@
             <div class="d-flex flex-column flex-lg-row gap-3 align-items-center py-3 py-lg-0 border-top border-white border-opacity-10 border-top-lg-0">
                 <AuthorizeView>
                     <Authorized>
-                        <div class="d-flex flex-column flex-lg-row align-items-center gap-3 ps-lg-3">
+                        @if (currentUser != null)
+                        {
+                            <div class="d-flex flex-column flex-lg-row align-items-center gap-3 ps-lg-3">
+                                <div class="d-flex align-items-center gap-3 order-1 order-lg-0 border border-white border-opacity-10 rounded-3 p-2 transition-base"
+                                     role="button"
+                                     @onclick='() => Nav.NavigateTo("/account")'>
 
-                            @* --- PROFILE LINK (MODIFIED) --- *@
-                            @* role="button" adds the pointer cursor via Bootstrap *@
-                            <div class="d-flex align-items-center gap-3 order-1 order-lg-0 border border-white border-opacity-10 rounded-3 p-2 transition-base"
-                                 role="button"
-                                 @onclick='() => Nav.NavigateTo("/account")'>
+                                    <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm border border-white border-opacity-25"
+                                         style="width: 42px; height: 42px; background-color: @(currentRole?.RoleColor ?? "#c80000"); flex-shrink: 0;">
+                                        @GetInitials(currentUser?.FullName)
+                                    </div>
 
-                                @* Avatar Circle *@
-                                <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm border border-white border-opacity-25"
-                                     style="width: 42px; height: 42px; background-color: @(currentRole?.RoleColor ?? "#c80000"); flex-shrink: 0;">
-                                    @GetInitials(currentUser?.FullName)
+                                    <div class="text-center text-lg-end">
+                                        <div class="text-white fw-bold lh-1 mb-1" style="font-size: 0.9rem;">@currentUser?.FullName</div>
+                                        <span class="badge rounded-pill fw-bolder px-2 py-1"
+                                              style="background-color: @(currentRole?.RoleColor ?? "#808080")33; color: @(currentRole?.RoleColor ?? "#808080"); border: 1px solid @(currentRole?.RoleColor ?? "#808080")66; font-size: 0.6rem;">
+                                            @(currentRole?.Name?.ToUpper() ?? "CLIENT")
+                                        </span>
+                                    </div>
                                 </div>
 
-                                @* Info Text *@
-                                <div class="text-center text-lg-end">
-                                    <div class="text-white fw-bold lh-1 mb-1" style="font-size: 0.9rem;">@currentUser?.FullName</div>
-                                    <span class="badge rounded-pill fw-bolder px-2 py-1"
-                                          style="background-color: @(currentRole?.RoleColor ?? "#808080")33; color: @(currentRole?.RoleColor ?? "#808080"); border: 1px solid @(currentRole?.RoleColor ?? "#808080")66; font-size: 0.6rem;">
-                                        @(currentRole?.Name?.ToUpper() ?? "CLIENT")
-                                    </span>
-                                </div>
+                                <button class="btn btn-outline-danger btn-sm rounded-pill px-4 py-2 py-lg-1 order-0 order-lg-1 w-100 w-lg-auto fw-bold" @onclick="HandleLogout">
+                                    LOGOUT
+                                </button>
                             </div>
-
-                            <button class="btn btn-outline-danger btn-sm rounded-pill px-4 py-2 py-lg-1 order-0 order-lg-1 w-100 w-lg-auto fw-bold" @onclick="HandleLogout">
-                                LOGOUT
-                            </button>
-                        </div>
+                        }
+                        else
+                        {
+                            @* Fallback if token is valid but user is gone from DB *@
+                            <button class="btn btn-outline-danger btn-sm fw-bold" @onclick="HandleLogout">SESSION EXPIRED - LOGOUT</button>
+                        }
                     </Authorized>
 
                     <NotAuthorized>

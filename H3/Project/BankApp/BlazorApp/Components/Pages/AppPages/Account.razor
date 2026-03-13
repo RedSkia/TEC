@@ -14,6 +14,7 @@
 @inject IDbContextFactory<BankAppDbContext> DbFactory
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
+@inject IAuthService AuthService
 @inject ICurrencyService CurrencyService
 @inject ITransferService TransferService
 @inject ILendingService LendingService
@@ -502,16 +503,23 @@
         }
     }
 
+    // In code.cs (HandleCloseProfile)
     private async Task HandleCloseProfile()
     {
         isSubmitting = true;
-        using var db = DbFactory.CreateDbContext();
-        var dbUser = await db.Users.FindAsync(user!.Id);
-        if (dbUser != null)
+
+        // Call the centralized service instead of manual DB removal
+        var success = await AuthService.CloseAccount(user!.Id);
+
+        if (success)
         {
-            db.Users.Remove(dbUser);
-            await db.SaveChangesAsync();
-            Nav.NavigateTo("/logout", forceLoad: true);
+            // Force a full reload to the index to ensure the UI resets completely
+            Nav.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            notifier.Show("Error closing account.", Notification.ToastLevel.Error);
+            isSubmitting = false;
         }
     }
 

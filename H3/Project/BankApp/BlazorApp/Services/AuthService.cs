@@ -79,6 +79,8 @@ public class AuthService(
         return null;
     }
 
+
+
     public async Task<bool> UpdateUserProfile(ApplicationUser updatedUser)
     {
         using var db = await dbFactory.CreateDbContextAsync();
@@ -100,15 +102,43 @@ public class AuthService(
     public async Task<bool> CloseAccount(string userId)
     {
         using var db = await dbFactory.CreateDbContextAsync();
-        // Removed .Include(u => u.BankAccount) - fetching just the balance check via projection or direct lookup is cleaner
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        // 1. Fetch user and their account
+        var user = await db.Users
+            .Include(u => u.Address)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
         var account = await db.BankAccounts.FirstOrDefaultAsync(a => a.UserId == userId);
 
-        if (user == null || (account != null && account.Balance > 0)) return false;
+        // 2. Updated Validation: 
+        // Fail if user doesn't exist OR if they still have money in the bank
+        if (user == null || account == null)
+        {
+            return false;
+        }
 
+        // 3. Remove related data first if necessary (or rely on Cascade Delete)
+        // If your DB isn't set to Cascade Delete, manually remove the account:
+        if (account != null)
+        {
+            db.BankAccounts.Remove(account);
+        }
+
+        // 4. Remove from Database
         db.Users.Remove(user);
-        return await db.SaveChangesAsync() > 0;
+
+        var result = await db.SaveChangesAsync() > 0;
+
+        // 5. Revoke session on success
+        if (result)
+        {
+            await Logout();
+        }
+
+        return result;
     }
+
+
 
     public async Task<List<ApplicationUser>> SearchUsers(string query)
     {

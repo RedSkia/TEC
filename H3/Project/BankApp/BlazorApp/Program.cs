@@ -68,6 +68,7 @@ builder.Services.AddScoped<IRouteNavigator, RouteNavigator>();
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 builder.Services.AddScoped<ILendingService, LendingService>();
 builder.Services.AddScoped<ITransferService, TransferService>();
+builder.Services.AddScoped<IStockService, StockService>();
 
 builder.Services.AddScoped<JwtAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
