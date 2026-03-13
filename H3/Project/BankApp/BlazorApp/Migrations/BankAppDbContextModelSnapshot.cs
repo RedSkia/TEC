@@ -427,6 +427,30 @@ namespace BlazorApp.Migrations
                     b.ToTable("Stocks");
                 });
 
+            modelBuilder.Entity("BankApp.Data.Entities.Market.StockHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("StockId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StockId");
+
+                    b.ToTable("StockHistory");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
@@ -637,6 +661,17 @@ namespace BlazorApp.Migrations
                     b.Navigation("Stock");
                 });
 
+            modelBuilder.Entity("BankApp.Data.Entities.Market.StockHistory", b =>
+                {
+                    b.HasOne("BankApp.Data.Entities.Market.Stock", "Stock")
+                        .WithMany("Histories")
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Stock");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("BankApp.Data.Entities.Auth.ApplicationRole", null)
@@ -706,6 +741,11 @@ namespace BlazorApp.Migrations
                     b.Navigation("LoanRequests");
 
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("BankApp.Data.Entities.Market.Stock", b =>
+                {
+                    b.Navigation("Histories");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,12 +1,92 @@
 ﻿@using BlazorApp.Components.Elements
 @inherits LayoutComponentBase
 
-<div class="d-flex flex-column min-vh-100 bg-black">
-    <Header />
+<div class="min-vh-100 bg-black overflow-hidden" style="font-family: 'Inter', sans-serif; color: #f8f9fa;">
 
-    <main class="flex-grow-1 text-white position-relative">
-        @Body
+    @* --- INSTITUTIONAL ATMOSPHERE --- *@
+    <div class="position-fixed w-100 h-100 z-0">
+        <div class="position-absolute top-0 end-0 w-75 h-75 opacity-20"
+             style="background: radial-gradient(circle at 80% 0%, #dc3545 0%, transparent 60%); filter: blur(150px);"></div>
+
+        <div class="position-absolute inset-0 opacity-5"
+             style="background-image: linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px); background-size: 100px 100px;"></div>
+    </div>
+
+    @* --- GLOBAL NOTIFICATION LAYER --- *@
+    <Notification @ref="_notification" />
+
+    @* --- NAVIGATION --- *@
+    <div class="sticky-top z-3 backdrop-blur-xl border-bottom border-secondary border-opacity-10">
+        <Header />
+        <div class="laser-line"></div>
+    </div>
+
+    @* --- MAIN VIEWPORT --- *@
+    <main class="position-relative z-2">
+        <div class="page-content container-fluid px-lg-5">
+            @* Pass the notification instance down to all pages *@
+            <CascadingValue Value="_notification">
+                @Body
+            </CascadingValue>
+        </div>
     </main>
 
-    <Footer />
+    @* --- FOOTER --- *@
+    <div class="position-relative z-2 bg-black py-5">
+        <div class="laser-line position-absolute top-0"></div>
+        <Footer />
+    </div>
 </div>
+
+@code {
+    private Notification? _notification;
+}
+
+<style>
+    .inset-0 {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+
+    .laser-line {
+        height: 1px;
+        width: 100%;
+        background: linear-gradient(90deg, transparent 0%, rgba(220, 53, 69, 0.1) 10%, rgba(220, 53, 69, 1) 50%, rgba(220, 53, 69, 0.1) 90%, transparent 100%);
+        box-shadow: 0px 0px 15px rgba(220, 53, 69, 0.4);
+        opacity: 0.8;
+    }
+
+    .backdrop-blur-xl {
+        backdrop-filter: blur(30px) saturate(200%);
+        background: rgba(0,0,0,0.85) !important;
+    }
+
+    .page-content {
+        padding-top: 3rem;
+        padding-bottom: 5rem;
+    }
+
+    ::selection {
+        background: #dc3545;
+        color: white;
+    }
+
+    ::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #000;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 0px;
+    }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #dc3545;
+        }
+</style>

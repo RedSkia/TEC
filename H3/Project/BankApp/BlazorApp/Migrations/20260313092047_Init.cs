@@ -263,6 +263,27 @@ namespace BlazorApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StockHistory",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StockId = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StockHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StockHistory_Stocks_StockId",
+                        column: x => x.StockId,
+                        principalTable: "Stocks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Investments",
                 columns: table => new
                 {
@@ -466,6 +487,11 @@ namespace BlazorApp.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StockHistory_StockId",
+                table: "StockHistory",
+                column: "StockId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_BankAccountId",
                 table: "Transactions",
                 column: "BankAccountId");
@@ -505,6 +531,9 @@ namespace BlazorApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "LoginActivities");
+
+            migrationBuilder.DropTable(
+                name: "StockHistory");
 
             migrationBuilder.DropTable(
                 name: "Transactions");

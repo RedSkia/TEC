@@ -18,4 +18,6 @@ public class Stock
     [Column(TypeName = "decimal(18,2)")]
     [Range(0.01, 1000000)]
     public decimal CurrentPrice { get; set; }
+
+    public virtual ICollection<StockHistory> Histories { get; set; } = new List<StockHistory>();
 }

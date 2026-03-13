@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using BankApp.Data.Entities.Market;
 
 namespace BankApp.Data;
 
@@ -15,6 +16,7 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<CurrencyType> CurrencyTypes { get; set; }
     public DbSet<Investment> Investments { get; set; }
     public DbSet<Stock> Stocks { get; set; }
+    public DbSet<StockHistory> StockHistory { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -34,24 +36,28 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         );
 
         // 2. THE "EAGER EVERYTHING" AUTO-INCLUDE ENGINE
-        // When you query ApplicationUser...
         builder.Entity<ApplicationUser>().Navigation(u => u.Address).AutoInclude();
         builder.Entity<ApplicationUser>().Navigation(u => u.BankAccount).AutoInclude();
 
-        // When BankAccount is loaded...
         builder.Entity<BankAccount>().Navigation(b => b.CurrencyType).AutoInclude();
         builder.Entity<BankAccount>().Navigation(b => b.Transactions).AutoInclude();
         builder.Entity<BankAccount>().Navigation(b => b.LoanRequests).AutoInclude();
         builder.Entity<BankAccount>().Navigation(b => b.Investments).AutoInclude();
 
-        // When Transactions or Loans are loaded...
         builder.Entity<Transaction>().Navigation(t => t.CurrencyType).AutoInclude();
         builder.Entity<LoanRequest>().Navigation(l => l.CurrencyType).AutoInclude();
 
-        // When Investments are loaded...
         builder.Entity<Investment>().Navigation(i => i.Stock).AutoInclude();
 
         // 3. RELATIONSHIP CONSTRAINTS
+
+        // Stock -> History (One-to-Many)
+        builder.Entity<StockHistory>()
+            .HasOne(sh => sh.Stock)
+            .WithMany(s => s.Histories)
+            .HasForeignKey(sh => sh.StockId)
+            .OnDelete(DeleteBehavior.Cascade); // Delete history if stock is removed
+
         builder.Entity<Address>()
             .HasOne(a => a.User)
             .WithOne(u => u.Address)

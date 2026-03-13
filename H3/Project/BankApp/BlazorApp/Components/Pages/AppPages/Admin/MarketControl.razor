@@ -1,0 +1,128 @@
+﻿@page "/admin/market"
+@using BankApp.Services
+@using BankApp.Data.Entities.Market
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using System.Globalization
+@inject StockService StockService
+@inject IDbContextFactory<BankApp.Data.BankAppDbContext> DbFactory
+@attribute [Authorize(Roles = "Admin")]
+
+<div class="container-fluid py-5 px-lg-5">
+    @* --- HEADER --- *@
+    <div class="d-flex justify-content-between align-items-start mb-5 pb-4 border-bottom border-white border-opacity-10">
+        <div>
+            <h1 class="display-3 fw-black text-white" style="letter-spacing: -4px;">MARKET <span class="text-danger">CORE.</span></h1>
+            <p class="text-secondary text-uppercase fw-bold small" style="letter-spacing: 2px;">Manual Asset Price Override & Simulation</p>
+        </div>
+        <div class="text-end">
+            <button @onclick="SimulateStep" class="btn btn-outline-danger rounded-0 px-4 py-2 fw-black shadow-sm">
+                TRIGGER GLOBAL VOLATILITY
+            </button>
+            @if (isUpdating)
+            {
+                <small class="d-block text-danger mt-2 animate-pulse">WRITING TO LEDGER...</small>
+            }
+        </div>
+    </div>
+
+    @* --- MARKET GRID --- *@
+    <div class="row g-4">
+        @foreach (var stock in stocks)
+        {
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="bg-black border border-white border-opacity-10 p-4 position-relative overflow-hidden h-100">
+                    @* Subtle Ticker Background *@
+                    <div class="position-absolute top-0 end-0 p-2 opacity-10 fw-black display-6" style="pointer-events: none;">
+                        @stock.Ticker
+                    </div>
+
+                    <div class="mb-4">
+                        <span class="text-danger fw-black small text-uppercase" style="letter-spacing: 1px;">@stock.Name</span>
+                        <div class="h2 fw-black text-white mt-1">$@stock.CurrentPrice.ToString("N2")</div>
+                    </div>
+
+                    <label class="text-secondary small fw-bold mb-2">MANUAL OVERRIDE</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-white border-opacity-10 text-secondary border-end-0">$</span>
+                        <input type="number" step="0.01"
+                               class="form-control bg-transparent border-white border-opacity-10 text-white fw-bold border-start-0 border-end-0"
+                               @bind="manipulateValues[stock.Id]" />
+                        <button class="btn btn-danger rounded-0 px-3" @onclick="() => SetPrice(stock.Id)">
+                            <i class="bi bi-check-lg">SET</i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Stock> stocks = new();
+    private Dictionary<int, decimal> manipulateValues = new();
+    private bool isUpdating = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        using var db = await DbFactory.CreateDbContextAsync();
+        stocks = await db.Stocks.OrderBy(s => s.Ticker).ToListAsync();
+        foreach (var s in stocks)
+        {
+            if (!manipulateValues.ContainsKey(s.Id))
+                manipulateValues[s.Id] = s.CurrentPrice;
+        }
+    }
+
+    private async Task SimulateStep()
+    {
+        isUpdating = true;
+        await StockService.UpdateMarketPricesAsync();
+        await LoadData();
+        isUpdating = false;
+    }
+
+    private async Task SetPrice(int id)
+    {
+        isUpdating = true;
+        await StockService.AdminAdjustPriceAsync(id, manipulateValues[id]);
+        await LoadData();
+        isUpdating = false;
+    }
+}
+
+<style>
+    .fw-black {
+        font-weight: 900 !important;
+    }
+
+    .form-control:focus {
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        border-color: rgba(220, 53, 69, 0.5) !important;
+        color: white;
+        box-shadow: none;
+    }
+
+    .animate-pulse {
+        animation: pulse 1.5s infinite;
+    }
+
+    @@keyframes pulse {
+        0% {
+            opacity: 0.4;
+        }
+
+        50% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0.4;
+        }
+    }
+</style>
