@@ -1,4 +1,4 @@
-﻿@attribute [Route(AppRoutes.Market)]
+﻿@page "/market"
 @using BankApp.Data.Entities.Auth
 @using BankApp.Data.Entities.Market
 @using BankApp.Data.Entities.Banking
@@ -6,196 +6,408 @@
 @using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
 @inject IAuthService AuthService
-@inject BankApp.Data.BankAppDbContext DbContext
+@inject IStockService StockService
+@inject IDbContextFactory<BankApp.Data.BankAppDbContext> DbFactory
 @inject IJSRuntime JS
+@implements IDisposable
 
-<div class="container-fluid bg-dark min-vh-100 text-white py-4">
-    <div class="container">
-        @if (user == null || availableStocks == null)
-        {
-            <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
-                <div class="spinner-border text-primary" role="status"></div>
-            </div>
-        }
-        else
-        {
-            <div class="row g-3">
-                @* --- 1. WATCHLIST (LEFT) --- *@
-                <div class="col-lg-3">
-                    <div class="card bg-secondary bg-opacity-10 border-secondary h-100">
-                        <div class="card-header border-secondary bg-transparent">
-                            <h6 class="mb-0 fw-bold"><i class="bi bi-list-ul me-2"></i>Market Watch</h6>
-                        </div>
-                        <div class="list-group list-group-flush overflow-auto" style="max-height: 700px;">
-                            @foreach (var stock in availableStocks)
-                            {
-                                <button @onclick="() => SelectStock(stock)"
-                                        class="list-group-item list-group-item-action bg-transparent text-white border-secondary @(selectedStock?.Id == stock.Id ? "bg-primary bg-opacity-25" : "")">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="fw-bold">@stock.Ticker</div>
-                                            <small class="text-muted">@stock.Name</small>
+<div class="container-fluid py-4 bg-black min-vh-100">
+    @if (availableStocks == null)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+            <div class="spinner-grow text-danger" role="status"></div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @* --- 1. WATCHLIST --- *@
+            <div class="col-xl-3 col-lg-4">
+                <div class="glass-panel p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-danger fw-black small text-uppercase m-0 tracking-wider">Market Terminal</h6>
+                        <span class="badge bg-danger pulse-red">LIVE</span>
+                    </div>
+
+                    @* SEARCH BAR *@
+                    <div class="search-box mb-3">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" @bind="searchTerm" @bind:event="oninput"
+                               class="form-control search-input" placeholder="Search Ticker..." />
+                    </div>
+
+                    <div class="list-group list-group-flush custom-scroll" style="max-height: 70vh; overflow-y: auto;">
+                        @foreach (var stock in FilteredStocks)
+                        {
+                            var trend = GetTrend(stock);
+                            <button @onclick="() => SelectStock(stock)"
+                                    class="stock-card @(selectedStock?.Id == stock.Id ? "active" : "")">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <div>
+                                        <div class="fw-black text-white m-0">@stock.Ticker</div>
+                                        <div class="text-secondary small-caps">@stock.Name</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold @(trend >= 0 ? "text-success" : "text-danger")">
+                                            $@stock.CurrentPrice.ToString("N2")
+                                            <i class="bi @(trend >= 0 ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
                                         </div>
-                                        <div class="text-end">
-                                            <div class="fw-bold">@stock.CurrentPrice.ToString("N2")</div>
-                                            <small class="text-success small">+0.5%</small>
+                                        <div class="small @(trend >= 0 ? "text-success" : "text-danger")" style="font-size: 0.7rem;">
+                                            @(trend >= 0 ? "+" : "")@trend.ToString("F2")%
                                         </div>
                                     </div>
-                                </button>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                @* --- 2. CHART & DATA (CENTER) --- *@
-                <div class="col-lg-6">
-                    <div class="card bg-secondary bg-opacity-10 border-secondary mb-3">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div>
-                                    <h3 class="mb-0 fw-bold">@selectedStock?.Ticker <span class="fs-6 fw-light text-muted">/ USD</span></h3>
-                                    <h4 class="text-success fw-bold mb-0">@selectedStock?.CurrentPrice.ToString("C2")</h4>
                                 </div>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-secondary active">1D</button>
-                                    <button class="btn btn-outline-secondary">1W</button>
-                                    <button class="btn btn-outline-secondary">1M</button>
-                                </div>
-                            </div>
-
-                            @* Chart Placeholder *@
-                            <div style="height: 350px; background: linear-gradient(to bottom, #1e1e1e, #121212); position: relative;" class="rounded border border-secondary d-flex align-items-center justify-content-center">
-                                <canvas id="stockChart"></canvas>
-                                @if (selectedStock == null)
-                                {
-                                    <div class="text-muted">Select a stock to view performance</div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-
-                    @* STATS GRID *@
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <div class="card bg-secondary bg-opacity-10 border-secondary p-3 text-center">
-                                <small class="text-muted d-block">Market Cap</small>
-                                <span class="fw-bold">2.8T</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="card bg-secondary bg-opacity-10 border-secondary p-3 text-center">
-                                <small class="text-muted d-block">P/E Ratio</small>
-                                <span class="fw-bold">28.4</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="card bg-secondary bg-opacity-10 border-secondary p-3 text-center">
-                                <small class="text-muted d-block">Dividend</small>
-                                <span class="fw-bold">0.65%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                @* --- 3. EXECUTION PANEL (RIGHT) --- *@
-                <div class="col-lg-3">
-                    <div class="card bg-secondary bg-opacity-10 border-secondary mb-3">
-                        <div class="card-body">
-                            <h6 class="fw-bold mb-3 text-uppercase small text-muted">Execution</h6>
-                            <div class="mb-3">
-                                <label class="small text-muted">Quantity</label>
-                                <input type="number" @bind="orderQuantity" class="form-control bg-dark text-white border-secondary" placeholder="0.00" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="small text-muted">Estimated Total</label>
-                                <h4 class="fw-bold">@((orderQuantity * (selectedStock?.CurrentPrice ?? 0)).ToString("C2"))</h4>
-                            </div>
-                            <button class="btn btn-success w-100 fw-bold mb-2 py-3" disabled="@(selectedStock == null)">BUY @selectedStock?.Ticker</button>
-                            <button class="btn btn-outline-danger w-100 fw-bold py-2" disabled="@(selectedStock == null)">SELL</button>
-                        </div>
-                    </div>
-
-                    @* PORTFOLIO SUMMARY *@
-                    <div class="card bg-primary bg-opacity-10 border-primary border-opacity-25">
-                        <div class="card-body">
-                            <h6 class="small text-uppercase text-primary fw-bold">Buying Power</h6>
-                            <h4 class="fw-bold mb-0">@user.BankAccount.Balance.ToString("C2")</h4>
-                        </div>
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
-        }
-    </div>
+
+            @* --- 2. CHART --- *@
+            <div class="col-xl-6 col-lg-8">
+                <div class="glass-panel p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h1 class="display-6 fw-black text-white mb-0">@selectedStock?.Ticker</h1>
+                            <p class="text-danger tracking-widest small fw-bold text-uppercase">@selectedStock?.Name</p>
+                        </div>
+                        <div class="text-end">
+                            <h2 class="fw-black text-white m-0 tracking-tighter">$@selectedStock?.CurrentPrice.ToString("N2")</h2>
+                            @{
+                                var selTrend = GetTrend(selectedStock);
+                            }
+                            <span class="badge @(selTrend >= 0 ? "bg-success" : "bg-danger") bg-opacity-20 @(selTrend >= 0 ? "text-success" : "text-danger") border @(selTrend >= 0 ? "border-success" : "border-danger") border-opacity-25 rounded-0">
+                                @(selTrend >= 0 ? "+" : "")@selTrend.ToString("F2")% TODAY
+                            </span>
+                        </div>
+                    </div>
+                    <div class="chart-container border border-secondary border-opacity-10 bg-black bg-opacity-30">
+                        <canvas id="stockChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            @* --- 3. EXECUTION --- *@
+            <div class="col-xl-3">
+                <div class="glass-panel p-4 mb-4">
+                    <h6 class="text-white fw-black small text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-2">Order Desk</h6>
+
+                    <div class="mb-4">
+                        <label class="text-secondary tiny-caps mb-2">Quantity (Units)</label>
+                        <div class="input-group">
+                            <input type="number" @bind="orderQuantity" class="form-control trade-input" />
+                            <span class="input-group-text bg-transparent border-secondary text-secondary">SHARES</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 p-3 bg-white bg-opacity-5 rounded">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-secondary small">Total Requirement</span>
+                            <span class="text-white fw-black fs-5">$@((orderQuantity * (selectedStock?.CurrentPrice ?? 0)).ToString("N2"))</span>
+                        </div>
+                    </div>
+
+                    @if (user != null)
+                    {
+                        <button @onclick="HandleBuy" class="btn btn-danger w-100 fw-black rounded-0 py-3 trade-btn mb-2">EXECUTE ACQUISITION</button>
+                        <p class="text-center text-success small">@tradeMessage</p>
+                    }
+                    else
+                    {
+                        <a href="/login" class="btn btn-outline-secondary w-100 rounded-0 py-3 text-uppercase fw-black">Login to Authorize</a>
+                    }
+                </div>
+
+                @if (user?.BankAccount != null)
+                {
+                    <div class="glass-panel p-3 border-danger border-opacity-50 border-start border-4">
+                        <small class="text-danger tiny-caps d-block">Available Liquidity</small>
+                        <h4 class="text-white fw-black m-0">$@user.BankAccount.Balance.ToString("N2")</h4>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </div>
+
+<style>
+    .glass-panel {
+        background: rgba(20, 20, 20, 0.8);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .tracking-wider {
+        letter-spacing: 2px;
+    }
+
+    .tracking-widest {
+        letter-spacing: 4px;
+    }
+
+    .tracking-tighter {
+        letter-spacing: -2px;
+    }
+
+    .small-caps {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        opacity: 0.6;
+    }
+
+    .tiny-caps {
+        font-size: 0.55rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 800;
+    }
+
+    .search-box {
+        position: relative;
+    }
+
+    .search-input {
+        background: #000;
+        border: 1px solid #333;
+        color: white;
+        padding-left: 35px;
+        border-radius: 0;
+        font-size: 0.8rem;
+    }
+
+        .search-input:focus {
+            background: #111;
+            border-color: #dc3545;
+            box-shadow: none;
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        font-size: 0.8rem;
+    }
+
+    .stock-card {
+        background: transparent;
+        border: none;
+        width: 100%;
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        transition: 0.2s;
+    }
+
+        .stock-card:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .stock-card.active {
+            background: rgba(220, 53, 69, 0.1);
+            border-left: 3px solid #dc3545;
+        }
+
+    .chart-container {
+        height: 400px;
+        width: 100%;
+        position: relative;
+    }
+
+    .trade-input {
+        background: #000;
+        border: 1px solid #333;
+        color: white;
+        font-weight: 900;
+        border-radius: 0;
+    }
+
+    .trade-btn {
+        transition: 0.3s;
+        box-shadow: 0 0 15px rgba(220, 53, 69, 0);
+    }
+
+        .trade-btn:hover {
+            box-shadow: 0 0 25px rgba(220, 53, 69, 0.4);
+            transform: translateY(-2px);
+        }
+
+    .pulse-red {
+        animation: pulse 1.5s infinite;
+        font-size: 0.6rem;
+        letter-spacing: 1px;
+    }
+
+    @@keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.4;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: #222;
+    }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #dc3545;
+        }
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    window.renderStockChart = (data) => {
-        const ctx = document.getElementById('stockChart').getContext('2d');
+    window.renderStockChart = (labels, prices) => {
+        const canvas = document.getElementById('stockChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
         if (window.myChart) { window.myChart.destroy(); }
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(220, 53, 69, 0.2)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
         window.myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'],
+                labels: labels,
                 datasets: [{
-                    label: 'Price',
-                    data: data,
-                    borderColor: '#00ff88',
-                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    data: prices,
+                    borderColor: '#dc3545',
+                    borderWidth: 2,
                     fill: true,
+                    backgroundColor: gradient,
                     tension: 0.4,
-                    pointRadius: 0
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: '#fff'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { display: false } },
-                    y: { grid: { color: 'rgba(255,255,255,0.1)' } }
+                    x: { display: false },
+                    y: {
+                        position: 'right',
+                        ticks: { color: '#444', font: { size: 10 } },
+                        grid: { color: 'rgba(255,255,255,0.03)' }
+                    }
                 }
             }
         });
-    }
+    };
 </script>
 
 @code {
     private ApplicationUser? user;
     private List<Stock>? availableStocks;
     private Stock? selectedStock;
+    private Dictionary<int, decimal> _previousPrices = new();
     private decimal orderQuantity = 1;
+    private string tradeMessage = "";
+    private string searchTerm = "";
+    private System.Threading.Timer? _timer;
+    private bool _jsInitialized = false;
+
+    private IEnumerable<Stock> FilteredStocks =>
+        string.IsNullOrWhiteSpace(searchTerm) ? (availableStocks ?? new()) :
+        (availableStocks ?? new()).Where(s => s.Ticker.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || s.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
         user = await AuthService.GetCurrentApplicationUser();
-        availableStocks = await DbContext.Stocks.ToListAsync();
-        if (availableStocks.Any()) selectedStock = availableStocks.First();
+        await RefreshMarketData();
+        if (availableStocks?.Any() == true) selectedStock = availableStocks.First();
+
+        _timer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await RefreshMarketData();
+                if (_jsInitialized) await UpdateChart();
+                StateHasChanged();
+            });
+        }, null, 1000, 1000);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (selectedStock != null)
+        if (firstRender) _jsInitialized = true;
+    }
+
+    private async Task RefreshMarketData()
+    {
+        using var db = await DbFactory.CreateDbContextAsync();
+        var currentStocks = await db.Stocks.ToListAsync();
+
+        if (availableStocks != null)
         {
-            await GenerateChart();
+            foreach (var old in availableStocks)
+            {
+                if (!_previousPrices.ContainsKey(old.Id)) _previousPrices[old.Id] = old.CurrentPrice;
+                // If price changed, update the tracking for the arrow
+                var updated = currentStocks.FirstOrDefault(s => s.Id == old.Id);
+                if (updated != null && updated.CurrentPrice != old.CurrentPrice)
+                    _previousPrices[old.Id] = old.CurrentPrice;
+            }
         }
+
+        availableStocks = currentStocks;
+        if (selectedStock != null) selectedStock = availableStocks.FirstOrDefault(s => s.Id == selectedStock.Id);
+    }
+
+    private decimal GetTrend(Stock? stock)
+    {
+        if (stock == null || !_previousPrices.TryGetValue(stock.Id, out var prevPrice) || prevPrice == 0) return 0;
+        return ((stock.CurrentPrice - prevPrice) / prevPrice) * 100;
     }
 
     private async Task SelectStock(Stock stock)
     {
         selectedStock = stock;
-        await GenerateChart();
+        await UpdateChart();
     }
 
-    private async Task GenerateChart()
+    private async Task HandleBuy()
     {
-        // Generate random-ish data for the chart effect
-        var random = new Random();
-        var basePrice = (double)selectedStock.CurrentPrice;
-        var mockData = Enumerable.Range(0, 7)
-            .Select(_ => basePrice + (random.NextDouble() * 10 - 5))
-            .ToArray();
-
-        await JS.InvokeVoidAsync("renderStockChart", mockData);
+        var result = await StockService.ExecuteTradeAsync(user?.Id, selectedStock!.Id, orderQuantity, true);
+        tradeMessage = result.Message;
     }
+
+    private async Task UpdateChart()
+    {
+        if (selectedStock == null) return;
+        using var db = await DbFactory.CreateDbContextAsync();
+        var history = await db.StockHistory
+            .Where(h => h.StockId == selectedStock.Id)
+            .OrderByDescending(h => h.Timestamp).Take(40).OrderBy(h => h.Timestamp).ToListAsync();
+
+        if (history.Any())
+        {
+            var labels = history.Select(h => h.Timestamp.ToString("HH:mm:ss")).ToArray();
+            var prices = history.Select(h => h.Price).ToArray();
+            try { await JS.InvokeVoidAsync("renderStockChart", labels, prices); } catch { }
+        }
+    }
+
+    public void Dispose() => _timer?.Dispose();
 }

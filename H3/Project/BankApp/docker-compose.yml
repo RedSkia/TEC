@@ -9,10 +9,6 @@ services:
       - MSSQL_SA_PASSWORD=BankAppPassword123
     ports:
       - "1433:1433"
-    volumes:
-      - ./dockervolumes/mssql/data:/var/opt/mssql/data
-      - ./dockervolumes/mssql/log:/var/opt/mssql/log
-      - ./dockervolumes/mssql/secrets:/var/opt/mssql/secrets
     networks:
       - bank-net
 
@@ -28,8 +24,6 @@ services:
       - ASPNETCORE_URLS=http://+:8080
     ports:
       - "8080:8080"
-    volumes:
-      - ./dockervolumes/temp-keys:/app/temp-keys
     networks:
       - bank-net
 

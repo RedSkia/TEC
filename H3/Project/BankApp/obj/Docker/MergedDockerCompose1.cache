@@ -51,11 +51,6 @@ services:
     tty: true
     volumes:
       - type: bind
-        source: D:\Desktop\TEC\H3\Project\BankApp\dockervolumes\temp-keys
-        target: /app/temp-keys
-        bind:
-          create_host_path: true
-      - type: bind
         source: C:\Users\marcu\AppData\Roaming\Microsoft\UserSecrets
         target: /home/app/.microsoft/usersecrets
         read_only: true
@@ -131,22 +126,6 @@ services:
         target: 1433
         published: "1433"
         protocol: tcp
-    volumes:
-      - type: bind
-        source: D:\Desktop\TEC\H3\Project\BankApp\dockervolumes\mssql\data
-        target: /var/opt/mssql/data
-        bind:
-          create_host_path: true
-      - type: bind
-        source: D:\Desktop\TEC\H3\Project\BankApp\dockervolumes\mssql\log
-        target: /var/opt/mssql/log
-        bind:
-          create_host_path: true
-      - type: bind
-        source: D:\Desktop\TEC\H3\Project\BankApp\dockervolumes\mssql\secrets
-        target: /var/opt/mssql/secrets
-        bind:
-          create_host_path: true
 networks:
   bank-net:
     name: dockercompose11790265661367496852_bank-net
