@@ -425,6 +425,78 @@ namespace BlazorApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Stocks");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CurrentPrice = 1250.00m,
+                            Name = "VOID-TECH SYSTEMS",
+                            Ticker = "VOID"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CurrentPrice = 250.50m,
+                            Name = "NEURAL LINK CORP",
+                            Ticker = "LINK"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CurrentPrice = 980.00m,
+                            Name = "ONYX HOLDINGS",
+                            Ticker = "ONYX"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CurrentPrice = 85.25m,
+                            Name = "TITAN HEAVY IND",
+                            Ticker = "TITN"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CurrentPrice = 450.00m,
+                            Name = "SPECTRE ANALYTICS",
+                            Ticker = "SPEC"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CurrentPrice = 12.75m,
+                            Name = "KAIZEN PHARMA",
+                            Ticker = "KZN"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CurrentPrice = 640.00m,
+                            Name = "APEX AEROSPACE",
+                            Ticker = "APEX"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CurrentPrice = 145.00m,
+                            Name = "PRISM SECURITY",
+                            Ticker = "PRSM"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CurrentPrice = 2100.00m,
+                            Name = "VAULT CRYPTOGRAPHICS",
+                            Ticker = "VLT"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CurrentPrice = 8.50m,
+                            Name = "OMEGA SOLUTIONS",
+                            Ticker = "OMGA"
+                        });
                 });
 
             modelBuilder.Entity("BankApp.Data.Entities.Market.StockHistory", b =>

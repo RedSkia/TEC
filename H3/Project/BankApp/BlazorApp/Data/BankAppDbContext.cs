@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using BankApp.Data.Entities.Market;
+using BankApp.Data.Entities.Banking;
+using BankApp.Data.Entities.Auth;
+using BankApp.Data.Entities.Lending;
+using System.Security.Cryptography;
 
 namespace BankApp.Data;
 
@@ -22,11 +26,11 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     {
         base.OnModelCreating(builder);
 
-        // 1. DATA SEEDING
+        // --- 1. SEEDING ---
         builder.Entity<ApplicationRole>().HasData(
-            CreateRole(RoleType.Admin, "#c80000", "S1"),
-            CreateRole(RoleType.LoanOfficer, "#00c800", "S2"),
-            CreateRole(RoleType.Customer, "#00c8c8", "S3")
+            new ApplicationRole { Id = "1", Name = "Admin", NormalizedName = "ADMIN", RoleColor = "#c80000", ConcurrencyStamp = "S1" },
+            new ApplicationRole { Id = "2", Name = "LoanOfficer", NormalizedName = "LOANOFFICER", RoleColor = "#00c800", ConcurrencyStamp = "S2" },
+            new ApplicationRole { Id = "3", Name = "Customer", NormalizedName = "CUSTOMER", RoleColor = "#00c8c8", ConcurrencyStamp = "S3" }
         );
 
         builder.Entity<CurrencyType>().HasData(
@@ -35,39 +39,50 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             new CurrencyType { Id = 3, CurrencyCode = "DKK", Rate = 7.4500m }
         );
 
-        // 2. THE "EAGER EVERYTHING" AUTO-INCLUDE ENGINE
+        builder.Entity<Stock>().HasData(
+            new Stock { Id = 1, Name = "VOID-TECH SYSTEMS", Ticker = "VOID", CurrentPrice = 1250.00m },
+            new Stock { Id = 2, Name = "NEURAL LINK CORP", Ticker = "LINK", CurrentPrice = 250.50m },
+            new Stock { Id = 3, Name = "ONYX HOLDINGS", Ticker = "ONYX", CurrentPrice = 980.00m },
+            new Stock { Id = 4, Name = "TITAN HEAVY IND", Ticker = "TITN", CurrentPrice = 85.25m },
+            new Stock { Id = 5, Name = "SPECTRE ANALYTICS", Ticker = "SPEC", CurrentPrice = 450.00m },
+            new Stock { Id = 6, Name = "KAIZEN PHARMA", Ticker = "KZN", CurrentPrice = 12.75m },
+            new Stock { Id = 7, Name = "APEX AEROSPACE", Ticker = "APEX", CurrentPrice = 640.00m },
+            new Stock { Id = 8, Name = "PRISM SECURITY", Ticker = "PRSM", CurrentPrice = 145.00m },
+            new Stock { Id = 9, Name = "VAULT CRYPTOGRAPHICS", Ticker = "VLT", CurrentPrice = 2100.00m },
+            new Stock { Id = 10, Name = "OMEGA SOLUTIONS", Ticker = "OMGA", CurrentPrice = 8.50m }
+        );
+
+        // --- 2. EAGER LOADING ---
         builder.Entity<ApplicationUser>().Navigation(u => u.Address).AutoInclude();
         builder.Entity<ApplicationUser>().Navigation(u => u.BankAccount).AutoInclude();
-
         builder.Entity<BankAccount>().Navigation(b => b.CurrencyType).AutoInclude();
-        builder.Entity<BankAccount>().Navigation(b => b.Transactions).AutoInclude();
-        builder.Entity<BankAccount>().Navigation(b => b.LoanRequests).AutoInclude();
         builder.Entity<BankAccount>().Navigation(b => b.Investments).AutoInclude();
-
-        builder.Entity<Transaction>().Navigation(t => t.CurrencyType).AutoInclude();
-        builder.Entity<LoanRequest>().Navigation(l => l.CurrencyType).AutoInclude();
-
         builder.Entity<Investment>().Navigation(i => i.Stock).AutoInclude();
 
-        // 3. RELATIONSHIP CONSTRAINTS
+        // --- 3. RELATIONSHIPS ---
 
-        // Stock -> History (One-to-Many)
-        builder.Entity<StockHistory>()
-            .HasOne(sh => sh.Stock)
-            .WithMany(s => s.Histories)
-            .HasForeignKey(sh => sh.StockId)
-            .OnDelete(DeleteBehavior.Cascade); // Delete history if stock is removed
-
-        builder.Entity<Address>()
-            .HasOne(a => a.User)
-            .WithOne(u => u.Address)
-            .HasForeignKey<Address>(a => a.UserId);
-
+        // One-to-One: User <-> BankAccount
         builder.Entity<BankAccount>()
             .HasOne(b => b.User)
             .WithOne(u => u.BankAccount)
-            .HasForeignKey<BankAccount>(b => b.UserId);
+            .HasForeignKey<BankAccount>(b => b.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
+        // One-to-One: User <-> Address
+        builder.Entity<Address>()
+            .HasOne(a => a.User)
+            .WithOne(u => u.Address)
+            .HasForeignKey<Address>(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Many-to-One: Investment -> BankAccount
+        builder.Entity<Investment>()
+            .HasOne(i => i.BankAccount)
+            .WithMany(b => b.Investments)
+            .HasForeignKey(i => i.BankAccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Restrict Currency deletion if used
         builder.Entity<Transaction>()
             .HasOne(t => t.CurrencyType)
             .WithMany()
@@ -79,17 +94,5 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .WithMany()
             .HasForeignKey(l => l.CurrencyTypeId)
             .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private static ApplicationRole CreateRole(RoleType role, string color, string stamp)
-    {
-        return new ApplicationRole
-        {
-            Id = ((int)role).ToString(),
-            Name = role.ToString(),
-            NormalizedName = role.ToString().ToUpper(),
-            RoleColor = color,
-            ConcurrencyStamp = stamp
-        };
     }
 }

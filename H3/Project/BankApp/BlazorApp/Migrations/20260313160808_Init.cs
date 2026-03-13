@@ -400,6 +400,23 @@ namespace BlazorApp.Migrations
                     { 3, "DKK", 7.4500m }
                 });
 
+            migrationBuilder.InsertData(
+                table: "Stocks",
+                columns: new[] { "Id", "CurrentPrice", "Name", "Ticker" },
+                values: new object[,]
+                {
+                    { 1, 1250.00m, "VOID-TECH SYSTEMS", "VOID" },
+                    { 2, 250.50m, "NEURAL LINK CORP", "LINK" },
+                    { 3, 980.00m, "ONYX HOLDINGS", "ONYX" },
+                    { 4, 85.25m, "TITAN HEAVY IND", "TITN" },
+                    { 5, 450.00m, "SPECTRE ANALYTICS", "SPEC" },
+                    { 6, 12.75m, "KAIZEN PHARMA", "KZN" },
+                    { 7, 640.00m, "APEX AEROSPACE", "APEX" },
+                    { 8, 145.00m, "PRISM SECURITY", "PRSM" },
+                    { 9, 2100.00m, "VAULT CRYPTOGRAPHICS", "VLT" },
+                    { 10, 8.50m, "OMEGA SOLUTIONS", "OMGA" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Addresses_UserId",
                 table: "Addresses",
