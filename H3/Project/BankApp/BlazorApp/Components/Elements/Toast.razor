@@ -60,10 +60,8 @@
         _timer.Elapsed += async (_, _) =>
         {
             if (!Toasts.Any()) { Stop(); return; }
-
             double step = 100 / (DisplayTime / 0.1);
             bool changed = false;
-
             foreach (var t in Toasts.ToList())
             {
                 if (t.IsHovered)
@@ -71,7 +69,6 @@
                     if (t.Progress < 100) { t.Progress = 100; changed = true; }
                     continue;
                 }
-
                 t.Progress -= step;
                 changed = true;
                 if (t.Progress <= 0) Toasts.Remove(t);
@@ -86,8 +83,7 @@
 
     private IEnumerable<ToastMessage> GetOrderedToasts() =>
         Location == DockLocation.BottomRight || Location == DockLocation.BottomLeft
-        ? Toasts.AsEnumerable().Reverse()
-        : Toasts;
+        ? Toasts.AsEnumerable().Reverse() : Toasts;
 
     private string GetContainerClasses() => Location switch
     {
@@ -102,7 +98,7 @@
         ToastLevel.Success => "bg-success",
         ToastLevel.Error => "bg-danger",
         ToastLevel.Warning => "bg-warning",
-        _ => "bg-danger" // Using Danger for Redskia theme brand consistency
+        _ => "bg-danger"
     };
 
     private string GetIcon(ToastLevel l) => l switch

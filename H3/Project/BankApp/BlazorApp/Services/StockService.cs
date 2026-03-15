@@ -22,12 +22,18 @@ public class StockService(IDbContextFactory<BankAppDbContext> dbFactory) : IStoc
 
         foreach (var stock in stocks)
         {
-            decimal fluctuation = GetRandomDecimal(-0.02m, 0.025m);
+            // 1. Balanced Fluctuation: -2.5% to +2.5% (removes upward bias)
+            decimal fluctuation = GetRandomDecimal(-0.025m, 0.025m);
+
             decimal oldPrice = stock.CurrentPrice;
             decimal change = oldPrice * fluctuation;
 
+            // 2. Apply change and Round
             stock.CurrentPrice = Math.Round(oldPrice + change, 2);
-            if (stock.CurrentPrice <= 0.01m) stock.CurrentPrice = 0.50m;
+
+            // 3. HARD CLAMPS (Prevents the "Billions" bug)
+            if (stock.CurrentPrice <= 0.10m) stock.CurrentPrice = 0.15m;
+            if (stock.CurrentPrice >= 5000m) stock.CurrentPrice = 4800m; // Crash if it gets too high
 
             db.StockHistory.Add(new StockHistory
             {

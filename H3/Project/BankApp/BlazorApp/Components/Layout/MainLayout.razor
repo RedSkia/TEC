@@ -13,7 +13,7 @@
     </div>
 
     @* --- GLOBAL NOTIFICATION LAYER --- *@
-    <Notification @ref="_notification" />
+    <Toast @ref="_toast" />
 
     @* --- NAVIGATION --- *@
     <div class="sticky-top z-3 backdrop-blur-xl border-bottom border-secondary border-opacity-10">
@@ -25,7 +25,7 @@
     <main class="position-relative z-2">
         <div class="page-content container-fluid px-lg-5">
             @* Pass the notification instance down to all pages *@
-            <CascadingValue Value="_notification">
+            <CascadingValue Value="_toast">
                 @Body
             </CascadingValue>
         </div>
@@ -39,7 +39,7 @@
 </div>
 
 @code {
-    private Notification? _notification;
+    private Toast? _toast;
 }
 
 <style>

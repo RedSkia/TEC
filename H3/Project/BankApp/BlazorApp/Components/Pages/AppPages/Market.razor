@@ -4,11 +4,12 @@
 @using BankApp.Data.Entities.Banking
 @using BankApp.Services
 @using Microsoft.EntityFrameworkCore
+@using BlazorApp.Components.Elements
 @rendermode InteractiveServer
 @inject IAuthService AuthService
 @inject IStockService StockService
 @inject IDbContextFactory<BankApp.Data.BankAppDbContext> DbFactory
-@inject IJSRuntime JS
+@inject NavigationManager Navigation
 @implements IDisposable
 
 <div class="container-fluid py-4 bg-black min-vh-100">
@@ -21,38 +22,37 @@
     else
     {
         <div class="row g-4">
-            @* --- 1. WATCHLIST --- *@
+            @* --- 1. TICKER MENU --- *@
             <div class="col-xl-3 col-lg-4">
-                <div class="glass-panel p-3 h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="text-danger fw-black small text-uppercase m-0 tracking-wider">Market Terminal</h6>
-                        <span class="badge bg-danger pulse-red">LIVE</span>
-                    </div>
-
-                    <div class="search-container mb-3">
-                        <i class="bi bi-search search-icon"></i>
-                        <input type="text" @bind="searchTerm" @bind:event="oninput"
-                               class="form-control search-input" placeholder="Search Ticker..." />
+                <div class="glass-panel p-0 overflow-hidden h-100" style="border-top: 2px solid #dc3545;">
+                    <div class="p-3 border-bottom border-secondary border-opacity-10 bg-black">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-danger fw-black small text-uppercase m-0 tracking-wider">Market Assets</h6>
+                            <span class="badge bg-danger text-black pulse-red">LIVE</span>
+                        </div>
+                        <div class="search-container">
+                            <input type="text" @bind="searchTerm" @bind:event="oninput"
+                                   class="form-control search-input" placeholder="Search Ticker..." />
+                        </div>
                     </div>
 
                     <div class="list-group list-group-flush custom-scroll" style="max-height: 70vh; overflow-y: auto;">
                         @foreach (var stock in FilteredStocks)
                         {
-                            var trend = GetTrend(stock);
+                            var changePercent = ((stock.CurrentPrice % 1.5m) - 0.75m);
+                            var isPositive = changePercent >= 0;
+
                             <button @onclick="() => SelectStock(stock)"
                                     class="stock-card @(selectedStock?.Id == stock.Id ? "active" : "")">
                                 <div class="d-flex justify-content-between align-items-center w-100">
                                     <div>
-                                        <div class="fw-black text-white m-0">@stock.Ticker</div>
-                                        <div class="text-secondary small-caps">@stock.Name</div>
+                                        <div class="ticker-text">@stock.Ticker</div>
+                                        <div class="text-secondary tiny-caps">@stock.Name</div>
                                     </div>
                                     <div class="text-end">
-                                        <div class="fw-bold @(trend >= 0 ? "text-success" : "text-danger")">
-                                            @GetCurrencySymbol()@GetConvertedPrice(stock.CurrentPrice).ToString("N2")
-                                            <i class="bi @(trend >= 0 ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
-                                        </div>
-                                        <div class="small @(trend >= 0 ? "text-success" : "text-danger")" style="font-size: 0.7rem;">
-                                            @(trend >= 0 ? "+" : "")@trend.ToString("F2")%
+                                        <div class="fw-black text-white">@FormatCurrency(GetConvertedPrice(stock.CurrentPrice))</div>
+                                        <div class="small fw-bold @(isPositive ? "text-success" : "text-danger")">
+                                            @(isPositive ? "▲" : "▼") @Math.Abs(changePercent).ToString("P2")
                                         </div>
                                     </div>
                                 </div>
@@ -62,93 +62,119 @@
                 </div>
             </div>
 
-            @* --- 2. CANDLESTICK CHART --- *@
+            @* --- 2. THE TERMINAL GRAPH --- *@
             <div class="col-xl-6 col-lg-8">
                 <div class="glass-panel p-4 mb-4">
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <div>
                             <h1 class="display-6 fw-black text-white mb-0">@selectedStock?.Ticker</h1>
-                            <p class="text-danger tracking-widest small fw-bold text-uppercase">@selectedStock?.Name</p>
+                            <p class="text-danger tracking-widest small fw-bold">TERMINAL FEED</p>
                         </div>
                         <div class="text-end">
-                            <h2 class="fw-black text-white m-0 tracking-tighter">@GetCurrencySymbol()@GetConvertedPrice(selectedStock?.CurrentPrice ?? 0).ToString("N2")</h2>
-                            @{
-                                var selTrend = GetTrend(selectedStock);
+                            @if (hoverPrice > 0)
+                            {
+                                <div class="text-info tiny-caps fw-bold">SCANNING PRICE</div>
+                                <h2 class="fw-black text-info m-0 tracking-tighter">@FormatCurrency(GetConvertedPrice(hoverPrice))</h2>
                             }
-                            <span class="badge @(selTrend >= 0 ? "bg-success" : "bg-danger") bg-opacity-20 @(selTrend >= 0 ? "text-success" : "text-danger") border border-opacity-25 rounded-0">
-                                @(selTrend >= 0 ? "+" : "")@selTrend.ToString("F2")% SESSION
-                            </span>
+                            else
+                            {
+                                <div class="text-secondary tiny-caps fw-bold">LAST PRICE</div>
+                                <h2 class="fw-black text-white m-0 tracking-tighter">@FormatCurrency(GetConvertedPrice(selectedStock?.CurrentPrice ?? 0))</h2>
+                            }
                         </div>
                     </div>
-                    <div class="chart-container border border-secondary border-opacity-10 bg-black bg-opacity-30">
-                        <canvas id="stockChart"></canvas>
+
+                    <div class="graph-wrapper border border-secondary border-opacity-10 bg-black" style="height: 450px; position: relative;" @onmouseleave="() => hoverPrice = 0">
+                        @if (candles.Any())
+                        {
+                            <svg viewBox="0 0 1000 450" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                                @* GRID LINES *@
+                                @for (int i = 0; i <= 5; i++)
+                                {
+                                    var y = i * 90;
+                                    <line x1="0" y1="@y" x2="1000" y2="@y" stroke="#1a1a1a" stroke-width="1" />
+                                }
+
+                                @* VOLUME BARS *@
+                                @foreach (var c in candles)
+                                {
+                                    <rect x="@(c.X - 8)" y="@(450 - c.VolumeHeight)" width="16" height="@c.VolumeHeight" fill="@(c.IsUp ? "#19875422" : "#dc354522")" />
+                                }
+
+                                @* TREND LINE *@
+                                <polyline fill="none" stroke="#0dcaf0" stroke-width="1.5" points="@GetTrendPoints()" stroke-linejoin="round" opacity="0.4" />
+
+                                @* CANDLESTICKS *@
+                                @foreach (var c in candles)
+                                {
+                                    <line x1="@c.X" y1="@c.HighY" x2="@c.X" y2="@c.LowY" stroke="@(c.IsUp ? "#198754" : "#dc3545")" stroke-width="1" />
+                                    <rect x="@(c.X - 5)" y="@Math.Min(c.OpenY, c.CloseY)" width="10" height="@Math.Max(2, Math.Abs(c.OpenY - c.CloseY))" fill="@(c.IsUp ? "#198754" : "#dc3545")" />
+
+                                    @if (c.TradeType != null)
+                                    {
+                                        <g>
+                                            <rect x="@(c.X - 25)" y="@(c.HighY - 35)" width="50" height="18" rx="2" fill="@(c.TradeType == "BUY" ? "#198754" : "#dc3545")" />
+                                            <text x="@c.X" y="@(c.HighY - 22)" fill="white" font-size="10" font-weight="900" text-anchor="middle">@c.TradeType</text>
+                                        </g>
+                                    }
+                                }
+
+                                @* HOVER LOGIC *@
+                                @foreach (var c in candles)
+                                {
+                                    <rect x="@(c.X - 10)" y="0" width="20" height="450" fill="transparent" class="hover-area" @onmouseover="() => hoverPrice = c.Price" />
+                                    @if (hoverPrice == c.Price)
+                                    {
+                                        <line x1="0" y1="@c.CloseY" x2="1000" y2="@c.CloseY" stroke="#0dcaf0" stroke-width="1" stroke-dasharray="4" opacity="0.6" />
+                                        <circle cx="@c.X" cy="@c.CloseY" r="4" fill="#0dcaf0" />
+                                    }
+                                }
+                            </svg>
+                        }
                     </div>
                 </div>
             </div>
 
-            @* --- 3. EXECUTION --- *@
+            @* --- 3. ORDER DESK (WITH AUTH GATE) --- *@
             <div class="col-xl-3">
-                <div class="glass-panel p-4 mb-4 shadow-red">
-                    <h6 class="text-white fw-black small text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-2">Order Desk</h6>
-
-                    @if (user != null)
+                <div class="glass-panel p-4 mb-4 position-relative overflow-hidden" style="min-height: 300px;">
+                    @if (user == null)
                     {
-                        <div class="mb-3">
-                            <label class="text-secondary tiny-caps mb-2 d-flex justify-content-between">
-                                Quantity
-                                <span class="text-white">Owned: @ownedQuantity.ToString("N4")</span>
-                            </label>
-                            <div class="input-group">
-                                <input type="number" step="0.0001" @bind="orderQuantity" class="form-control trade-input" />
-                                <span class="input-group-text bg-transparent border-secondary text-secondary tiny-caps">SHARES</span>
-                            </div>
-                        </div>
-
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <button @onclick="() => HandleTrade(true)" class="btn btn-danger w-100 fw-black rounded-0 py-3 trade-btn">BUY</button>
-                            </div>
-                            <div class="col-6">
-                                <button @onclick="() => HandleTrade(false)" class="btn btn-outline-light w-100 fw-black rounded-0 py-3 trade-btn" disabled="@(ownedQuantity <= 0)">SELL</button>
-                            </div>
-
-                            <div class="col-6">
-                                <button @onclick="ExecuteBuyMax" class="btn btn-dark border-success text-success w-100 fw-black rounded-0 py-2 tiny-caps mt-1">
-                                    <i class="bi bi-lightning-fill"></i> Buy Max
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button @onclick="ExecuteSellAll" class="btn btn-dark border-warning text-warning w-100 fw-black rounded-0 py-2 tiny-caps mt-1" disabled="@(ownedQuantity <= 0)">
-                                    <i class="bi bi-lightning-fill"></i> Sell All
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 p-3 bg-white bg-opacity-5 rounded">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-secondary small">Requirement</span>
-                                <span class="text-white fw-black fs-5">@GetCurrencySymbol()@GetConvertedPrice(orderQuantity * (selectedStock?.CurrentPrice ?? 0)).ToString("N2")</span>
-                            </div>
-                        </div>
-
-                        <p class="text-center mt-3 @(tradeMessage.Contains("Success") ? "text-success" : "text-warning") small fw-bold">@tradeMessage</p>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <i class="bi bi-lock-fill text-danger display-4 d-block mb-3"></i>
-                            <h5 class="text-white fw-black">TERMINAL LOCKED</h5>
-                            <p class="text-secondary small mb-4">Authorization required for trading</p>
-                            <a href="Account/Login" class="btn btn-danger rounded-0 px-4 fw-black">LOGIN</a>
+                        @* --- ACCESS OVERLAY --- *@
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-black bg-opacity-75" style="z-index: 10; backdrop-filter: blur(4px);">
+                            <i class="bi bi-lock-fill text-danger mb-3" style="font-size: 2rem;"></i>
+                            <h5 class="fw-black text-white text-center px-4">SECURE TERMINAL<br />LOCKED</h5>
+                            <button class="btn btn-danger rounded-pill fw-black px-4 mt-3 tiny-caps" @onclick='() => Navigation.NavigateTo("/login")'>Login to Trade</button>
                         </div>
                     }
+
+                    <h6 class="text-white fw-black small text-uppercase mb-4 border-bottom border-danger border-opacity-25 pb-2">Order Execution</h6>
+                    <div class="mb-3 @(user == null ? "opacity-25" : "")">
+                        <label class="text-secondary tiny-caps mb-2 d-flex justify-content-between align-items-end">
+                            <span>Order Quantity</span>
+                            <div class="text-end">
+                                <div class="text-white">HOLD: @ownedQuantity.ToString("N2")</div>
+                                <div class="text-danger fw-bold" style="font-size: 10px;">
+                                    TOTAL: @FormatCurrency(GetConvertedPrice(selectedStock?.CurrentPrice ?? 0) * orderQuantity)
+                                </div>
+                            </div>
+                        </label>
+                        <input type="number" step="0.01" @bind="orderQuantity" @bind:event="oninput" class="form-control trade-input" disabled="@(user == null)" />
+                    </div>
+
+                    <div class="row g-2 @(user == null ? "opacity-25" : "")">
+                        <div class="col-6"><button @onclick="() => HandleTrade(true)" class="btn btn-success w-100 fw-black rounded-0 py-3" disabled="@(user == null)">BUY</button></div>
+                        <div class="col-6"><button @onclick="() => HandleTrade(false)" class="btn btn-danger w-100 fw-black rounded-0 py-3" disabled="@(user == null)">SELL</button></div>
+                        <div class="col-6"><button @onclick="ExecuteBuyMax" class="btn btn-dark border-danger w-100 fw-black rounded-0 py-2 tiny-caps mt-1" disabled="@(user == null)">BUY ALL</button></div>
+                        <div class="col-6"><button @onclick="ExecuteSellAll" class="btn btn-dark border-secondary w-100 fw-black rounded-0 py-2 tiny-caps mt-1" disabled="@(user == null)">SELL ALL</button></div>
+                    </div>
                 </div>
 
-                @if (user?.BankAccount != null)
+                @if (user?.BankAccount?.CurrencyType != null)
                 {
-                    <div class="glass-panel p-3 border-danger border-opacity-50 border-start border-4">
-                        <small class="text-danger tiny-caps d-block">Available (@user.BankAccount.CurrencyType?.CurrencyCode)</small>
-                        <h4 class="text-white fw-black m-0">@GetCurrencySymbol()@user.BankAccount.Balance.ToString("N2")</h4>
+                    <div class="glass-panel p-3 border-danger border-start border-4">
+                        <small class="text-secondary tiny-caps d-block">Available Funds</small>
+                        <h4 class="text-white fw-black m-0">@FormatCurrency(user.BankAccount.Balance)</h4>
                     </div>
                 }
             </div>
@@ -158,69 +184,34 @@
 
 <style>
     .glass-panel {
-        background: rgba(10, 10, 10, 0.95);
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255,255,255,0.05);
+        background: #080808;
+        border: 1px solid #1a1a1a;
     }
 
     .fw-black {
         font-weight: 900;
     }
 
-    .tracking-wider {
-        letter-spacing: 2px;
-    }
-
-    .tracking-widest {
-        letter-spacing: 4px;
-    }
-
-    .tracking-tighter {
-        letter-spacing: -2px;
-    }
-
-    .small-caps {
-        font-size: 0.65rem;
-        text-transform: uppercase;
-        font-weight: bold;
-        opacity: 0.6;
-    }
-
-    .tiny-caps {
-        font-size: 0.55rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-weight: 800;
-    }
-
-    .search-container {
-        position: relative;
-    }
-
-    .search-icon {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #666;
-        z-index: 5;
+    .ticker-text {
+        font-weight: 900;
+        color: white;
+        font-size: 1.1rem;
+        letter-spacing: -0.5px;
     }
 
     .search-input {
         background: #000;
-        border: 1px solid #333;
+        border: 1px solid #222;
         color: white;
-        padding-left: 38px !important;
         border-radius: 0;
         font-size: 0.8rem;
-        height: 40px;
     }
 
         .search-input:focus {
-            border-color: #dc3545;
-            box-shadow: none;
-            color: white;
             background: #050505;
+            border-color: #dc3545;
+            color: white;
+            box-shadow: none;
         }
 
     .stock-card {
@@ -228,26 +219,23 @@
         border: none;
         width: 100%;
         text-align: left;
-        padding: 12px;
-        border-bottom: 1px solid rgba(255,255,255,0.03);
-        transition: 0.2s;
+        padding: 15px 20px;
+        border-bottom: 1px solid #111;
+        transition: all 0.2s ease;
     }
 
         .stock-card:hover {
-            background: rgba(255,255,255,0.03);
+            background: #0a0a0a;
         }
 
         .stock-card.active {
-            background: rgba(220, 53, 69, 0.1);
-            border-left: 3px solid #dc3545;
+            background: linear-gradient(90deg, #111 0%, #000 100%);
+            border-left: 4px solid #dc3545;
         }
 
-    .chart-container {
-        height: 420px;
-        width: 100%;
-        position: relative;
-        padding: 15px;
-    }
+            .stock-card.active .ticker-text {
+                color: #dc3545;
+            }
 
     .trade-input {
         background: #000;
@@ -257,273 +245,184 @@
         border-radius: 0;
     }
 
-    .trade-btn:hover {
-        box-shadow: 0 0 25px rgba(220, 53, 69, 0.4);
-        transform: translateY(-2px);
-    }
-
     .pulse-red {
-        animation: pulse 1.5s infinite;
-        font-size: 0.6rem;
-        letter-spacing: 1px;
+        animation: pulseR 2s infinite;
     }
 
-    @@keyframes pulse {
-        0% {
+    @@keyframes pulseR {
+        0%, 100% {
             opacity: 1;
         }
 
         50% {
-            opacity: 0.4;
+            opacity: 0.3;
         }
+    }
 
-        100% {
-            opacity: 1;
-        }
+    .tiny-caps {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
     .custom-scroll::-webkit-scrollbar {
-        width: 4px;
+        width: 3px;
     }
 
     .custom-scroll::-webkit-scrollbar-thumb {
-        background: #dc3545;
+        background: #222;
     }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #dc3545;
+        }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.1/dist/chartjs-chart-financial.min.js"></script>
-
-<script>
-    // Critical: Register the controller manually for Chart.js 3+
-    if (typeof Chart !== 'undefined' && Chart.register && typeof CandlestickController !== 'undefined') {
-        Chart.register(CandlestickController, CandlestickElement);
-    }
-
-    window.renderStockChart = (data) => {
-        const canvas = document.getElementById('stockChart');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-
-        if (window.myChart) {
-            window.myChart.destroy();
-        }
-
-        window.myChart = new Chart(ctx, {
-            type: 'candlestick',
-            data: {
-                datasets: [{
-                    label: 'Live Market',
-                    data: data,
-                    color: {
-                        up: '#198754',
-                        down: '#dc3545',
-                        unchanged: '#444'
-                    },
-                    wickColor: {
-                        up: '#198754',
-                        down: '#dc3545',
-                        unchanged: '#444'
-                    },
-                    borderColor: '#333'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: true }
-                },
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: { unit: 'minute', displayFormats: { minute: 'HH:mm' } },
-                        grid: { display: false },
-                        ticks: { color: '#666', font: { size: 10 } }
-                    },
-                    y: {
-                        position: 'right',
-                        grid: { color: 'rgba(255,255,255,0.03)' },
-                        ticks: { color: '#888', font: { family: 'monospace' } }
-                    }
-                }
-            }
-        });
-    };
-</script>
-
 @code {
+    [CascadingParameter] public Toast? Toast { get; set; }
+
     private ApplicationUser? user;
     private List<Stock>? availableStocks;
     private Stock? selectedStock;
-    private Dictionary<int, decimal> _previousPrices = new();
     private decimal orderQuantity = 1;
     private decimal ownedQuantity = 0;
-    private string tradeMessage = "";
+    private decimal hoverPrice = 0;
     private string searchTerm = "";
     private System.Threading.Timer? _timer;
-    private bool _jsInitialized = false;
+    private List<CandleModel> candles = new();
+    private Dictionary<long, string> tradeHistoryMarkers = new();
 
-    private IEnumerable<Stock> FilteredStocks =>
-        string.IsNullOrWhiteSpace(searchTerm) ? (availableStocks ?? new()) :
-        (availableStocks ?? new()).Where(s => s.Ticker.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                              s.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+    private IEnumerable<Stock> FilteredStocks => (availableStocks ?? new()).Where(s => string.IsNullOrEmpty(searchTerm) || s.Ticker.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
-        user = await AuthService.GetCurrentApplicationUser();
+        await RefreshUserData();
         await RefreshMarketData();
-        if (availableStocks?.Any() == true)
-        {
-            selectedStock = availableStocks.First();
-        }
+        if (availableStocks?.Any() == true) selectedStock = availableStocks.First();
+        await BuildGraph();
 
         _timer = new System.Threading.Timer(async _ =>
         {
             await InvokeAsync(async () =>
             {
+                await RefreshUserData();
                 await RefreshMarketData();
-                if (_jsInitialized) await UpdateChart();
+                await BuildGraph();
                 StateHasChanged();
             });
         }, null, 2000, 2000);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _jsInitialized = true;
-            await Task.Delay(800); // Allow JS extra time to register controllers
-            await UpdateChart();
-        }
-    }
-
-    private decimal GetConvertedPrice(decimal basePrice) =>
-        user?.BankAccount?.CurrencyType == null ? basePrice : basePrice * user.BankAccount.CurrencyType.Rate;
-
-    private string GetCurrencySymbol() => user?.BankAccount?.CurrencyType?.CurrencyCode switch
-    {
-        "USD" => "$",
-        "EUR" => "€",
-        "DKK" => "kr.",
-        "AMD" => "֏",
-        _ => "$"
-    };
+    private async Task RefreshUserData() => user = await AuthService.GetCurrentApplicationUser();
 
     private async Task RefreshMarketData()
     {
         using var db = await DbFactory.CreateDbContextAsync();
-        var currentStocks = await db.Stocks.ToListAsync();
-
-        if (availableStocks != null)
-        {
-            foreach (var old in availableStocks)
-            {
-                var updated = currentStocks.FirstOrDefault(s => s.Id == old.Id);
-                if (updated != null && updated.CurrentPrice != old.CurrentPrice)
-                    _previousPrices[old.Id] = old.CurrentPrice;
-            }
-        }
-
-        availableStocks = currentStocks;
+        availableStocks = await db.Stocks.ToListAsync();
         if (selectedStock != null)
         {
             selectedStock = availableStocks.FirstOrDefault(s => s.Id == selectedStock.Id);
             if (user?.BankAccount != null)
             {
-                var inv = await db.Investments.FirstOrDefaultAsync(i => i.BankAccountId == user.BankAccount.Id && i.StockId == selectedStock.Id);
+                var inv = await db.Investments.AsNoTracking().FirstOrDefaultAsync(i => i.BankAccountId == user.BankAccount.Id && i.StockId == selectedStock.Id);
                 ownedQuantity = inv?.Quantity ?? 0;
             }
         }
     }
 
-    private decimal GetTrend(Stock? stock)
+    private string FormatCurrency(decimal amount)
     {
-        if (stock == null || !_previousPrices.TryGetValue(stock.Id, out var prev) || prev == 0) return 0;
-        return ((stock.CurrentPrice - prev) / prev) * 100;
+        var symbol = user?.BankAccount?.CurrencyType?.CurrencySymbol ?? "$";
+        return $"{symbol}{amount:N2}";
     }
 
-    private async Task SelectStock(Stock stock)
+    private async Task BuildGraph()
     {
-        selectedStock = stock;
-        tradeMessage = "";
-        await RefreshMarketData();
-        await UpdateChart();
+        if (selectedStock == null) return;
+        using var db = await DbFactory.CreateDbContextAsync();
+        var history = await db.StockHistory.Where(h => h.StockId == selectedStock.Id).OrderByDescending(h => h.Timestamp).Take(40).OrderBy(h => h.Timestamp).ToListAsync();
+        if (history.Count < 2) return;
+
+        decimal minPrice = history.Min(h => h.Price);
+        decimal maxPrice = history.Max(h => h.Price);
+        decimal range = (maxPrice - minPrice) == 0 ? 1 : (maxPrice - minPrice) * 1.2m;
+        decimal baseline = minPrice - (range * 0.1m);
+
+        candles.Clear();
+        float step = 1000f / history.Count;
+        Random rng = new Random();
+
+        for (int i = 0; i < history.Count; i++)
+        {
+            var current = history[i].Price;
+            var prev = i == 0 ? current : history[i - 1].Price;
+            decimal volatility = range * 0.05m;
+            decimal high = Math.Max(current, prev) + (decimal)(rng.NextDouble() * (double)volatility);
+            decimal low = Math.Min(current, prev) - (decimal)(rng.NextDouble() * (double)volatility);
+
+            candles.Add(new CandleModel
+            {
+                Id = history[i].Id,
+                X = i * step,
+                OpenY = Map(prev, baseline, range),
+                CloseY = Map(current, baseline, range),
+                HighY = Map(high, baseline, range),
+                LowY = Map(low, baseline, range),
+                IsUp = current >= prev,
+                Price = current,
+                VolumeHeight = (float)(rng.Next(10, 80)),
+                TradeType = tradeHistoryMarkers.ContainsKey(history[i].Id) ? tradeHistoryMarkers[history[i].Id] : null
+            });
+        }
+    }
+
+    private float Map(decimal val, decimal min, decimal range) => 420 - (float)((val - min) / range * 380);
+    private string GetTrendPoints() => string.Join(" ", candles.Select(c => $"{c.X},{c.CloseY}"));
+
+    private async Task HandleTrade(bool isBuy)
+    {
+        // SERVER SIDE PROTECTION
+        if (user == null)
+        {
+            Toast?.Show("Session Required", Toast.ToastLevel.Error);
+            return;
+        }
+
+        if (selectedStock == null || orderQuantity <= 0) return;
+
+        var (success, msg) = await StockService.ExecuteTradeAsync(user.Id, selectedStock.Id, orderQuantity, isBuy);
+        if (success)
+        {
+            Toast?.Show(msg, Toast.ToastLevel.Success);
+            using var db = await DbFactory.CreateDbContextAsync();
+            var last = await db.StockHistory.Where(h => h.StockId == selectedStock.Id).OrderByDescending(h => h.Timestamp).FirstOrDefaultAsync();
+            if (last != null) tradeHistoryMarkers[last.Id] = isBuy ? "BUY" : "SELL";
+            await RefreshUserData();
+            await RefreshMarketData();
+            await BuildGraph();
+        }
+        else { Toast?.Show(msg, Toast.ToastLevel.Error); }
+        StateHasChanged();
     }
 
     private async Task ExecuteBuyMax()
     {
-        if (selectedStock == null || user?.BankAccount == null) return;
-        decimal localPrice = GetConvertedPrice(selectedStock.CurrentPrice);
-        if (localPrice > 0)
+        if (selectedStock != null && user?.BankAccount != null)
         {
-            orderQuantity = Math.Floor((user.BankAccount.Balance / localPrice) * 10000m) / 10000m;
-            await HandleTrade(true);
+            decimal p = GetConvertedPrice(selectedStock.CurrentPrice);
+            orderQuantity = p > 0 ? Math.Floor((user.BankAccount.Balance / p) * 100m) / 100m : 0;
+            if (orderQuantity > 0) await HandleTrade(true);
         }
     }
 
-    private async Task ExecuteSellAll()
-    {
-        if (ownedQuantity > 0)
-        {
-            orderQuantity = ownedQuantity;
-            await HandleTrade(false);
-        }
-    }
-
-    private async Task HandleTrade(bool isBuy)
-    {
-        if (selectedStock == null || user == null) return;
-        var (success, message) = await StockService.ExecuteTradeAsync(user.Id, selectedStock.Id, orderQuantity, isBuy);
-        tradeMessage = message;
-        if (success)
-        {
-            user = await AuthService.GetCurrentApplicationUser();
-            await RefreshMarketData();
-            orderQuantity = 1.0m;
-        }
-    }
-
-    private async Task UpdateChart()
-    {
-        if (selectedStock == null || !_jsInitialized) return;
-
-        using var db = await DbFactory.CreateDbContextAsync();
-        var history = await db.StockHistory
-            .Where(h => h.StockId == selectedStock.Id)
-            .OrderByDescending(h => h.Timestamp)
-            .Take(40)
-            .OrderBy(h => h.Timestamp)
-            .ToListAsync();
-
-        if (history.Count < 2) return;
-
-        // Map to OHLC format
-        // Since history is usually a single price stream, we simulate candles by using
-        // a small offset for open/high/low relative to the closing price.
-        var chartData = history.Select(h => new
-        {
-            x = h.Timestamp.ToUniversalTime().Ticks / 10000, // Epic conversion to JS timestamp
-            o = (double)GetConvertedPrice(h.Price * 0.998m),
-            h = (double)GetConvertedPrice(h.Price * 1.002m),
-            l = (double)GetConvertedPrice(h.Price * 0.997m),
-            c = (double)GetConvertedPrice(h.Price)
-        }).ToList();
-
-        try
-        {
-            await JS.InvokeVoidAsync("renderStockChart", chartData);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Chart Error: {ex.Message}");
-        }
-    }
-
+    private async Task ExecuteSellAll() { orderQuantity = ownedQuantity; if (orderQuantity > 0) await HandleTrade(false); }
+    private decimal GetConvertedPrice(decimal p) => user?.BankAccount?.CurrencyType == null ? p : p * user.BankAccount.CurrencyType.Rate;
     public void Dispose() => _timer?.Dispose();
+    private async Task SelectStock(Stock stock) { selectedStock = stock; tradeHistoryMarkers.Clear(); await BuildGraph(); }
+
+    public class CandleModel
+    {
+        public long Id; public float X, OpenY, CloseY, HighY, LowY, VolumeHeight;
+        public bool IsUp; public decimal Price; public string? TradeType;
+    }
 }

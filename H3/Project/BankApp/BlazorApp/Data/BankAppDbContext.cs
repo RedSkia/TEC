@@ -34,9 +34,16 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         );
 
         builder.Entity<CurrencyType>().HasData(
-            new CurrencyType { Id = 1, CurrencyCode = "EUR", Rate = 1.0000m },
-            new CurrencyType { Id = 2, CurrencyCode = "USD", Rate = 1.0800m },
-            new CurrencyType { Id = 3, CurrencyCode = "DKK", Rate = 7.4500m }
+            new CurrencyType { Id = 1, CurrencyCode = "EUR", CurrencySymbol = "€", Rate = 1.0000m },
+            new CurrencyType { Id = 2, CurrencyCode = "USD", CurrencySymbol = "$", Rate = 1.0800m },
+            new CurrencyType { Id = 3, CurrencyCode = "DKK", CurrencySymbol = "kr", Rate = 7.4500m },
+            new CurrencyType { Id = 4, CurrencyCode = "GBP", CurrencySymbol = "£", Rate = 0.8600m },
+            new CurrencyType { Id = 5, CurrencyCode = "SEK", CurrencySymbol = "kr", Rate = 11.2000m },
+            new CurrencyType { Id = 6, CurrencyCode = "NOK", CurrencySymbol = "kr", Rate = 11.5000m },
+            new CurrencyType { Id = 7, CurrencyCode = "CHF", CurrencySymbol = "CHF", Rate = 0.9600m },
+            new CurrencyType { Id = 8, CurrencyCode = "CAD", CurrencySymbol = "C$", Rate = 1.4700m },
+            new CurrencyType { Id = 9, CurrencyCode = "AUD", CurrencySymbol = "A$", Rate = 1.6400m },
+            new CurrencyType { Id = 10, CurrencyCode = "JPY", CurrencySymbol = "¥", Rate = 160.0000m }
         );
 
         builder.Entity<Stock>().HasData(

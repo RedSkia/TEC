@@ -93,7 +93,7 @@
 </style>
 
 @code {
-    [CascadingParameter] public Notification? Toast { get; set; }
+    [CascadingParameter] public Toast? Toast { get; set; }
 
     private string username = "";
     private string password = "";
@@ -105,7 +105,7 @@
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
             error = "CREDENTIALS REQUIRED";
-            Toast?.Show(error, Notification.ToastLevel.Warning);
+            Toast?.Show(error, Toast.ToastLevel.Warning);
             return;
         }
 
@@ -118,19 +118,19 @@
 
             if (!string.IsNullOrEmpty(token))
             {
-                Toast?.Show($"Welcome, {username}. Access Granted.", Notification.ToastLevel.Success);
+                Toast?.Show($"Welcome, {username}. Access Granted.", Toast.ToastLevel.Success);
                 Nav.NavigateTo("/");
             }
             else
             {
                 error = "INVALID CREDENTIALS";
-                Toast?.Show(error, Notification.ToastLevel.Error);
+                Toast?.Show(error, Toast.ToastLevel.Error);
             }
         }
         catch (Exception)
         {
             error = "CONNECTION ERROR";
-            Toast?.Show("System Offline: Server connection failed.", Notification.ToastLevel.Error);
+            Toast?.Show("System Offline: Server connection failed.", Toast.ToastLevel.Error);
         }
         finally
         {
