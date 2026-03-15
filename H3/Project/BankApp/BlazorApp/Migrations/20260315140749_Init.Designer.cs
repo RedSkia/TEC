@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorApp.Migrations
 {
     [DbContext(typeof(BankAppDbContext))]
-    [Migration("20260313160808_Init")]
+    [Migration("20260315140749_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -260,6 +260,10 @@ namespace BlazorApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CurrencySymbol")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Rate")
                         .HasColumnType("decimal(18,4)");
 
@@ -272,19 +276,71 @@ namespace BlazorApp.Migrations
                         {
                             Id = 1,
                             CurrencyCode = "EUR",
+                            CurrencySymbol = "€",
                             Rate = 1.0000m
                         },
                         new
                         {
                             Id = 2,
                             CurrencyCode = "USD",
+                            CurrencySymbol = "$",
                             Rate = 1.0800m
                         },
                         new
                         {
                             Id = 3,
                             CurrencyCode = "DKK",
+                            CurrencySymbol = "kr",
                             Rate = 7.4500m
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CurrencyCode = "GBP",
+                            CurrencySymbol = "£",
+                            Rate = 0.8600m
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CurrencyCode = "SEK",
+                            CurrencySymbol = "kr",
+                            Rate = 11.2000m
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CurrencyCode = "NOK",
+                            CurrencySymbol = "kr",
+                            Rate = 11.5000m
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CurrencyCode = "CHF",
+                            CurrencySymbol = "CHF",
+                            Rate = 0.9600m
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CurrencyCode = "CAD",
+                            CurrencySymbol = "C$",
+                            Rate = 1.4700m
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CurrencyCode = "AUD",
+                            CurrencySymbol = "A$",
+                            Rate = 1.6400m
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CurrencyCode = "JPY",
+                            CurrencySymbol = "¥",
+                            Rate = 160.0000m
                         });
                 });
 

@@ -59,7 +59,7 @@
 </div>
 
 @code {
-    [CascadingParameter] public Notification? Toast { get; set; }
+    [CascadingParameter] public Toast? Toast { get; set; }
 
     private List<Stock> stocks = new();
     private Dictionary<int, decimal> manipulateValues = new();
@@ -88,10 +88,10 @@
         try {
             await StockService.UpdateMarketPricesAsync();
             await LoadData();
-            Toast?.Show("MARKET VOLATILITY APPLIED", Notification.ToastLevel.Warning);
+            Toast?.Show("MARKET VOLATILITY APPLIED", Toast.ToastLevel.Warning);
         }
         catch (Exception ex) {
-            Toast?.Show("CORE SYNC FAILURE", Notification.ToastLevel.Error);
+            Toast?.Show("CORE SYNC FAILURE", Toast.ToastLevel.Error);
             Console.WriteLine(ex.Message);
         }
         finally {
@@ -108,10 +108,10 @@
             var ticker = stocks.FirstOrDefault(x => x.Id == id)?.Ticker ?? "ASSET";
             await StockService.AdminAdjustPriceAsync(id, manipulateValues[id]);
             await LoadData();
-            Toast?.Show($"{ticker} OVERRIDDEN", Notification.ToastLevel.Success);
+            Toast?.Show($"{ticker} OVERRIDDEN", Toast.ToastLevel.Success);
         }
         catch (Exception ex) {
-            Toast?.Show("ADJUSTMENT FAILED", Notification.ToastLevel.Error);
+            Toast?.Show("ADJUSTMENT FAILED", Toast.ToastLevel.Error);
             Console.WriteLine(ex.Message);
         }
         finally {

@@ -61,6 +61,7 @@ namespace BlazorApp.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CurrencyCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CurrencySymbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,4)", nullable: false)
                 },
                 constraints: table =>
@@ -392,12 +393,19 @@ namespace BlazorApp.Migrations
 
             migrationBuilder.InsertData(
                 table: "CurrencyTypes",
-                columns: new[] { "Id", "CurrencyCode", "Rate" },
+                columns: new[] { "Id", "CurrencyCode", "CurrencySymbol", "Rate" },
                 values: new object[,]
                 {
-                    { 1, "EUR", 1.0000m },
-                    { 2, "USD", 1.0800m },
-                    { 3, "DKK", 7.4500m }
+                    { 1, "EUR", "€", 1.0000m },
+                    { 2, "USD", "$", 1.0800m },
+                    { 3, "DKK", "kr", 7.4500m },
+                    { 4, "GBP", "£", 0.8600m },
+                    { 5, "SEK", "kr", 11.2000m },
+                    { 6, "NOK", "kr", 11.5000m },
+                    { 7, "CHF", "CHF", 0.9600m },
+                    { 8, "CAD", "C$", 1.4700m },
+                    { 9, "AUD", "A$", 1.6400m },
+                    { 10, "JPY", "¥", 160.0000m }
                 });
 
             migrationBuilder.InsertData(

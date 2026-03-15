@@ -19,7 +19,7 @@
 @inject ITransferService TransferService
 @inject ILendingService LendingService
 
-<Notification @ref="notifier" DisplayTime="4.0" Location="Notification.DockLocation.BottomLeft" />
+<Toast @ref="toast" DisplayTime="4.0" Location="Toast.DockLocation.BottomLeft" />
 
 @* --- TRANSACTIONS HISTORY MODAL --- *@
 @if (showHistoryModal)
@@ -146,7 +146,7 @@
     private List<ApplicationUser> allUsers = new();
     private List<CurrencyType> availableCurrencies = new();
     private ApplicationUser? selectedRecipient;
-    private Notification notifier = default!;
+    private Toast toast = default!;
     private string transferSearchValue = "";
     private bool isSubmitting = false;
     private LoanRequest loanRequest = new();
@@ -458,18 +458,18 @@
     {
         isSubmitting = true;
         var res = await TransferService.ExecuteTransferAsync(user!.Id, selectedRecipient!.Id, transferAmount);
-        if (res.Success) { notifier.Show("Transfer Successful", Notification.ToastLevel.Success); await LoadData(); transferAmount = 0; selectedRecipient = null; ActiveTab = AccountTab.Overview; }
-        else notifier.Show(res.Message, Notification.ToastLevel.Error);
+        if (res.Success) { toast.Show("Transfer Successful", Toast.ToastLevel.Success); await LoadData(); transferAmount = 0; selectedRecipient = null; ActiveTab = AccountTab.Overview; }
+        else toast.Show(res.Message, Toast.ToastLevel.Error);
         isSubmitting = false;
     }
 
     private async Task HandleLoanApplication()
     {
-        if (loanRequest.Amount <= 0) { notifier.Show("Invalid amount", Notification.ToastLevel.Error); return; }
+        if (loanRequest.Amount <= 0) { toast.Show("Invalid amount", Toast.ToastLevel.Error); return; }
         loanRequest.BankAccountId = user!.BankAccount!.Id;
         var success = await LendingService.SubmitLoanRequestAsync(loanRequest);
-        if (success) { notifier.Show("Request Sent", Notification.ToastLevel.Success); await LoadData(); loanRequest = new() { CurrencyTypeId = availableCurrencies.First().Id }; }
-        else notifier.Show("Submission Failed", Notification.ToastLevel.Error);
+        if (success) { toast.Show("Request Sent", Toast.ToastLevel.Success); await LoadData(); loanRequest = new() { CurrencyTypeId = availableCurrencies.First().Id }; }
+        else toast.Show("Submission Failed", Toast.ToastLevel.Error);
     }
 
     private async Task HandleCurrencyChange(ChangeEventArgs e)
@@ -477,7 +477,7 @@
         if (int.TryParse(e.Value?.ToString(), out int id))
         {
             var success = await CurrencyService.UpdateAccountCurrency(user!.Id, id);
-            if (success) { notifier.Show("Currency Swapped", Notification.ToastLevel.Success); await LoadData(); }
+            if (success) { toast.Show("Currency Swapped", Toast.ToastLevel.Success); await LoadData(); }
         }
     }
 
@@ -498,7 +498,7 @@
             dbUser.Address.ZipCode = editZip;
 
             await db.SaveChangesAsync();
-            notifier.Show("Profile Updated", Notification.ToastLevel.Success);
+            toast.Show("Profile Updated", Toast.ToastLevel.Success);
             await LoadData();
         }
     }
@@ -518,12 +518,12 @@
         }
         else
         {
-            notifier.Show("Error closing account.", Notification.ToastLevel.Error);
+            toast.Show("Error closing account.", Toast.ToastLevel.Error);
             isSubmitting = false;
         }
     }
 
-    private async Task HandleDeleteLoan(int id) { if (await LendingService.DeleteLoanRequestAsync(id)) { await LoadData(); notifier.Show("Request Cancelled", Notification.ToastLevel.Info); } }
+    private async Task HandleDeleteLoan(int id) { if (await LendingService.DeleteLoanRequestAsync(id)) { await LoadData(); toast.Show("Request Cancelled", Toast.ToastLevel.Info); } }
 
     private string GetStatusClass(LoanStatus s) => s == LoanStatus.Approved ? "bg-success" : (s == LoanStatus.Denied ? "bg-danger" : "bg-dark");
 }
