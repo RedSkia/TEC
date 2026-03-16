@@ -13,6 +13,7 @@ D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Azure.Identity.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Humanizer.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.Bcl.AsyncInterfaces.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.Build.Framework.dll
@@ -37,6 +38,7 @@ D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.Identity
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.OpenApi.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.SqlServer.Server.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Microsoft.VisualStudio.SolutionPersistence.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\Mono.TextTemplating.dll
@@ -135,6 +137,8 @@ D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\runtimes\win\lib\n
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\SharedCore.dll
+D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\bin\Debug\net10.0\SharedCore.pdb
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\EmbeddedAttribute.cs
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\ValidatableTypeAttribute.cs
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.csproj.AssemblyReference.cache
@@ -143,6 +147,7 @@ D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.Generate
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.AssemblyInfoInputs.cache
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.AssemblyInfo.cs
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.csproj.CoreCompileInputs.cache
+D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.MvcApplicationPartsAssemblyInfo.cs
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.MvcApplicationPartsAssemblyInfo.cache
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.sourcelink.json
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\rjimswa.dswa.cache.json
@@ -168,10 +173,10 @@ D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.bu
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.development.json
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.build.endpoints.json
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\swae.build.ex.cache
-D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.csproj.Up2Date
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\refint\BlazorApp.dll
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.pdb
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\BlazorApp.genruntimeconfig.cache
 D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\ref\BlazorApp.dll
+D:\Desktop\TEC\H3\Project\BankApp\BlazorApp\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
     <UserSecretsId>3edb97e7-4cbb-4855-85f4-2330692586ee</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -29,17 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="BankApp.Data.Constants" />
-    <Using Include="BankApp.Data.Entities.Auth" />
-    <Using Include="BankApp.Data.Entities.Auth" />
-    <Using Include="BankApp.Data.Entities.Banking" />
-    <Using Include="BankApp.Data.Entities.Lending" />
-    <Using Include="BankApp.Data.Entities.Market" />
-    <Using Include="BankApp.Services" />
-    <Using Include="BlazorApp.Components" />
-    <Using Include="BlazorApp.Components.Elements" />
-    <Using Include="Microsoft.AspNetCore.Authorization" />
-    <Using Include="Microsoft.AspNetCore.Components.Forms" />
+    <ProjectReference Include="..\SharedCore\SharedCore.csproj" />
   </ItemGroup>
 
 </Project>

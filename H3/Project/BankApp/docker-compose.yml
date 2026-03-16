@@ -1,14 +1,26 @@
-name: BankApp
-
 services:
   database:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: bankapp-sql
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=BankAppPassword123
+      - MSSQL_SA_PASSWORD=BankAppPassword123!
     ports:
       - "1433:1433"
+    networks:
+      - bank-net
+
+  webapi:
+    image: ${DOCKER_REGISTRY-}webapi
+    build:
+      context: .
+      dockerfile: WebAPI/Dockerfile
+    depends_on:
+      - database
+    ports:
+      - "5001:8080" # Access API at localhost:5001
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
     networks:
       - bank-net
 
@@ -19,11 +31,10 @@ services:
       dockerfile: BlazorApp/Dockerfile
     depends_on:
       - database
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
     ports:
-      - "8080:8080"
+      - "7001:8080" # Access UI at localhost:7001
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
     networks:
       - bank-net
 
