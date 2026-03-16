@@ -8,13 +8,16 @@ namespace BankApp.Services;
 
 public class StockMarketService(IDbContextFactory<BankAppDbContext> dbFactory) : BackgroundService
 {
+    public event Action? OnMarketUpdated;
     // --- BACKGROUND ENGINE (The Worker) ---
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             await UpdateMarketPrices();
-            await Task.Delay(5000, stoppingToken); // Slower frequency for better performance
+            // Notify anyone listening (like our UI)
+            OnMarketUpdated?.Invoke();
+            await Task.Delay(1000, stoppingToken);
         }
     }
 

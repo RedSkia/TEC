@@ -154,6 +154,81 @@ public class IdentityService : AuthenticationStateProvider
     }
 
     // -----------------------------------------------------
+    // USER RETRIEVAL & MANAGEMENT
+    // -----------------------------------------------------
+
+    public async Task<ApplicationUser?> GetCurrentUserAsync()
+    {
+        // Fix: Always get the fresh state instead of relying on the private field
+        var authState = await GetAuthenticationStateAsync();
+        var userPrincipal = authState.User;
+
+        var userId = userPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) return null;
+
+        using var db = await _dbFactory.CreateDbContextAsync();
+
+        return await db.Users
+            .Include(u => u.Address)
+            .Include(u => u.BankAccount)
+                .ThenInclude(b => b!.CurrencyType)
+            .Include(u => u.BankAccount)
+                .ThenInclude(b => b!.Transactions)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == userId);
+    }
+
+    public async Task<List<ApplicationUser>> GetAllUsersExceptAsync(string excludeUserId)
+    {
+        using var db = await _dbFactory.CreateDbContextAsync();
+        return await db.Users
+            .Where(u => u.Id != excludeUserId)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<bool> UpdateUserProfileAsync(string userId, ApplicationUser updatedData)
+    {
+        using var db = await _dbFactory.CreateDbContextAsync();
+        var user = await db.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null) return false;
+
+        // Update top-level info
+        user.FullName = updatedData.FullName;
+
+        // Handle Address update/creation
+        if (user.Address == null)
+        {
+            user.Address = updatedData.Address;
+        }
+        else if (updatedData.Address != null)
+        {
+            user.Address.Street = updatedData.Address.Street;
+            user.Address.City = updatedData.Address.City;
+            user.Address.ZipCode = updatedData.Address.ZipCode;
+        }
+
+        var result = await db.SaveChangesAsync();
+        return result > 0;
+    }
+
+    public async Task<bool> DeleteAccountAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return false;
+
+        var result = await _userManager.DeleteAsync(user);
+
+        if (result.Succeeded)
+        {
+            await Logout(); // Terminate session after purge
+            return true;
+        }
+        return false;
+    }
+
+    // -----------------------------------------------------
     // USER RETRIEVAL
     // -----------------------------------------------------
 
