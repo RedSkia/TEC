@@ -1,105 +1,113 @@
-﻿@attribute [Route(AppRoutes.LoginRegister)]
+﻿@* @attribute [Route(AppRoutes.LoginRegister)]
 @using BlazorApp.Components.Elements
 @using BankApp.Data.Entities.Auth
-@inject IAuthService AuthService
+@using BankApp.Services
+@inject IdentityService IdentityService
 @inject NavigationManager Nav
 @rendermode InteractiveServer
 
-<div class="container-fluid py-5 bg-light min-vh-100">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-5">
-                <InputForm Model="user"
-                           OnSubmit="HandleRegister"
-                           ButtonText="Open Account"
-                           IsLoading="busy"
-                           FormName="register-form">
+<div class="auth-container d-flex align-items-center justify-content-center min-vh-100 py-5">
+    <div style="width: 100%; max-width: 500px;">
 
-                    <HeaderContent>
-                        <div class="text-center mb-4">
-                            <h3 class="fw-bold">Join the Bank</h3>
-                            <p class="text-muted small">All fields are mandatory</p>
-                        </div>
+        <InputForm TItem="ApplicationUser"
+                   Model="user"
+                   OnSubmit="HandleRegister"
+                   ButtonText="CREATE ACCOUNT"
+                   LoadingText="PROVISIONING..."
+                   IsLoading="busy"
+                   ButtonClass="btn-outline-danger border-2 fw-bold rounded-0"
+                   FormName="register-form"
+                   Class="bg-dark bg-opacity-75 border border-secondary border-opacity-25 rounded-0 shadow-lg p-4"
+                   style="backdrop-filter: blur(10px);">
 
-                        @if (error != null)
-                        {
-                            <div class="alert alert-danger py-2 small border-0 shadow-sm mb-3 animate-fade-in">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i> @error
-                            </div>
-                        }
-                    </HeaderContent>
-
-                    <ChildContent>
-                        @* 1. Full Name *@
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Full Name</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-person"></i></span>
-                                <InputText @bind-Value="user.FullName" class="form-control border-start-0" placeholder="John Doe" />
-                            </div>
-                        </div>
-
-                        @* 2. Email *@
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope"></i></span>
-                                <InputText @bind-Value="user.Email" class="form-control border-start-0" placeholder="name@bank.com" />
-                            </div>
-                        </div>
-
-                        @* 3. Street Address *@
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Street Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-house"></i></span>
-                                <InputText @bind-Value="user.Address.Street" class="form-control border-start-0" placeholder="123 Nordic Way" />
-                            </div>
-                        </div>
-
-                        @* Address Helpers (City/Zip) - Necessary for Entity Validation *@
-                        <div class="row mb-3">
-                            <div class="col-7">
-                                <label class="form-label small fw-bold">City</label>
-                                <InputText @bind-Value="user.Address.City" class="form-control" placeholder="City" />
-                            </div>
-                            <div class="col-5">
-                                <label class="form-label small fw-bold">Zip Code</label>
-                                <InputText @bind-Value="user.Address.ZipCode" class="form-control" placeholder="0000" />
-                            </div>
-                        </div>
-
-                        @* 4. Username *@
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Username</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-at"></i></span>
-                                <InputText @bind-Value="user.UserName" class="form-control border-start-0" placeholder="Enter Username" />
-                            </div>
-                        </div>
-
-                        @* 5. Password *@
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock"></i></span>
-                                <InputText @bind-Value="password" type="password" class="form-control border-start-0" placeholder="••••••••" />
-                            </div>
-                        </div>
-                    </ChildContent>
-                </InputForm>
-
-                <div class="text-center mt-3">
-                    <p class="small text-muted">
-                        Already have an account? <a href="/login" class="text-primary text-decoration-none fw-bold">Sign In</a>
+            <HeaderContent>
+                <div class="text-center mb-4">
+                    <h4 class="fw-bold text-white mb-1" style="letter-spacing: -1px;">
+                        NEW <span class="text-danger">ACCOUNT.</span>
+                    </h4>
+                    <p class="text-secondary small text-uppercase mb-0" style="letter-spacing: 2px; font-size: 0.65rem;">
+                        Global Asset Onboarding
                     </p>
                 </div>
-            </div>
+
+                @if (error != null)
+                {
+                    <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small rounded-0 mb-4 py-2 fw-bold text-uppercase text-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @error
+                    </div>
+                }
+            </HeaderContent>
+
+            <ChildContent>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Full Name</label>
+                        <InputText @bind-Value="user.FullName" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="John Doe" />
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Email Address</label>
+                        <InputText @bind-Value="user.Email" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="name@domain.com" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Street Address</label>
+                    <InputText @bind-Value="user.Address.Street" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="123 Security Ln" />
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-7">
+                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">City</label>
+                        <InputText @bind-Value="user.Address.City" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" placeholder="City" />
+                    </div>
+                    <div class="col-5">
+                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Zip Code</label>
+                        <InputText @bind-Value="user.Address.ZipCode" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" placeholder="0000" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Username</label>
+                        <InputText @bind-Value="user.UserName" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="UserHandle" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Password</label>
+                        <InputText @bind-Value="password" type="password" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="••••••••" />
+                    </div>
+                </div>
+            </ChildContent>
+        </InputForm>
+
+        <div class="text-center mt-3">
+            <NavLink href="@AppRoutes.Login" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
+                <i class="bi bi-arrow-left me-1"></i>Back to Security Portal
+            </NavLink>
         </div>
     </div>
 </div>
 
+<style>
+    .form-control:focus {
+        background-color: #000 !important;
+        border-color: #dc3545 !important;
+        color: #fff !important;
+    }
+
+    .form-control::placeholder {
+        color: #444 !important;
+        font-size: 0.8rem;
+    }
+
+    .hover-danger:hover {
+        color: #dc3545 !important;
+        transition: 0.2s ease;
+    }
+</style>
+
 @code {
+    [CascadingParameter] public Toast? Toast { get; set; }
+
     private ApplicationUser user = new() { Address = new Address() };
     private string password = "";
     private bool busy;
@@ -107,16 +115,15 @@
 
     async Task HandleRegister()
     {
-        // Strict Mandatory Field Check
+        // Internal Validation
         if (string.IsNullOrWhiteSpace(user.FullName) ||
             string.IsNullOrWhiteSpace(user.Email) ||
             string.IsNullOrWhiteSpace(user.UserName) ||
             string.IsNullOrWhiteSpace(user.Address.Street) ||
-            string.IsNullOrWhiteSpace(user.Address.City) ||
-            string.IsNullOrWhiteSpace(user.Address.ZipCode) ||
             string.IsNullOrWhiteSpace(password))
         {
-            error = "Please fill in all fields to proceed.";
+            error = "ALL FIELDS MANDATORY";
+            Toast?.Show("Validation Error: Please complete the form.", Toast.ToastLevel.Warning);
             return;
         }
 
@@ -125,35 +132,29 @@
 
         try
         {
-            // Note: Update your AuthService.Register to also take City/Zip
-            // or modify the service to use these values from the user object.
-            var validationErrors = await AuthService.Register(
-                user.Email,
-                password,
-                RoleType.Customer,
-                user.UserName,
-                user.FullName,
-                user.Address.Street,
-                user.Address.City,
-                user.Address.ZipCode
-            );
+            // Call our refined IdentityService
+            var validationErrors = await IdentityService.Register(user, password, RoleType.Customer);
 
             if (validationErrors == null)
             {
-                Nav.NavigateTo("/login");
+                Toast?.Show("Account Provisioned Successfully.", Toast.ToastLevel.Success);
+                Nav.NavigateTo(AppRoutes.Login);
             }
             else
             {
-                error = string.Join(" ", validationErrors);
+                error = string.Join(" | ", validationErrors).ToUpper();
+                Toast?.Show("Registration Rejected", Toast.ToastLevel.Error);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            error = "Server connection lost. Please try again.";
+            error = "INTERNAL SERVER ERROR";
+            Toast?.Show("Fatal: Connection to Identity provider lost.", Toast.ToastLevel.Error);
+            Console.WriteLine(ex.Message);
         }
         finally
         {
             busy = false;
         }
     }
-}
+} *@

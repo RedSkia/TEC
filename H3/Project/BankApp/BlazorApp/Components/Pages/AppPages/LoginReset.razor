@@ -1,123 +1,179 @@
-﻿@attribute [Route(AppRoutes.LoginReset)]
+﻿@* @attribute [Route(AppRoutes.LoginReset)]
 @using BankApp.Services
 @using BankApp.Data.Entities.Auth
 @using BlazorApp.Components.Elements
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@inject IAuthService AuthService
+@inject IdentityService IdentityService
 @inject NavigationManager Nav
 @rendermode InteractiveServer
 
-<div class="container-fluid py-5 bg-light min-vh-100">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-5">
+<div class="auth-container d-flex align-items-center justify-content-center min-vh-100 py-5">
+    <div style="width: 100%; max-width: 450px;">
 
-                <div class="mb-4 text-center">
-                    <a href="/" class="text-decoration-none small text-muted">
-                        <i class="bi bi-arrow-left"></i> Back to Home
-                    </a>
-                </div>
-
-                <AuthorizeView Roles="@RoleType.Customer.ToString()">
-                    <Authorized>
-                        @* CASE 1: LOGGED IN - Direct Override *@
-                        <InputForm Model="this" OnSubmit="HandleOverride" ButtonText="Override My Password" IsLoading="isBusy">
-                            <HeaderContent>
-                                <h3 class="fw-bold text-center">Security Override</h3>
-                                <p class="text-muted small text-center">Enter your new password below to update your account.</p>
-                                @RenderStatus()
-                            </HeaderContent>
-                            <ChildContent>
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold">New Password</label>
-                                    <InputText @bind-Value="newPassword" type="password" class="form-control" placeholder="Enter new password" />
-                                </div>
-                            </ChildContent>
-                        </InputForm>
-                    </Authorized>
-
-                    <NotAuthorized>
-                        @* CASE 2: GUEST - Reset by Username *@
-                        <InputForm Model="this" OnSubmit="HandleGuestReset" ButtonText="Reset Account" IsLoading="isBusy">
-                            <HeaderContent>
-                                <h3 class="fw-bold text-center">Account Recovery</h3>
-                                <p class="text-muted small text-center">Enter your username and new password.</p>
-                                @RenderStatus()
-                            </HeaderContent>
-                            <ChildContent>
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold">Username</label>
-                                    <InputText @bind-Value="targetUsername" class="form-control" placeholder="Username" />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold">New Password</label>
-                                    <InputText @bind-Value="newPassword" type="password" class="form-control" placeholder="New password" />
-                                </div>
-                            </ChildContent>
-                        </InputForm>
-                    </NotAuthorized>
-                </AuthorizeView>
-
-            </div>
+        <div class="mb-4 text-center">
+            <a href="/" class="text-decoration-none small text-secondary hover-danger fw-bold text-uppercase" style="letter-spacing: 1px;">
+                <i class="bi bi-arrow-left me-1"></i> Return to Terminal
+            </a>
         </div>
+
+        <AuthorizeView Roles="@RoleType.Customer.ToString()">
+            <Authorized>
+                <InputForm TItem="object"
+                           Model="this"
+                           OnSubmit="HandleOverride"
+                           ButtonText="OVERRIDE PASSWORD"
+                           IsLoading="isBusy"
+                           ButtonClass="btn-outline-danger border-2 fw-bold rounded-0"
+                           Class="bg-dark bg-opacity-75 border border-secondary border-opacity-25 rounded-0 shadow-lg p-4"
+                           style="backdrop-filter: blur(10px);">
+
+                    <HeaderContent>
+                        <div class="text-center mb-4">
+                            <h4 class="fw-bold text-white mb-1" style="letter-spacing: -1px;">
+                                SECURITY <span class="text-danger">OVERRIDE.</span>
+                            </h4>
+                            <p class="text-secondary small text-uppercase mb-0" style="letter-spacing: 2px; font-size: 0.65rem;">
+                                Authorized Identity Modification
+                            </p>
+                        </div>
+                        @RenderStatus()
+                    </HeaderContent>
+
+                    <ChildContent>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">New Password</label>
+                            <InputText @bind-Value="newPassword"
+                                       type="password"
+                                       class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
+                                       style="border-left: 3px solid #dc3545;"
+                                       placeholder="••••••••" />
+                        </div>
+                    </ChildContent>
+                </InputForm>
+            </Authorized>
+
+            <NotAuthorized>
+                <InputForm TItem="object"
+                           Model="this"
+                           OnSubmit="HandleGuestReset"
+                           ButtonText="RECOVER ACCOUNT"
+                           IsLoading="isBusy"
+                           ButtonClass="btn-outline-danger border-2 fw-bold rounded-0"
+                           Class="bg-dark bg-opacity-75 border border-secondary border-opacity-25 rounded-0 shadow-lg p-4"
+                           style="backdrop-filter: blur(10px);">
+
+                    <HeaderContent>
+                        <div class="text-center mb-4">
+                            <h4 class="fw-bold text-white mb-1" style="letter-spacing: -1px;">
+                                ACCOUNT <span class="text-danger">RECOVERY.</span>
+                            </h4>
+                            <p class="text-secondary small text-uppercase mb-0" style="letter-spacing: 2px; font-size: 0.65rem;">
+                                Emergency Protocol Access
+                            </p>
+                        </div>
+                        @RenderStatus()
+                    </HeaderContent>
+
+                    <ChildContent>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Target Username</label>
+                            <InputText @bind-Value="targetUsername"
+                                       class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
+                                       style="border-left: 3px solid #dc3545;"
+                                       placeholder="Username" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Emergency New Password</label>
+                            <InputText @bind-Value="newPassword"
+                                       type="password"
+                                       class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
+                                       style="border-left: 3px solid #dc3545;"
+                                       placeholder="••••••••" />
+                        </div>
+                    </ChildContent>
+                </InputForm>
+            </NotAuthorized>
+        </AuthorizeView>
+
     </div>
 </div>
 
+<style>
+    .form-control:focus {
+        background-color: #000 !important;
+        border-color: #dc3545 !important;
+        color: #fff !important;
+    }
+
+    .hover-danger:hover {
+        color: #dc3545 !important;
+        transition: 0.2s ease;
+    }
+</style>
+
 @code {
+    [CascadingParameter] public Toast? Toast { get; set; }
+
     private string targetUsername = "";
     private string newPassword = "";
     private bool isBusy;
     private string? statusMessage;
     private bool isError;
 
-    // Logged-in: Get the current user's name and force the reset
     private async Task HandleOverride()
     {
         if (string.IsNullOrWhiteSpace(newPassword)) return;
         isBusy = true;
 
-        var user = await AuthService.GetCurrentApplicationUser();
+        var user = await IdentityService.GetCurrentUserAsync();
         if (user != null)
         {
-            var result = await AuthService.ForcePasswordReset(user.UserName!, newPassword);
-            ProcessResult(result.Succeeded, result.Succeeded ? "Password updated successfully!" : GetError(result));
+            var result = await IdentityService.ResetPassword(user.UserName!, newPassword);
+            ProcessResult(result.Succeeded, result.Succeeded ? "ENCRYPTED: Password Updated." : GetError(result));
         }
         else
         {
-            ProcessResult(false, "Session expired. Please log in again.");
+            ProcessResult(false, "SESSION TIMEOUT: RELOGIN REQUIRED.");
         }
     }
 
-    // Guest: Use the provided username to force the reset
     private async Task HandleGuestReset()
     {
         if (string.IsNullOrWhiteSpace(targetUsername) || string.IsNullOrWhiteSpace(newPassword)) return;
         isBusy = true;
 
-        var result = await AuthService.ForcePasswordReset(targetUsername, newPassword);
-        ProcessResult(result.Succeeded, result.Succeeded ? "Account recovered! You can now log in." : GetError(result));
+        var result = await IdentityService.ResetPassword(targetUsername, newPassword);
+        ProcessResult(result.Succeeded, result.Succeeded ? "RECOVERY COMPLETE: Access Restored." : GetError(result));
     }
 
     private void ProcessResult(bool success, string msg)
     {
         isError = !success;
-        statusMessage = msg;
-        if (success) { newPassword = targetUsername = ""; }
+        statusMessage = msg.ToUpper();
+        if (success)
+        {
+            Toast?.Show(msg, Toast.ToastLevel.Success);
+            newPassword = targetUsername = "";
+        }
+        else
+        {
+            Toast?.Show(msg, Toast.ToastLevel.Error);
+        }
         isBusy = false;
     }
 
     private string GetError(Microsoft.AspNetCore.Identity.IdentityResult result)
-        => string.Join(" ", result.Errors.Select(e => e.Description));
+        => string.Join(" | ", result.Errors.Select(e => e.Description));
 
     RenderFragment RenderStatus() => __builder =>
     {
         if (statusMessage != null)
         {
-            <div class="alert @(isError ? "alert-danger" : "alert-success") border-0 py-2 small mb-3 animate-fade-in">
-                <i class="bi @(isError ? "bi-exclamation-circle" : "bi-check-circle") me-2"></i>
+            <div class="alert @(isError ? "alert-danger bg-danger" : "alert-success bg-success") bg-opacity-10 border-0 rounded-0 py-2 small mb-4 fw-bold text-center">
+                <i class="bi @(isError ? "bi-shield-slash" : "bi-shield-check") me-2"></i>
                 @statusMessage
             </div>
         }
     };
-}
+} *@

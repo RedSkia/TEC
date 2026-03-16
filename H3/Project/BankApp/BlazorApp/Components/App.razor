@@ -28,9 +28,10 @@
 </head>
 
 <body class="bg-black">
-    @* REMOVED CascadingAuthenticationState tag - it's already a service in Program.cs *@
-    @* DISABLED Prerendering to prevent JS/LocalStorage timing issues *@
-    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+
+    <CascadingAuthenticationState>
+        <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+    </CascadingAuthenticationState>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
@@ -40,5 +41,6 @@
 
     <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="_framework/blazor.web.js"></script>
+
 </body>
 </html>

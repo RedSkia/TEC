@@ -1,4 +1,4 @@
-﻿@page "/admin/market"
+﻿@* @page "/admin/market"
 @using BankApp.Services
 @using BankApp.Data.Entities.Market
 @using Microsoft.AspNetCore.Authorization
@@ -9,7 +9,6 @@
 @rendermode InteractiveServer
 
 <div class="container-fluid py-5 px-lg-5">
-    @* --- HEADER --- *@
     <div class="d-flex justify-content-between align-items-start mb-5 pb-4 border-bottom border-white border-opacity-10">
         <div>
             <h1 class="display-3 fw-black text-white" style="letter-spacing: -4px;">MARKET <span class="text-danger">CORE.</span></h1>
@@ -23,14 +22,12 @@
         </div>
     </div>
 
-    @* --- MARKET GRID --- *@
     <div class="row g-4">
         @foreach (var stock in stocks)
         {
             <div class="col-xl-3 col-lg-4 col-md-6">
                 <div class="bg-dark bg-opacity-50 border border-secondary border-opacity-25 p-4 position-relative overflow-hidden h-100" style="backdrop-filter: blur(10px);">
                     
-                    @* Ticker Watermark *@
                     <div class="position-absolute top-0 end-0 p-2 opacity-10 fw-black display-6" style="pointer-events: none; font-size: 3rem; transform: rotate(-10deg);">
                         @stock.Ticker
                     </div>
@@ -135,4 +132,4 @@
         -webkit-appearance: none; 
         margin: 0; 
     }
-</style>
+</style> *@

@@ -2,7 +2,8 @@
 @using BlazorApp.Components.Elements
 @using BankApp.Data.Entities.Auth
 @using Microsoft.AspNetCore.Components.Routing
-@inject IAuthService AuthService
+@using BankApp.Services
+@inject IdentityService IdentityService
 @inject NavigationManager Nav
 @rendermode InteractiveServer
 
@@ -62,7 +63,7 @@
         </InputForm>
 
         <div class="d-flex justify-content-between mt-3 px-1">
-            <NavLink href="login/register" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
+            <NavLink href="@AppRoutes.LoginRegister" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
                 <i class="bi bi-person-plus me-1"></i>Create Account
             </NavLink>
 
@@ -74,7 +75,6 @@
 </div>
 
 <style>
-    /* Clean overrides for the new look */
     .form-control:focus {
         background-color: #000 !important;
         border-color: #dc3545 !important;
@@ -100,6 +100,15 @@
     private bool busy;
     private string? error;
 
+    protected override void OnInitialized()
+    {
+        // Fix: If already authenticated, redirect immediately
+        if (IdentityService.IsUserAuthenticated())
+        {
+            Nav.NavigateTo(AppRoutes.Index);
+        }
+    }
+
     async Task HandleLogin()
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
@@ -114,23 +123,25 @@
 
         try
         {
-            var token = await AuthService.Login(username, password);
+            var token = await IdentityService.Login(username, password);
 
             if (!string.IsNullOrEmpty(token))
             {
-                Toast?.Show($"Welcome, {username}. Access Granted.", Toast.ToastLevel.Success);
-                Nav.NavigateTo("/");
+                // Navigate with true to force a reload, refreshing the AuthProvider
+                // and ensuring the Header updates immediately.
+                Nav.NavigateTo(AppRoutes.Index, true);
             }
             else
             {
-                error = "INVALID CREDENTIALS";
-                Toast?.Show(error, Toast.ToastLevel.Error);
+                error = "ACCESS DENIED";
+                Toast?.Show("Authentication Failed: Invalid Credentials.", Toast.ToastLevel.Error);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            error = "CONNECTION ERROR";
-            Toast?.Show("System Offline: Server connection failed.", Toast.ToastLevel.Error);
+            error = "CRITICAL FAILURE";
+            Toast?.Show("System Error: Security service unreachable.", Toast.ToastLevel.Error);
+            Console.WriteLine($"Login Error: {ex.Message}");
         }
         finally
         {

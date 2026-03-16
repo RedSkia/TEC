@@ -1,4 +1,4 @@
-﻿@page "/market"
+﻿@* @page "/market"
 @using BankApp.Data.Entities.Auth
 @using BankApp.Data.Entities.Market
 @using BankApp.Data.Entities.Banking
@@ -6,10 +6,11 @@
 @using Microsoft.EntityFrameworkCore
 @using BlazorApp.Components.Elements
 @rendermode InteractiveServer
-@inject IAuthService AuthService
-@inject IStockService StockService
+
+@inject IdentityService IdentityService
+@inject StockMarketService MarketService
 @inject IDbContextFactory<BankApp.Data.BankAppDbContext> DbFactory
-@inject NavigationManager Navigation
+@inject AppNavigator Nav
 @implements IDisposable
 
 <div class="container-fluid py-4 bg-black min-vh-100">
@@ -22,17 +23,16 @@
     else
     {
         <div class="row g-4">
-            @* --- 1. TICKER MENU --- *@
             <div class="col-xl-3 col-lg-4">
-                <div class="glass-panel p-0 overflow-hidden h-100" style="border-top: 2px solid #dc3545;">
+                <div class="glass-panel p-0 overflow-hidden h-100">
                     <div class="p-3 border-bottom border-secondary border-opacity-10 bg-black">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="text-danger fw-black small text-uppercase m-0 tracking-wider">Market Assets</h6>
-                            <span class="badge bg-danger text-black pulse-red">LIVE</span>
+                            <h6 class="text-white fw-bold small text-uppercase m-0">Market Assets</h6>
+                            <span class="badge bg-danger pulse-red">LIVE</span>
                         </div>
                         <div class="search-container">
                             <input type="text" @bind="searchTerm" @bind:event="oninput"
-                                   class="form-control search-input" placeholder="Search Ticker..." />
+                                   class="form-control search-input" placeholder="Search Assets..." />
                         </div>
                     </div>
 
@@ -50,8 +50,8 @@
                                         <div class="text-secondary tiny-caps">@stock.Name</div>
                                     </div>
                                     <div class="text-end">
-                                        <div class="fw-black text-white">@FormatCurrency(GetConvertedPrice(stock.CurrentPrice))</div>
-                                        <div class="small fw-bold @(isPositive ? "text-success" : "text-danger")">
+                                        <div class="fw-bold text-white">@FormatCurrency(GetConvertedPrice(stock.CurrentPrice))</div>
+                                        <div class="small @(isPositive ? "text-success" : "text-danger")">
                                             @(isPositive ? "▲" : "▼") @Math.Abs(changePercent).ToString("P2")
                                         </div>
                                     </div>
@@ -62,25 +62,18 @@
                 </div>
             </div>
 
-            @* --- 2. THE TERMINAL GRAPH --- *@
             <div class="col-xl-6 col-lg-8">
                 <div class="glass-panel p-4 mb-4">
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <div>
                             <h1 class="display-6 fw-black text-white mb-0">@selectedStock?.Ticker</h1>
-                            <p class="text-danger tracking-widest small fw-bold">TERMINAL FEED</p>
+                            <p class="text-secondary small fw-bold">REAL-TIME MARKET DATA</p>
                         </div>
                         <div class="text-end">
-                            @if (hoverPrice > 0)
-                            {
-                                <div class="text-info tiny-caps fw-bold">SCANNING PRICE</div>
-                                <h2 class="fw-black text-info m-0 tracking-tighter">@FormatCurrency(GetConvertedPrice(hoverPrice))</h2>
-                            }
-                            else
-                            {
-                                <div class="text-secondary tiny-caps fw-bold">LAST PRICE</div>
-                                <h2 class="fw-black text-white m-0 tracking-tighter">@FormatCurrency(GetConvertedPrice(selectedStock?.CurrentPrice ?? 0))</h2>
-                            }
+                            <div class="text-secondary tiny-caps fw-bold">@(hoverPrice > 0 ? "SELECTED PRICE" : "LAST PRICE")</div>
+                            <h2 class="fw-black @(hoverPrice > 0 ? "text-info" : "text-white") m-0 tracking-tighter">
+                                @FormatCurrency(GetConvertedPrice(hoverPrice > 0 ? hoverPrice : (selectedStock?.CurrentPrice ?? 0)))
+                            </h2>
                         </div>
                     </div>
 
@@ -88,23 +81,19 @@
                         @if (candles.Any())
                         {
                             <svg viewBox="0 0 1000 450" preserveAspectRatio="none" style="width: 100%; height: 100%;">
-                                @* GRID LINES *@
                                 @for (int i = 0; i <= 5; i++)
                                 {
                                     var y = i * 90;
                                     <line x1="0" y1="@y" x2="1000" y2="@y" stroke="#1a1a1a" stroke-width="1" />
                                 }
 
-                                @* VOLUME BARS *@
                                 @foreach (var c in candles)
                                 {
-                                    <rect x="@(c.X - 8)" y="@(450 - c.VolumeHeight)" width="16" height="@c.VolumeHeight" fill="@(c.IsUp ? "#19875422" : "#dc354522")" />
+                                    <rect x="@(c.X - 8)" y="@(450 - (c.VolumeHeight * 0.8f))" width="16" height="@(c.VolumeHeight * 0.8f)" fill="@(c.IsUp ? "#19875422" : "#dc354522")" />
                                 }
 
-                                @* TREND LINE *@
-                                <polyline fill="none" stroke="#0dcaf0" stroke-width="1.5" points="@GetTrendPoints()" stroke-linejoin="round" opacity="0.4" />
+                                <polyline fill="none" stroke="#0dcaf0" stroke-width="1.5" points="@GetTrendPoints()" stroke-linejoin="round" opacity="0.3" />
 
-                                @* CANDLESTICKS *@
                                 @foreach (var c in candles)
                                 {
                                     <line x1="@c.X" y1="@c.HighY" x2="@c.X" y2="@c.LowY" stroke="@(c.IsUp ? "#198754" : "#dc3545")" stroke-width="1" />
@@ -119,7 +108,6 @@
                                     }
                                 }
 
-                                @* HOVER LOGIC *@
                                 @foreach (var c in candles)
                                 {
                                     <rect x="@(c.X - 10)" y="0" width="20" height="450" fill="transparent" class="hover-area" @onmouseover="() => hoverPrice = c.Price" />
@@ -135,21 +123,19 @@
                 </div>
             </div>
 
-            @* --- 3. ORDER DESK (WITH AUTH GATE) --- *@
             <div class="col-xl-3">
                 <div class="glass-panel p-4 mb-4 position-relative overflow-hidden" style="min-height: 300px;">
                     @if (user == null)
                     {
-                        @* --- ACCESS OVERLAY --- *@
-                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-black bg-opacity-75" style="z-index: 10; backdrop-filter: blur(4px);">
-                            <i class="bi bi-lock-fill text-danger mb-3" style="font-size: 2rem;"></i>
-                            <h5 class="fw-black text-white text-center px-4">SECURE TERMINAL<br />LOCKED</h5>
-                            <button class="btn btn-danger rounded-pill fw-black px-4 mt-3 tiny-caps" @onclick='() => Navigation.NavigateTo("/login")'>Login to Trade</button>
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-black bg-opacity-50" style="z-index: 10; backdrop-filter: blur(2px);">
+                            <i class="bi bi-shield-lock text-danger mb-3" style="font-size: 2rem;"></i>
+                            <h5 class="fw-bold text-white text-center px-4">PURCHASE PANEL<br />RESTRICTED</h5>
+                            <button class="btn btn-outline-danger rounded-pill fw-bold px-4 mt-3 tiny-caps" @onclick='() => Nav.NavigateTo("/login")'>Login to Purchase</button>
                         </div>
                     }
 
-                    <h6 class="text-white fw-black small text-uppercase mb-4 border-bottom border-danger border-opacity-25 pb-2">Order Execution</h6>
-                    <div class="mb-3 @(user == null ? "opacity-25" : "")">
+                    <h6 class="text-white fw-bold small text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-2">Order Execution</h6>
+                    <div class="mb-3">
                         <label class="text-secondary tiny-caps mb-2 d-flex justify-content-between align-items-end">
                             <span>Order Quantity</span>
                             <div class="text-end">
@@ -162,11 +148,11 @@
                         <input type="number" step="0.01" @bind="orderQuantity" @bind:event="oninput" class="form-control trade-input" disabled="@(user == null)" />
                     </div>
 
-                    <div class="row g-2 @(user == null ? "opacity-25" : "")">
-                        <div class="col-6"><button @onclick="() => HandleTrade(true)" class="btn btn-success w-100 fw-black rounded-0 py-3" disabled="@(user == null)">BUY</button></div>
-                        <div class="col-6"><button @onclick="() => HandleTrade(false)" class="btn btn-danger w-100 fw-black rounded-0 py-3" disabled="@(user == null)">SELL</button></div>
-                        <div class="col-6"><button @onclick="ExecuteBuyMax" class="btn btn-dark border-danger w-100 fw-black rounded-0 py-2 tiny-caps mt-1" disabled="@(user == null)">BUY ALL</button></div>
-                        <div class="col-6"><button @onclick="ExecuteSellAll" class="btn btn-dark border-secondary w-100 fw-black rounded-0 py-2 tiny-caps mt-1" disabled="@(user == null)">SELL ALL</button></div>
+                    <div class="row g-2">
+                        <div class="col-6"><button @onclick="() => HandleTrade(true)" class="btn btn-success w-100 fw-bold rounded-1 py-3" disabled="@(user == null)">BUY</button></div>
+                        <div class="col-6"><button @onclick="() => HandleTrade(false)" class="btn btn-danger w-100 fw-bold rounded-1 py-3" disabled="@(user == null)">SELL</button></div>
+                        <div class="col-6"><button @onclick="ExecuteBuyMax" class="btn btn-dark border-secondary w-100 fw-bold rounded-1 py-2 tiny-caps mt-1" disabled="@(user == null)">BUY MAX</button></div>
+                        <div class="col-6"><button @onclick="ExecuteSellAll" class="btn btn-dark border-secondary w-100 fw-bold rounded-1 py-2 tiny-caps mt-1" disabled="@(user == null)">SELL ALL</button></div>
                     </div>
                 </div>
 
@@ -174,7 +160,7 @@
                 {
                     <div class="glass-panel p-3 border-danger border-start border-4">
                         <small class="text-secondary tiny-caps d-block">Available Funds</small>
-                        <h4 class="text-white fw-black m-0">@FormatCurrency(user.BankAccount.Balance)</h4>
+                        <h4 class="text-white fw-bold m-0">@FormatCurrency(user.BankAccount.Balance)</h4>
                     </div>
                 }
             </div>
@@ -184,8 +170,8 @@
 
 <style>
     .glass-panel {
-        background: #080808;
-        border: 1px solid #1a1a1a;
+        background: #0c0c0c;
+        border: 1px solid #1f1f1f;
     }
 
     .fw-black {
@@ -193,17 +179,16 @@
     }
 
     .ticker-text {
-        font-weight: 900;
+        font-weight: 800;
         color: white;
         font-size: 1.1rem;
-        letter-spacing: -0.5px;
     }
 
     .search-input {
         background: #000;
         border: 1px solid #222;
         color: white;
-        border-radius: 0;
+        border-radius: 4px;
         font-size: 0.8rem;
     }
 
@@ -225,37 +210,32 @@
     }
 
         .stock-card:hover {
-            background: #0a0a0a;
+            background: #151515;
         }
 
         .stock-card.active {
-            background: linear-gradient(90deg, #111 0%, #000 100%);
+            background: #1a1a1a;
             border-left: 4px solid #dc3545;
         }
-
-            .stock-card.active .ticker-text {
-                color: #dc3545;
-            }
 
     .trade-input {
         background: #000;
         border: 1px solid #333;
         color: white;
-        font-weight: 900;
-        border-radius: 0;
+        font-weight: 700;
+        border-radius: 4px;
     }
 
     .pulse-red {
         animation: pulseR 2s infinite;
     }
-
     @@keyframes pulseR {
         0%, 100% {
             opacity: 1;
         }
 
         50% {
-            opacity: 0.3;
+            opacity: 0.4;
         }
     }
 
@@ -266,16 +246,13 @@
     }
 
     .custom-scroll::-webkit-scrollbar {
-        width: 3px;
+        width: 4px;
     }
 
     .custom-scroll::-webkit-scrollbar-thumb {
-        background: #222;
+        background: #333;
+        border-radius: 10px;
     }
-
-        .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #dc3545;
-        }
 </style>
 
 @code {
@@ -296,7 +273,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshUserData();
+        user = await IdentityService.GetCurrentUserAsync();
         await RefreshMarketData();
         if (availableStocks?.Any() == true) selectedStock = availableStocks.First();
         await BuildGraph();
@@ -305,104 +282,93 @@
         {
             await InvokeAsync(async () =>
             {
-                await RefreshUserData();
                 await RefreshMarketData();
                 await BuildGraph();
                 StateHasChanged();
             });
-        }, null, 2000, 2000);
+        }, null, 1000, 1000);
     }
-
-    private async Task RefreshUserData() => user = await AuthService.GetCurrentApplicationUser();
 
     private async Task RefreshMarketData()
     {
         using var db = await DbFactory.CreateDbContextAsync();
-        availableStocks = await db.Stocks.ToListAsync();
+        availableStocks = await db.Stocks.AsNoTracking().ToListAsync();
+
         if (selectedStock != null)
         {
             selectedStock = availableStocks.FirstOrDefault(s => s.Id == selectedStock.Id);
             if (user?.BankAccount != null)
             {
-                var inv = await db.Investments.AsNoTracking().FirstOrDefaultAsync(i => i.BankAccountId == user.BankAccount.Id && i.StockId == selectedStock.Id);
+                var inv = await db.Investments.AsNoTracking()
+                    .FirstOrDefaultAsync(i => i.BankAccountId == user.BankAccount.Id && i.StockId == selectedStock.Id);
                 ownedQuantity = inv?.Quantity ?? 0;
             }
         }
     }
 
-    private string FormatCurrency(decimal amount)
-    {
-        var symbol = user?.BankAccount?.CurrencyType?.CurrencySymbol ?? "$";
-        return $"{symbol}{amount:N2}";
-    }
+    private string FormatCurrency(decimal amount) => $"{(user?.BankAccount?.CurrencyType?.CurrencySymbol ?? "$")}{amount:N2}";
 
     private async Task BuildGraph()
     {
         if (selectedStock == null) return;
         using var db = await DbFactory.CreateDbContextAsync();
-        var history = await db.StockHistory.Where(h => h.StockId == selectedStock.Id).OrderByDescending(h => h.Timestamp).Take(40).OrderBy(h => h.Timestamp).ToListAsync();
+        var history = await db.StockHistory.AsNoTracking()
+            .Where(h => h.StockId == selectedStock.Id)
+            .OrderByDescending(h => h.Timestamp).Take(40).OrderBy(h => h.Timestamp).ToListAsync();
+
         if (history.Count < 2) return;
 
         decimal minPrice = history.Min(h => h.Price);
         decimal maxPrice = history.Max(h => h.Price);
-        decimal range = (maxPrice - minPrice) == 0 ? 1 : (maxPrice - minPrice) * 1.2m;
-        decimal baseline = minPrice - (range * 0.1m);
+        decimal range = (maxPrice - minPrice) == 0 ? 1 : (maxPrice - minPrice) * 1.5m;
+        decimal baseline = minPrice - (range * 0.2m);
 
         candles.Clear();
         float step = 1000f / history.Count;
-        Random rng = new Random();
+        Random rng = new();
 
         for (int i = 0; i < history.Count; i++)
         {
             var current = history[i].Price;
             var prev = i == 0 ? current : history[i - 1].Price;
-            decimal volatility = range * 0.05m;
-            decimal high = Math.Max(current, prev) + (decimal)(rng.NextDouble() * (double)volatility);
-            decimal low = Math.Min(current, prev) - (decimal)(rng.NextDouble() * (double)volatility);
-
+            decimal vol = range * 0.05m;
             candles.Add(new CandleModel
             {
                 Id = history[i].Id,
                 X = i * step,
                 OpenY = Map(prev, baseline, range),
                 CloseY = Map(current, baseline, range),
-                HighY = Map(high, baseline, range),
-                LowY = Map(low, baseline, range),
+                HighY = Map(Math.Max(current, prev) + (decimal)rng.NextDouble() * vol, baseline, range),
+                LowY = Map(Math.Min(current, prev) - (decimal)rng.NextDouble() * vol, baseline, range),
                 IsUp = current >= prev,
                 Price = current,
-                VolumeHeight = (float)(rng.Next(10, 80)),
-                TradeType = tradeHistoryMarkers.ContainsKey(history[i].Id) ? tradeHistoryMarkers[history[i].Id] : null
+                VolumeHeight = rng.Next(20, 60),
+                TradeType = tradeHistoryMarkers.GetValueOrDefault(history[i].Id)
             });
         }
     }
 
-    private float Map(decimal val, decimal min, decimal range) => 420 - (float)((val - min) / range * 380);
+    private float Map(decimal val, decimal min, decimal range) => 350 - (float)((val - min) / range * 300);
     private string GetTrendPoints() => string.Join(" ", candles.Select(c => $"{c.X},{c.CloseY}"));
 
     private async Task HandleTrade(bool isBuy)
     {
-        // SERVER SIDE PROTECTION
-        if (user == null)
-        {
-            Toast?.Show("Session Required", Toast.ToastLevel.Error);
-            return;
-        }
+        if (user == null || selectedStock == null || orderQuantity <= 0) return;
 
-        if (selectedStock == null || orderQuantity <= 0) return;
+        var (success, msg) = await MarketService.ExecuteTrade(user.Id, selectedStock.Id, orderQuantity, isBuy);
 
-        var (success, msg) = await StockService.ExecuteTradeAsync(user.Id, selectedStock.Id, orderQuantity, isBuy);
         if (success)
         {
             Toast?.Show(msg, Toast.ToastLevel.Success);
             using var db = await DbFactory.CreateDbContextAsync();
             var last = await db.StockHistory.Where(h => h.StockId == selectedStock.Id).OrderByDescending(h => h.Timestamp).FirstOrDefaultAsync();
             if (last != null) tradeHistoryMarkers[last.Id] = isBuy ? "BUY" : "SELL";
-            await RefreshUserData();
+
+            user = await IdentityService.GetCurrentUserAsync(); // Refresh balance
             await RefreshMarketData();
             await BuildGraph();
         }
         else { Toast?.Show(msg, Toast.ToastLevel.Error); }
-        StateHasChanged();
     }
 
     private async Task ExecuteBuyMax()
@@ -425,4 +391,4 @@
         public long Id; public float X, OpenY, CloseY, HighY, LowY, VolumeHeight;
         public bool IsUp; public decimal Price; public string? TradeType;
     }
-}
+} *@
