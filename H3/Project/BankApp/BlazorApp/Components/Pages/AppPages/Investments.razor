@@ -1,9 +1,9 @@
-﻿@attribute [Route(AppRoutes.Invest)]
+﻿@* @attribute [Route(AppRoutes.Invest)]
 @using BankApp.Data.Entities.Auth
 @using BankApp.Data.Entities.Market
 @using BankApp.Data.Entities.Banking
 @using BankApp.Services
-@using Microsoft.EntityFrameworkCore @* <--- ADD THIS LINE *@
+@using Microsoft.EntityFrameworkCore 
 @rendermode InteractiveServer
 @inject IAuthService AuthService
 @inject BankApp.Data.BankAppDbContext DbContext
@@ -19,7 +19,6 @@
     else
     {
         <div class="row g-4">
-            @* --- LEFT: MARKET LIST --- *@
             <div class="col-lg-7">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -54,7 +53,6 @@
                 </div>
             </div>
 
-            @* --- RIGHT: PORTFOLIO --- *@
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm bg-dark text-white mb-4">
                     <div class="card-body p-4 text-center">
@@ -149,4 +147,4 @@
             .Where(i => i.Stock != null)
             .Sum(i => i.Quantity * i.Stock.CurrentPrice);
     }
-}
+} *@

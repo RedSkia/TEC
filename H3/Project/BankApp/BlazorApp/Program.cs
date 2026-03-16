@@ -1,21 +1,19 @@
 using BankApp.Data;
+using BankApp.Data.Entities.Auth;
 using BankApp.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using BankApp.Data.Entities.Market;
-using BankApp.Data.Entities.Banking;
-using BankApp.Data.Entities.Auth;
-using BankApp.Data.Entities.Lending;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. DATABASE & IDENTITY ---
+// -----------------------------------------------------
+// DATABASE
+// -----------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContextFactory<BankAppDbContext>(options =>
@@ -25,128 +23,144 @@ builder.Services.AddDbContextFactory<BankAppDbContext>(options =>
         sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
         sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
     });
-    // CRITICAL: Suppress the error that stops the database from creating/migrating
+
     options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
 });
 
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options => {
+// -----------------------------------------------------
+// IDENTITY
+// -----------------------------------------------------
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 1;
     options.Password.RequiredUniqueChars = 0;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
+    options.User.RequireUniqueEmail = true;
 })
+.AddRoles<ApplicationRole>()
 .AddEntityFrameworkStores<BankAppDbContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddScoped(sp =>
-    sp.GetRequiredService<IDbContextFactory<BankAppDbContext>>().CreateDbContext());
+// -----------------------------------------------------
+// JWT AUTHENTICATION
+// -----------------------------------------------------
+var jwtKey = builder.Configuration["JWT:Key"]!;
+var jwtIssuer = builder.Configuration["JWT:Issuer"]!;
+var jwtAudience = builder.Configuration["JWT:Audience"]!;
 
-// --- 2. AUTHENTICATION ---
-builder.Services.AddAuthentication(options => {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options => {
+builder.Services
+.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
-        ValidIssuer = builder.Configuration["JWT:Issuer"],
-        ValidAudience = builder.Configuration["JWT:Audience"],
+        ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!)),
-        ClockSkew = TimeSpan.FromSeconds(30)
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var token = context.Request.Query["access_token"];
+            if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments("/_blazor"))
+            {
+                context.Token = token;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
-// --- 3. SERVICES ---
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddControllers();
-builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-
-builder.Services.AddScoped<TokenStorageService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IRouteNavigator, RouteNavigator>();
-builder.Services.AddScoped<ICurrencyService, CurrencyService>();
-builder.Services.AddScoped<ILendingService, LendingService>();
-builder.Services.AddScoped<ITransferService, TransferService>();
-builder.Services.AddSingleton<IStockService, StockService>();
-builder.Services.AddHostedService<MarketWorker>();
-
-
-builder.Services.AddScoped<JwtAuthStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthStateProvider>());
-
-builder.Services.AddAuthorizationCore(options => {
-    options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
-        .RequireAuthenticatedUser().Build();
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("StaffOnly", policy => policy.RequireRole("Admin", "LoanOfficer"));
+// -----------------------------------------------------
+// AUTHORIZATION & ANTIFORGERY
+// -----------------------------------------------------
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    options.AddPolicy("StaffOnly", p => p.RequireRole("Admin", "LoanOfficer"));
 });
 
-// CRUD
-builder.Services.AddTransient<ICRUDService<Stock>, CRUDService<Stock>>();
-builder.Services.AddTransient<ICRUDService<CurrencyType>, CRUDService<CurrencyType>>();
-builder.Services.AddTransient<ICRUDService<Transaction>, CRUDService<Transaction>>();
-builder.Services.AddTransient<ICRUDService<Address>, CRUDService<Address>>();
-builder.Services.AddTransient<ICRUDService<LoginActivity>, CRUDService<LoginActivity>>();
-builder.Services.AddTransient<ICRUDService<BankAccount>, CRUDService<BankAccount>>();
-builder.Services.AddTransient<ICRUDService<LoanRequest>, CRUDService<LoanRequest>>();
-builder.Services.AddTransient<ICRUDService<Investment>, CRUDService<Investment>>();
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+});
+
+// -----------------------------------------------------
+// BLAZOR & CUSTOM SERVICES
+// -----------------------------------------------------
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+builder.Services.AddCascadingAuthenticationState();
+
+// Map the custom IdentityService to the AuthenticationStateProvider
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityService>();
+builder.Services.AddScoped<IdentityService>(); // Allows injecting IdentityService directly if needed
+
+builder.Services.AddScoped<AppNavigator>();
+builder.Services.AddScoped<FinanceService>();
+builder.Services.AddScoped<StockMarketService>();
 
 var app = builder.Build();
 
-// --- 4. MIGRATION & SEEDING ---
+// -----------------------------------------------------
+// DATABASE MIGRATION + SEEDING
+// -----------------------------------------------------
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var contextFactory = services.GetRequiredService<IDbContextFactory<BankAppDbContext>>();
+    var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-    int retryCount = 12; // 1 minute total
-    while (retryCount > 0)
-    {
-        try
-        {
-            using var context = contextFactory.CreateDbContext();
-            await context.Database.MigrateAsync();
+    using var context = contextFactory.CreateDbContext();
+    await context.Database.MigrateAsync();
 
-            var adminName = "admin";
-            var adminUser = await userManager.FindByNameAsync(adminName);
-            if (adminUser == null)
-            {
-                var admin = new ApplicationUser { UserName = adminName, Email = "admin@bank.com", FullName = "System Admin", EmailConfirmed = true };
-                var res = await userManager.CreateAsync(admin, "1");
-                if (res.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(admin, "Admin");
-                    context.Addresses.Add(new Address { Street = "System", City = "System", ZipCode = "0000", UserId = admin.Id });
-                    context.BankAccounts.Add(new BankAccount { AccountNumber = "ADM-001", Balance = 1000000, CurrencyTypeId = 1, UserId = admin.Id });
-                    await context.SaveChangesAsync();
-                }
-            }
-            Console.WriteLine(">>> Database Online and Seeded.");
-            break;
-        }
-        catch (Exception ex)
+    if (!await roleManager.RoleExistsAsync("Admin"))
+        await roleManager.CreateAsync(new ApplicationRole { Name = "Admin", RoleColor = "#c80000" });
+
+    if (!await roleManager.RoleExistsAsync("LoanOfficer"))
+        await roleManager.CreateAsync(new ApplicationRole { Name = "LoanOfficer", RoleColor = "#00c800" });
+
+    if (!await roleManager.RoleExistsAsync("Customer"))
+        await roleManager.CreateAsync(new ApplicationRole { Name = "Customer", RoleColor = "#00c8c8" });
+
+    var admin = await userManager.FindByNameAsync("admin");
+    if (admin == null)
+    {
+        admin = new ApplicationUser
         {
-            retryCount--;
-            Console.WriteLine($">>> DB Waiting... {retryCount} left. Error: {ex.Message}");
-            await Task.Delay(5000);
-        }
+            UserName = "admin",
+            Email = "admin@bank.com",
+            FullName = "System Admin",
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(admin, "1");
+        if (result.Succeeded)
+            await userManager.AddToRoleAsync(admin, "Admin");
     }
 }
 
-// --- 5. MIDDLEWARE ---
+// -----------------------------------------------------
+// MIDDLEWARE PIPELINE
+// -----------------------------------------------------
 app.UseStaticFiles();
-app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
-app.MapRazorComponents<BlazorApp.Components.App>().AddInteractiveServerRenderMode();
+app.UseAntiforgery();
+
+app.MapRazorComponents<BlazorApp.Components.App>()
+   .AddInteractiveServerRenderMode();
 
 app.Run();
