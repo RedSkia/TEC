@@ -7,5 +7,5 @@ public enum TransactionType
     Exchange, 
     Withdraw, 
     Deposit, 
-    LoanDisbursement 
+    Loan
 }

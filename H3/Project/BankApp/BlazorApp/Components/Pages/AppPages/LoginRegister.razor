@@ -1,4 +1,4 @@
-﻿@* @attribute [Route(AppRoutes.LoginRegister)]
+﻿@page "/login/register"
 @using BlazorApp.Components.Elements
 @using BankApp.Data.Entities.Auth
 @using BankApp.Services
@@ -7,33 +7,30 @@
 @rendermode InteractiveServer
 
 <div class="auth-container d-flex align-items-center justify-content-center min-vh-100 py-5">
-    <div style="width: 100%; max-width: 500px;">
+    <div style="width: 100%; max-width: 500px;" class="fade-in">
 
         <InputForm TItem="ApplicationUser"
                    Model="user"
                    OnSubmit="HandleRegister"
-                   ButtonText="CREATE ACCOUNT"
+                   ButtonText="INITIALIZE ACCOUNT"
                    LoadingText="PROVISIONING..."
                    IsLoading="busy"
-                   ButtonClass="btn-outline-danger border-2 fw-bold rounded-0"
+                   ButtonClass="btn-danger fw-black rounded-0 w-100 py-3 mt-2"
                    FormName="register-form"
-                   Class="bg-dark bg-opacity-75 border border-secondary border-opacity-25 rounded-0 shadow-lg p-4"
-                   style="backdrop-filter: blur(10px);">
+                   Class="glass-panel p-4 shadow-lg"
+                   style="border-top: 4px solid #dc3545;">
 
             <HeaderContent>
                 <div class="text-center mb-4">
-                    <h4 class="fw-bold text-white mb-1" style="letter-spacing: -1px;">
-                        NEW <span class="text-danger">ACCOUNT.</span>
-                    </h4>
-                    <p class="text-secondary small text-uppercase mb-0" style="letter-spacing: 2px; font-size: 0.65rem;">
-                        Global Asset Onboarding
-                    </p>
+                    <div class="badge bg-danger pulse-red mb-2">SYSTEM ONBOARDING</div>
+                    <h2 class="fw-black text-white mb-1 tracking-tighter">NEW <span class="text-danger">USER.</span></h2>
+                    <p class="text-secondary tiny-caps mb-0">Identity & Asset Initialization</p>
                 </div>
 
                 @if (error != null)
                 {
-                    <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small rounded-0 mb-4 py-2 fw-bold text-uppercase text-center">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @error
+                    <div class="alert bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger tiny-caps py-2 fw-bold text-center mb-4">
+                        <i class="bi bi-exclamation-octagon-fill me-2"></i> @error
                     </div>
                 }
             </HeaderContent>
@@ -41,67 +38,91 @@
             <ChildContent>
                 <div class="row g-3 mb-3">
                     <div class="col-md-12">
-                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Full Name</label>
-                        <InputText @bind-Value="user.FullName" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="John Doe" />
+                        <label class="tiny-caps text-secondary mb-1">Legal Full Name</label>
+                        <InputText @bind-Value="user.FullName" class="form-control trade-input" placeholder="JOHN DOE" />
                     </div>
                     <div class="col-md-12">
-                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Email Address</label>
-                        <InputText @bind-Value="user.Email" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="name@domain.com" />
+                        <label class="tiny-caps text-secondary mb-1">Network Identity (Email)</label>
+                        <InputText @bind-Value="user.Email" class="form-control trade-input" placeholder="IDENTITY@NETWORK.COM" />
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Street Address</label>
-                    <InputText @bind-Value="user.Address.Street" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="123 Security Ln" />
+                    <label class="tiny-caps text-secondary mb-1">Residential Vector (Street)</label>
+                    <InputText @bind-Value="user.Address.Street" class="form-control trade-input" placeholder="123 SECURITY LN" />
                 </div>
 
                 <div class="row g-3 mb-3">
                     <div class="col-7">
-                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">City</label>
-                        <InputText @bind-Value="user.Address.City" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" placeholder="City" />
+                        <label class="tiny-caps text-secondary mb-1">City</label>
+                        <InputText @bind-Value="user.Address.City" class="form-control trade-input" placeholder="NEO-CITY" />
                     </div>
                     <div class="col-5">
-                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Zip Code</label>
-                        <InputText @bind-Value="user.Address.ZipCode" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" placeholder="0000" />
+                        <label class="tiny-caps text-secondary mb-1">Zip</label>
+                        <InputText @bind-Value="user.Address.ZipCode" class="form-control trade-input" placeholder="00000" />
                     </div>
                 </div>
 
-                <div class="row g-3 mb-3">
+                <div class="row g-3 mb-2">
                     <div class="col-md-6">
-                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Username</label>
-                        <InputText @bind-Value="user.UserName" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="UserHandle" />
+                        <label class="tiny-caps text-secondary mb-1">Username</label>
+                        <InputText @bind-Value="user.UserName" class="form-control trade-input" placeholder="UID_01" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Password</label>
-                        <InputText @bind-Value="password" type="password" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" style="border-left: 3px solid #dc3545;" placeholder="••••••••" />
+                        <label class="tiny-caps text-secondary mb-1">Access Key</label>
+                        <input type="password" @bind="password" class="form-control trade-input" placeholder="••••••••" />
                     </div>
                 </div>
             </ChildContent>
         </InputForm>
 
-        <div class="text-center mt-3">
-            <NavLink href="@AppRoutes.Login" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
-                <i class="bi bi-arrow-left me-1"></i>Back to Security Portal
+        <div class="text-center mt-4">
+            <NavLink href="/login" class="text-decoration-none tiny-caps text-secondary hover-danger">
+                <i class="bi bi-shield-lock me-1"></i> Return to Terminal Login
             </NavLink>
         </div>
     </div>
 </div>
 
 <style>
-    .form-control:focus {
-        background-color: #000 !important;
-        border-color: #dc3545 !important;
-        color: #fff !important;
+    /* Reusing your Market Terminal Styles */
+    .glass-panel {
+        background: #0c0c0c;
+        border: 1px solid #1f1f1f;
+        border-radius: 4px;
     }
 
-    .form-control::placeholder {
-        color: #444 !important;
-        font-size: 0.8rem;
+    .fw-black { font-weight: 900; }
+    .tracking-tighter { letter-spacing: -2px; }
+    .tiny-caps { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+
+    .trade-input {
+        background: #000 !important;
+        border: 1px solid #333 !important;
+        color: white !important;
+        font-weight: 600;
+        border-radius: 0;
+        font-size: 0.9rem;
+    }
+
+    .trade-input:focus {
+        border-color: #dc3545 !important;
+        box-shadow: none !important;
     }
 
     .hover-danger:hover {
         color: #dc3545 !important;
         transition: 0.2s ease;
+    }
+
+    .pulse-red {
+        animation: pulseR 2s infinite;
+        font-size: 9px;
+    }
+
+    @@keyframes pulseR {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
     }
 </style>
 
@@ -115,15 +136,14 @@
 
     async Task HandleRegister()
     {
-        // Internal Validation
         if (string.IsNullOrWhiteSpace(user.FullName) ||
             string.IsNullOrWhiteSpace(user.Email) ||
             string.IsNullOrWhiteSpace(user.UserName) ||
-            string.IsNullOrWhiteSpace(user.Address.Street) ||
+            string.IsNullOrWhiteSpace(user.Address?.Street) ||
             string.IsNullOrWhiteSpace(password))
         {
-            error = "ALL FIELDS MANDATORY";
-            Toast?.Show("Validation Error: Please complete the form.", Toast.ToastLevel.Warning);
+            error = "FIELD_MANDATORY_CRITICAL";
+            Toast?.Show("Missing required identification fields.", Toast.ToastLevel.Warning);
             return;
         }
 
@@ -132,24 +152,24 @@
 
         try
         {
-            // Call our refined IdentityService
-            var validationErrors = await IdentityService.Register(user, password, RoleType.Customer);
+            // IdentityService handles the UserManager logic and Role assignment
+            var validationErrors = await IdentityService.Register(user, password);
 
-            if (validationErrors == null)
+            if (validationErrors == null || !validationErrors.Any())
             {
-                Toast?.Show("Account Provisioned Successfully.", Toast.ToastLevel.Success);
-                Nav.NavigateTo(AppRoutes.Login);
+                Toast?.Show("Access Granted. Identity Synchronized.", Toast.ToastLevel.Success);
+                Nav.NavigateTo("/login");
             }
             else
             {
                 error = string.Join(" | ", validationErrors).ToUpper();
-                Toast?.Show("Registration Rejected", Toast.ToastLevel.Error);
+                Toast?.Show("Network Rejected Identity", Toast.ToastLevel.Error);
             }
         }
         catch (Exception ex)
         {
-            error = "INTERNAL SERVER ERROR";
-            Toast?.Show("Fatal: Connection to Identity provider lost.", Toast.ToastLevel.Error);
+            error = "ID_SYNC_FAILURE";
+            Toast?.Show("Critical connection error to Identity Provider.", Toast.ToastLevel.Error);
             Console.WriteLine(ex.Message);
         }
         finally
@@ -157,4 +177,4 @@
             busy = false;
         }
     }
-} *@
+}

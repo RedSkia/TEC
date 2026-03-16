@@ -60,4 +60,54 @@ public class FinanceService(IDbContextFactory<BankAppDbContext> dbFactory)
         db.LoanRequests.Add(request);
         return await db.SaveChangesAsync() > 0;
     }
+    // --- LOAN OFFICER PROTOCOLS ---
+
+    public async Task<List<LoanRequest>> GetAllLoanRequestsAsync()
+    {
+        using var db = await dbFactory.CreateDbContextAsync();
+        return await db.LoanRequests
+            .Include(l => l.CurrencyType)
+            .Include(l => l.BankAccount)
+                .ThenInclude(b => b.User) // We need this to see WHO is asking
+            .OrderByDescending(l => l.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<bool> UpdateLoanStatusAsync(int loanId, LoanStatus status, string? officerId, string? response = null)
+    {
+        using var db = await dbFactory.CreateDbContextAsync();
+        var loan = await db.LoanRequests.FindAsync(loanId);
+        if (loan == null) return false;
+
+        loan.Status = status;
+
+        if (!string.IsNullOrEmpty(officerId))
+            loan.AssignedOfficerId = officerId;
+
+        if (!string.IsNullOrEmpty(response))
+            loan.ResponseFromOfficer = response;
+
+        // Logic: If approved, we should actually deposit the money!
+        if (status == LoanStatus.Approved)
+        {
+            var account = await db.BankAccounts.FindAsync(loan.BankAccountId);
+            if (account != null)
+            {
+                account.Balance += loan.Amount;
+
+                // Add a transaction record for the deposit
+                db.Transactions.Add(new Transaction
+                {
+                    BankAccountId = account.Id,
+                    Amount = loan.Amount,
+                    CurrencyTypeId = loan.CurrencyTypeId,
+                    Type = TransactionType.Loan, // Ensure you have this in your Enum
+                    Note = $"LOAN_PROCEEDS: {loan.RequestReference.Substring(0, 8)}",
+                    TransactionReference = Guid.NewGuid().ToString("N").ToUpper()[..12]
+                });
+            }
+        }
+
+        return await db.SaveChangesAsync() > 0;
+    }
 }

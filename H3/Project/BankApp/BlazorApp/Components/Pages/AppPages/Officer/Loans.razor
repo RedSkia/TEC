@@ -1,0 +1,302 @@
+﻿@page "/officer/lending"
+@using BankApp.Data.Entities.Auth
+@using BankApp.Data.Entities.Banking
+@using BankApp.Data.Entities.Lending
+@using BankApp.Services
+@using BlazorApp.Components.Elements
+@using System.Globalization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@rendermode InteractiveServer
+
+@inject FinanceService FinanceService
+@inject IdentityService IdentityService
+@inject NavigationManager Nav
+
+<AuthorizeView Roles="Admin, LoanOfficer">
+    <Authorized>
+        <div class="container-fluid py-5 min-vh-100 text-white">
+            <div class="container fade-in">
+
+                @* --- HEADER --- *@
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-black tracking-tighter uppercase mb-0">LENDING <span class="text-danger">DESK.</span></h2>
+                        <p class="tiny-caps text-secondary">Asset Disbursement & Risk Assessment</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-opacity-25 text-secondary"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control trade-input small" style="width: 250px;" placeholder="Search identities/refs..." @bind="searchTerm" @bind:event="oninput" />
+                        </div>
+                        <div class="badge bg-dark border border-secondary text-secondary p-2 d-flex align-items-center tiny-caps">
+                            OFFICER: @context.User.Identity?.Name?.ToUpper()
+                        </div>
+                    </div>
+                </div>
+
+                @if (loans == null)
+                {
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-danger" role="status"></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-4">
+                        @* --- LEFT SIDE: QUEUES --- *@
+                        <div class="col-lg-8">
+
+                            @* ACTIVE REQUESTS *@
+                            <div class="glass-panel p-4 mb-4 border-start border-warning border-4">
+                                <h6 class="tiny-caps text-warning mb-3"><i class="bi bi- lightning-charge me-2"></i>Active Protocols</h6>
+                                @RenderLoanTable(ActiveLoans)
+                            </div>
+
+                            @* CLOSED REQUESTS *@
+                            <div class="glass-panel p-4 border-start border-secondary border-4">
+                                <h6 class="tiny-caps text-secondary mb-3"><i class="bi bi-archive me-2"></i>Archive / Finalized</h6>
+                                @RenderLoanTable(ClosedLoans)
+                            </div>
+                        </div>
+
+                        @* --- RIGHT SIDE: DECISION PANEL --- *@
+                        <div class="col-lg-4">
+                            <div class="glass-panel p-4 h-100 border-start border-danger border-4 sticky-top" style="top: 2rem; max-height: 85vh;">
+                                @if (selectedLoan == null)
+                                {
+                                    <div class="text-center py-5 opacity-25">
+                                        <i class="bi bi-shield-lock display-1 mb-3"></i>
+                                        <p class="tiny-caps">Select a request to initialize review protocol</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    bool isLocked = selectedLoan.Status == LoanStatus.Approved || selectedLoan.Status == LoanStatus.Denied || selectedLoan.Status == LoanStatus.Paid;
+
+                                    <div class="fade-in">
+                                        <div class="d-flex justify-content-between align-items-start mb-3 border-bottom border-danger border-opacity-25 pb-2">
+                                            <h6 class="tiny-caps text-danger mb-0">Analysis: @selectedLoan.RequestReference.Substring(0, 8)</h6>
+                                            @if (isLocked)
+                                            {
+                                                <span class="badge bg-danger rounded-0 tiny-caps"><i class="bi bi-lock-fill me-1"></i>LOCKED</span>
+                                            }
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="tiny-caps text-secondary">Subject</label>
+                                            <div class="fw-bold text-white">@selectedLoan.BankAccount.User.FullName.ToUpper()</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="tiny-caps text-secondary">Customer Statement</label>
+                                            <div class="p-3 bg-black border border-secondary border-opacity-25 small italic text-secondary">
+                                                "@selectedLoan.MessageFromCustomer"
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="tiny-caps text-secondary">Requested Amount</label>
+                                            <div class="h4 font-monospace text-white">@selectedLoan.Amount.ToString("N2") @selectedLoan.CurrencyType.CurrencyCode</div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="tiny-caps text-secondary">Officer Response / Log</label>
+                                            <textarea class="form-control trade-input" rows="4"
+                                                      @bind="officerNote"
+                                                      readonly="@isLocked"
+                                                      placeholder="@(isLocked ? "Protocol finalized. Comments are read-only." : "Enter decision rationale...")"></textarea>
+                                        </div>
+
+                                        @if (!isLocked)
+                                        {
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-success rounded-0 fw-black py-3 shadow-sm" @onclick="() => UpdateStatus(LoanStatus.Approved)" disabled="@isBusy">
+                                                    APPROVE & FUND
+                                                </button>
+                                                <button class="btn btn-outline-danger rounded-0 tiny-caps py-2" @onclick="() => UpdateStatus(LoanStatus.Denied)" disabled="@isBusy">
+                                                    DENY REQUEST
+                                                </button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="p-3 border border-secondary border-opacity-25 text-center">
+                                                <i class="bi bi-info-circle me-2"></i>
+                                                <span class="tiny-caps text-secondary">Transaction Finalized @selectedLoan.CreatedAt.ToString("yyyy.MM.dd")</span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center">
+            <div class="text-center border border-danger p-5 glass-panel shadow-lg">
+                <i class="bi bi-exclamation-octagon text-danger display-1 mb-4"></i>
+                <h1 class="fw-black tracking-tighter text-white uppercase">Clearance Required.</h1>
+                <p class="text-secondary tiny-caps">Identity must hold Admin or LoanOfficer permissions.</p>
+                <button class="btn btn-outline-danger mt-4 rounded-0 fw-bold px-4" @onclick='() => Nav.NavigateTo("/")'>RETURN TO BASE</button>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<LoanRequest>? loans;
+    private LoanRequest? selectedLoan;
+    private string searchTerm = "";
+    private string officerNote = "";
+    private bool isBusy = false;
+    private ApplicationUser? currentOfficer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentOfficer = await IdentityService.GetCurrentUserAsync();
+        await LoadLoans();
+    }
+
+    private async Task LoadLoans() => loans = await FinanceService.GetAllLoanRequestsAsync();
+
+    // --- FILTERED LISTS ---
+    private IEnumerable<LoanRequest> ActiveLoans => GetFiltered(l => l.Status == LoanStatus.Open || l.Status == LoanStatus.UnderReview);
+    private IEnumerable<LoanRequest> ClosedLoans => GetFiltered(l => l.Status == LoanStatus.Approved || l.Status == LoanStatus.Denied || l.Status == LoanStatus.Paid);
+
+    private IEnumerable<LoanRequest> GetFiltered(Func<LoanRequest, bool> statusPredicate)
+    {
+        if (loans == null) return Enumerable.Empty<LoanRequest>();
+        return loans.Where(statusPredicate)
+                    .Where(l => string.IsNullOrEmpty(searchTerm) ||
+                           l.BankAccount.User.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                           l.RequestReference.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+    }
+
+    // --- TABLE RENDER FRAGMENT ---
+    private RenderFragment RenderLoanTable(IEnumerable<LoanRequest> data) => __builder =>
+    {
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle border-0 mb-0">
+                <thead>
+                    <tr class="tiny-caps text-secondary border-bottom border-secondary border-opacity-25">
+                        <th class="ps-3">Subject</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var loan in data)
+                    {
+                        <tr class="@(selectedLoan?.Id == loan.Id ? "bg-danger bg-opacity-10" : "")">
+                            <td class="py-3 ps-3">
+                                <div class="fw-bold">@loan.BankAccount.User.FullName.ToUpper()</div>
+                                <div class="font-monospace text-secondary" style="font-size: 0.65rem;">REF: @loan.RequestReference.Substring(0, 8)</div>
+                            </td>
+                            <td class="font-monospace fw-bold text-info">@loan.Amount.ToString("N2") @loan.CurrencyType.CurrencyCode</td>
+                            <td><span class="badge rounded-0 tiny-caps @GetStatusClass(loan.Status)">@loan.Status</span></td>
+                            <td class="text-end pe-3">
+                                <button class="btn btn-sm @(selectedLoan?.Id == loan.Id ? "btn-danger" : "btn-outline-danger") rounded-0 tiny-caps px-3" @onclick="() => SelectLoan(loan)">
+                                    Review
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    };
+
+    private async Task SelectLoan(LoanRequest loan)
+    {
+        selectedLoan = loan;
+        officerNote = loan.ResponseFromOfficer ?? "";
+        if (loan.Status == LoanStatus.Open)
+        {
+            await FinanceService.UpdateLoanStatusAsync(loan.Id, LoanStatus.UnderReview, currentOfficer?.Id);
+            loan.Status = LoanStatus.UnderReview;
+        }
+    }
+
+    private async Task UpdateStatus(LoanStatus status)
+    {
+        if (selectedLoan == null) return;
+        isBusy = true;
+        var success = await FinanceService.UpdateLoanStatusAsync(selectedLoan.Id, status, currentOfficer?.Id, officerNote);
+        if (success) { await LoadLoans(); selectedLoan = null; officerNote = ""; }
+        isBusy = false;
+    }
+
+    private string GetStatusClass(LoanStatus status) => status switch
+    {
+        LoanStatus.Open => "bg-secondary",
+        LoanStatus.UnderReview => "bg-warning text-dark",
+        LoanStatus.Approved => "bg-success",
+        LoanStatus.Denied => "bg-danger",
+        _ => "bg-dark text-secondary"
+    };
+}
+
+<style>
+    .glass-panel {
+        background: #0c0c0c;
+        border: 1px solid #1f1f1f;
+        border-radius: 4px;
+    }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .tracking-tighter {
+        letter-spacing: -2px;
+    }
+
+    .tiny-caps {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 700;
+    }
+
+    .trade-input {
+        background: #000 !important;
+        border: 1px solid #333 !important;
+        color: white !important;
+        font-size: 0.8rem;
+        border-radius: 0;
+    }
+
+        .trade-input:focus {
+            border-color: #dc3545 !important;
+            box-shadow: none !important;
+        }
+
+        .trade-input[readonly] {
+            border-style: dashed !important;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .fade-in {
+        animation: fadeIn 0.4s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>

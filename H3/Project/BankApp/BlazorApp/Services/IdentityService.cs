@@ -71,10 +71,23 @@ public class IdentityService : AuthenticationStateProvider
     public async Task<string?> Login(string username, string password)
     {
         var user = await _userManager.FindByNameAsync(username);
+        using var db = await _dbFactory.CreateDbContextAsync();
 
+        // 1. Check if user exists and password is correct
         if (user == null || !await _userManager.CheckPasswordAsync(user, password))
-            return null;
+        {
+            // Log the failure
+            db.LoginActivities.Add(new LoginActivity
+            {
+                UserId = user?.Id ?? "UNKNOWN", // Handle null user case
+                Status = LoginStatus.InvalidPassword,
+                LoginTime = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync();
+            return null; // Exit here for bad credentials
+        }
 
+        // 2. If code reaches here, credentials are valid. Proceed with token.
         var roles = await _userManager.GetRolesAsync(user);
         var token = GenerateJwtToken(user, roles);
 
@@ -83,11 +96,9 @@ public class IdentityService : AuthenticationStateProvider
 
         // Save token to browser local storage
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
-
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
 
-        using var db = await _dbFactory.CreateDbContextAsync();
-
+        // Log the success
         db.LoginActivities.Add(new LoginActivity
         {
             UserId = user.Id,
@@ -96,7 +107,6 @@ public class IdentityService : AuthenticationStateProvider
         });
 
         await db.SaveChangesAsync();
-
         return token;
     }
 
@@ -112,6 +122,45 @@ public class IdentityService : AuthenticationStateProvider
         await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
 
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+    }
+
+    // -----------------------------------------------------
+    // PASSWORD MANAGEMENT
+    // -----------------------------------------------------
+
+    public async Task<IdentityResult> ResetPassword(string username, string newPassword)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+
+        if (user == null)
+        {
+            return IdentityResult.Failed(new IdentityError
+            {
+                Code = "UserNotFound",
+                Description = "IDENTITY_NOT_FOUND: The specified subject does not exist."
+            });
+        }
+
+        // 1. Generate a password reset token (Internal bypass)
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        // 2. Apply the new password using that token
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+        // Optional: Log the activity
+        if (result.Succeeded)
+        {
+            using var db = await _dbFactory.CreateDbContextAsync();
+            db.LoginActivities.Add(new LoginActivity
+            {
+                UserId = user.Id,
+                Status = LoginStatus.Success, // You could add a 'SecurityOverride' status to your enum
+                LoginTime = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync();
+        }
+
+        return result;
     }
 
     // -----------------------------------------------------
@@ -159,7 +208,6 @@ public class IdentityService : AuthenticationStateProvider
 
     public async Task<ApplicationUser?> GetCurrentUserAsync()
     {
-        // Fix: Always get the fresh state instead of relying on the private field
         var authState = await GetAuthenticationStateAsync();
         var userPrincipal = authState.User;
 
@@ -170,10 +218,12 @@ public class IdentityService : AuthenticationStateProvider
 
         return await db.Users
             .Include(u => u.Address)
+            .Include(u => u.LoginActivities) // <--- FETCH LOGIN LOGS
             .Include(u => u.BankAccount)
                 .ThenInclude(b => b!.CurrencyType)
             .Include(u => u.BankAccount)
                 .ThenInclude(b => b!.Transactions)
+                    .ThenInclude(t => t.CurrencyType) // Include this for correct symbols
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == userId);
     }
