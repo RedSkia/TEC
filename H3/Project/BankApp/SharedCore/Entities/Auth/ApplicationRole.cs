@@ -1,0 +1,10 @@
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+
+namespace SharedCore.Entities.Auth;
+
+public class ApplicationRole : IdentityRole
+{
+    [Required]
+    public string RoleColor { get; set; } = "#808080";
+}
