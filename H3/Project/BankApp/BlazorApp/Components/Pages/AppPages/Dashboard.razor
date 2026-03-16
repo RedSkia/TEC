@@ -1,152 +1,236 @@
-﻿@attribute [Route(AppRoutes.Dashboard)]
-
+﻿@page "/dashboard"
+@using BankApp.Data.Entities.Auth
+@using BankApp.Data.Entities.Banking
+@using BankApp.Data.Entities.Lending
 @using BankApp.Services
+@using BlazorApp.Components.Elements
+@using System.Globalization
 @rendermode InteractiveServer
 
-@* <div class="bg-black text-white min-vh-100 pb-5">
-    <div class="border-bottom border-white border-opacity-10 py-4 mb-5 bg-black sticky-top">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="fw-bolder tracking-tighter mb-0">Command <span class="text-danger">Center</span></h2>
-                <span class="text-white-50 smaller tracking-widest text-uppercase">Encrypted Session Active</span>
-            </div>
-            <button class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">
-                <i class="bi bi-plus-lg me-2"></i>New Account
-            </button>
-        </div>
-    </div>
+@inject IdentityService IdentityService
+@inject FinanceService FinanceService
+@inject NavigationManager Nav
 
-    <div class="container">
+<div class="dashboard-container bg-black min-vh-100 text-white">
+    <div class="container py-5 fade-in">
+
         @if (user == null)
         {
             <div class="text-center py-5">
-                <div class="spinner-grow text-danger" role="status"></div>
-                <p class="mt-4 tracking-widest text-white-50">SYNCING PROTOCOLS...</p>
+                <div class="spinner-border text-danger" role="status"></div>
+                <p class="tiny-caps text-secondary mt-3">Establishing Secure Uplink...</p>
             </div>
         }
         else
         {
-            <div class="row g-4 mb-5">
-                <div class="col-lg-8">
-                    <h5 class="text-uppercase tracking-widest text-danger small fw-bold mb-4">Financial Assets</h5>
-                    <div class="row g-4 mb-5">
-                        @foreach (var account in user.BankAccount)
-                        {
-                            <div class="col-md-6">
-                                <div class="glass-card p-4 h-100">
-                                    <div class="d-flex justify-content-between mb-4">
-                                        <div class="icon-box bg-danger bg-opacity-10 text-danger">
-                                            <i class="bi bi-cpu"></i>
-                                        </div>
-                                        <span class="badge bg-white bg-opacity-5 text-success border border-success border-opacity-25 rounded-pill px-3 py-2">LIVE</span>
-                                    </div>
-                                    <small class="text-white-50 text-uppercase tracking-widest" style="font-size: 0.6rem;">Master Account</small>
-                                    <h2 class="fw-bolder mb-3">@account.Balance.ToString("C2")</h2>
-                                    <div class="d-flex justify-content-between align-items-end">
-                                        <span class="font-monospace text-white-50">@FormatAccountNumber(account.AccountNumber)</span>
-                                        <i class="bi bi-arrow-right-short fs-4 text-danger"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        }
+            @* --- HEADER: WELCOME & PROTOCOL STATUS --- *@
+            <div class="d-flex justify-content-between align-items-end mb-5">
+                <div>
+                    <h1 class="fw-black tracking-tighter uppercase mb-0" style="font-size: 3rem;">
+                        COMMAND <span class="text-danger">CENTER.</span>
+                    </h1>
+                    <div class="d-flex align-items-center gap-3 mt-2">
+                        <span class="badge bg-danger rounded-0 tiny-caps">Level: Authorized</span>
+                        <span class="text-secondary tiny-caps font-monospace">Terminal_ID: @user.Id.Substring(0, 8)</span>
                     </div>
+                </div>
+                <div class="text-end d-none d-md-block">
+                    <div class="text-secondary tiny-caps mb-1">Current Timestamp (UTC)</div>
+                    <div class="fw-bold font-monospace">@DateTime.UtcNow.ToString("yyyy.MM.dd | HH:mm:ss")</div>
+                </div>
+            </div>
 
-                    <h5 class="text-uppercase tracking-widest text-danger small fw-bold mb-4">Unified Ledger</h5>
-                    <div class="glass-card overflow-hidden">
+            @* --- TOP ROW: PRIMARY DATA WIDGETS --- *@
+            <div class="row g-4 mb-4">
+                @* 1. Total Liquidity *@
+                <div class="col-lg-4">
+                    <div class="stat-card bg-danger p-4 h-100 shadow-lg border-start border-white border-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="tiny-caps fw-black">Available Capital</span>
+                            <i class="bi bi-wallet2 fs-4"></i>
+                        </div>
+                        <h2 class="display-5 fw-black tracking-tighter mb-0">
+                            @FormatValue(user.BankAccount?.Balance ?? 0)
+                        </h2>
+                        <div class="tiny-caps opacity-75 mt-2">Verified: @user.BankAccount?.CurrencyType?.CurrencyCode</div>
+                    </div>
+                </div>
+
+                @* 2. Market Exposure *@
+                <div class="col-lg-4">
+                    <div class="stat-card bg-dark border border-secondary border-opacity-25 p-4 h-100">
+                        <div class="d-flex justify-content-between mb-3 text-secondary">
+                            <span class="tiny-caps">Market Value</span>
+                            <i class="bi bi-graph-up-arrow fs-4 text-danger"></i>
+                        </div>
+                        <h2 class="display-5 fw-black tracking-tighter mb-0 text-white">
+                            @FormatValue(marketValue)
+                        </h2>
+                        <div class="tiny-caps text-success mt-2">
+                            <i class="bi bi-caret-up-fill me-1"></i>Active Portfolio
+                        </div>
+                    </div>
+                </div>
+
+                @* 3. Debt/Loan Status *@
+                <div class="col-lg-4">
+                    <div class="stat-card bg-dark border border-secondary border-opacity-25 p-4 h-100">
+                        <div class="d-flex justify-content-between mb-3 text-secondary">
+                            <span class="tiny-caps">Active Liability</span>
+                            <i class="bi bi-bank fs-4 text-warning"></i>
+                        </div>
+                        <h2 class="display-5 fw-black tracking-tighter mb-0 @(totalDebt > 0 ? "text-warning" : "text-secondary opacity-25")">
+                            @FormatValue(totalDebt)
+                        </h2>
+                        <div class="tiny-caps text-secondary mt-2">Outstanding Loan Protocols</div>
+                    </div>
+                </div>
+            </div>
+
+            @* --- MIDDLE ROW: CONTROL PAD & RECENT ACTIVITY --- *@
+            <div class="row g-4">
+                @* QUICK ACTIONS - THE "CONTROL PAD" *@
+                <div class="col-lg-4">
+                    <div class="glass-panel p-4 h-100 border-top border-danger border-4">
+                        <h6 class="tiny-caps text-danger mb-4">Quick Command Pad</h6>
+                        <div class="d-grid gap-2">
+                            <button @onclick='() => Nav.NavigateTo("/account")' class="btn btn-outline-light rounded-0 text-start p-3 tiny-caps hover-red">
+                                <i class="bi bi-arrow-left-right me-3"></i> Transfer Assets
+                            </button>
+                            <button @onclick='() => Nav.NavigateTo("/market")' class="btn btn-outline-light rounded-0 text-start p-3 tiny-caps hover-red">
+                                <i class="bi bi-cpu me-3"></i> Access Market Intel
+                            </button>
+                            <button @onclick='() => Nav.NavigateTo("/account")' class="btn btn-outline-light rounded-0 text-start p-3 tiny-caps hover-red">
+                                <i class="bi bi-safe me-3"></i> Request Funding
+                            </button>
+                            <button @onclick='() => Nav.NavigateTo("/")' class="btn btn-outline-danger rounded-0 text-start p-3 tiny-caps">
+                                <i class="bi bi-power me-3"></i> Terminate Session
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                @* TRANSACTION FEED *@
+                <div class="col-lg-8">
+                    <div class="glass-panel p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="tiny-caps text-secondary mb-0">System Log Feed</h6>
+                            <button class="btn btn-link text-danger tiny-caps p-0 text-decoration-none" @onclick='() => Nav.NavigateTo("/account")'>Full Ledger</button>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-dark table-hover align-middle mb-0">
-                                <thead class="bg-white bg-opacity-5">
-                                    <tr>
-                                        <th class="ps-4 border-0 text-white-50 small text-uppercase">Reference</th>
-                                        <th class="border-0 text-white-50 small text-uppercase">Account</th>
-                                        <th class="border-0 text-white-50 small text-uppercase text-end pe-4">Amount</th>
-                                    </tr>
-                                </thead>
+                            <table class="table table-dark table-hover align-middle border-0 mb-0">
                                 <tbody>
-                                    @foreach (var tx in user.BankAccount.SelectMany(a => a.Transactions).OrderByDescending(t => t.CreatedAt).Take(8))
+                                    @if (user.BankAccount?.Transactions == null || !user.BankAccount.Transactions.Any())
                                     {
-                                        <tr class="border-bottom border-white border-opacity-5">
-                                            <td class="ps-4 py-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="tx-indicator @(tx.Amount < 0 ? "bg-danger" : "bg-success")"></div>
-                                                    <div>
-                                                        <div class="fw-bold">@tx.Note</div>
-                                                        <div class="text-white-50 smaller font-monospace">@tx.TransactionReference.Substring(0, 12)</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="text-white-50 small font-monospace">..@tx.BankAccount.AccountNumber.Substring(Math.Max(0, tx.BankAccount.AccountNumber.Length - 4))</td>
-                                            <td class="text-end pe-4 fw-bolder @(tx.Amount < 0 ? "text-danger" : "text-success")">
-                                                @(tx.Amount < 0 ? "-" : "+")@Math.Abs(tx.Amount).ToString("C2")
-                                            </td>
-                                        </tr>
+                                        <tr><td class="text-center py-5 text-secondary tiny-caps">No recent movements logged.</td></tr>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var tx in user.BankAccount.Transactions.OrderByDescending(t => t.CreatedAt).Take(5))
+                                        {
+                                            <tr class="border-secondary border-opacity-10">
+                                                <td class="py-3">
+                                                    <div class="fw-bold uppercase" style="font-size: 0.8rem;">@tx.Type</div>
+                                                    <div class="text-secondary small">@tx.Note</div>
+                                                </td>
+                                                <td class="text-secondary font-monospace small">@tx.CreatedAt.ToString("MM.dd")</td>
+                                                <td class="text-end fw-bold @(tx.Amount < 0 ? "text-danger" : "text-success") font-monospace pe-3">
+                                                    @(tx.Amount < 0 ? "-" : "+") @FormatValue(Math.Abs(tx.Amount))
+                                                </td>
+                                            </tr>
+                                        }
                                     }
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-lg-4">
-                    <h5 class="text-uppercase tracking-widest text-danger small fw-bold mb-4">Secured Hardware</h5>
-                    @foreach (var card in user.BankAccount.SelectMany(a => a.Cards))
-                    {
-                        <div class="glass-card p-4 mb-4 border border-danger border-opacity-10">
-                            <div class="d-flex justify-content-between mb-5">
-                                <i class="bi bi-chip text-warning fs-3"></i>
-                                <span class="text-white-50 font-monospace">Tier 1</span>
-                            </div>
-                            <div class="fs-4 mb-4 font-monospace tracking-widest text-center">**** **** **** @card.CardNumber.Substring(card.CardNumber.Length - 4)</div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="small text-uppercase tracking-widest">@user.FullName</span>
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">@card.ExpiryDate</span>
-                            </div>
-                        </div>
-                    }
-
-                    <div class="mt-5">
-                         <h5 class="text-uppercase tracking-widest text-danger small fw-bold mb-4">Global Pulse</h5>
-                         <NetworkStats />
-                    </div>
+            @* --- FOOTER: BANK-WIDE STATS --- *@
+            <div class="mt-5 pt-5 border-top border-secondary border-opacity-10">
+                <div class="mb-4">
+                    <span class="tiny-caps text-secondary"><i class="bi bi-globe text-danger me-2"></i>Global Registry Overview</span>
                 </div>
+                <Stats />
             </div>
         }
     </div>
 </div>
 
 <style>
-    .glass-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 1.5rem;
-        backdrop-filter: blur(10px);
-        transition: transform 0.3s ease, border-color 0.3s ease;
+    .fw-black {
+        font-weight: 900;
     }
-    .glass-card:hover {
-        border-color: rgba(220, 53, 69, 0.3);
-        transform: translateY(-5px);
-    }
-    .icon-box {
-        width: 50px; height: 50px;
-        display: flex; align-items: center; justify-content: center;
-        border-radius: 1rem; font-size: 1.5rem;
-    }
-    .tx-indicator {
-        width: 4px; height: 30px; border-radius: 10px; margin-right: 15px;
-    }
-    .tracking-tighter { letter-spacing: -2px; }
-    .smaller { font-size: 0.7rem; }
-</style> *@
 
-@* @code {
+    .tracking-tighter {
+        letter-spacing: -3px;
+    }
+
+    .tiny-caps {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 700;
+    }
+
+    .stat-card {
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: default;
+    }
+
+        .stat-card:hover {
+            transform: scale(1.02);
+        }
+
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .hover-red:hover {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: white !important;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+@code {
     private ApplicationUser? user;
+    private decimal marketValue = 0;
+    private decimal totalDebt = 0;
 
-    protected override async Task OnInitializedAsync() {
-        user = await AuthService.GetCurrentApplicationUser();
+    protected override async Task OnInitializedAsync()
+    {
+        user = await IdentityService.GetCurrentUserAsync();
+
+        if (user?.BankAccount != null)
+        {
+            // Fetch the user's loans to calculate total debt
+            var loans = await FinanceService.GetUserLoansAsync(user.BankAccount.Id);
+            totalDebt = loans.Where(l => l.Status == LoanStatus.Approved).Sum(l => l.Amount);
+
+            // Note: In a real app, you'd calculate investment market value here.
+            // For now, let's look at their investment count or mock a value based on stocks.
+            marketValue = 12450.50m; // Mock value - link to your real stock math later
+        }
     }
 
-    private string FormatAccountNumber(string raw) {
-        if (string.IsNullOrEmpty(raw) || raw.Length < 4) return raw;
-        return raw.Length >= 12 ? string.Join("-", Enumerable.Range(0, raw.Length / 4).Select(i => raw.Substring(i * 4, 4))) : raw;
-    }
-} *@
+    private string FormatValue(decimal val) => val.ToString("N2", new CultureInfo("en-US"));
+}

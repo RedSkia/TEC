@@ -1,78 +1,186 @@
-﻿@page "/dd"
+﻿@page "/"
 @using BankApp.Data
 @using BlazorApp.Components.Elements
 @inject NavigationManager Nav
 
-<div class="container py-5">
-    <div class="row min-vh-60 align-items-center mb-5 mt-lg-5">
-        <div class="col-lg-10">
-            <div class="mb-4 d-flex align-items-center gap-3">
-                <div class="bg-danger" style="width: 60px; height: 4px;"></div>
-                <span class="fw-bold text-white small text-uppercase" style="letter-spacing: 5px;">Redskia Bank</span>
-            </div>
+<div class="landing-wrapper">
+    @* --- HERO SECTION --- *@
+    <section class="hero-section position-relative overflow-hidden d-flex align-items-center">
+        @* Background Decorative Text *@
+        <div class="bg-text-watermark">REDSKIA</div>
 
-            <h1 class="display-1 fw-bold text-white mb-4" style="letter-spacing: -5px; line-height: 0.85;">
-                INVESTMENT <br />
-                <span class="text-danger">MARKET.</span>
-            </h1>
+        <div class="container position-relative z-index-2">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="mb-4 d-flex align-items-center gap-3 fade-in-up" style="animation-delay: 0.1s;">
+                        <div class="bg-danger" style="width: 40px; height: 2px;"></div>
+                        <span class="tiny-caps text-danger">Institutional Asset Registry</span>
+                    </div>
 
-            <p class="text-light fs-4 opacity-75 mb-5" style="max-width: 800px; line-height: 1.4;">
-                Access institutional-grade wealth management. Trade global assets,
-                monitor market shifts, and build your private portfolio in a
-                real-time financial ecosystem.
-            </p>
+                    <h1 class="hero-title fw-black text-white mb-0 fade-in-up" style="animation-delay: 0.2s;">
+                        PRIVATE <br />
+                        <span class="text-outline">MANAGEMENT</span><br />
+                        <span class="text-danger">MARKET.</span>
+                    </h1>
 
-            <div class="d-flex flex-wrap gap-3">
-                <button @onclick='() => Nav.NavigateTo("/login")'
-                        class="btn btn-danger btn-lg rounded-0 px-5 py-3 fw-bold border-0 shadow-lg">
-                    GET STARTED
-                </button>
+                    <div class="row mt-5 fade-in-up" style="animation-delay: 0.3s;">
+                        <div class="col-md-6 col-lg-5">
+                            <p class="text-secondary fs-5 mb-5 border-start border-danger border-3 ps-4 py-2">
+                                Redskia Bank provides the infrastructure for high-velocity capital.
+                                Secure your identity, trade global equity, and access encrypted lending protocols.
+                            </p>
 
-                <button @onclick='() => Nav.NavigateTo("/market")'
-                        class="btn btn-outline-light btn-lg rounded-0 px-5 py-3 fw-bold">
-                    VIEW MARKET
-                </button>
+                            <div class="d-flex flex-wrap gap-3">
+                                <button @onclick='() => Nav.NavigateTo("/login")'
+                                        class="btn btn-danger btn-lg rounded-0 px-5 py-3 fw-black tiny-caps shadow-red">
+                                    Initialize Session
+                                </button>
+
+                                <button @onclick='() => Nav.NavigateTo("/market")'
+                                        class="btn btn-outline-light btn-lg rounded-0 px-5 py-3 fw-black tiny-caps">
+                                    Market Intel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="row">
-        <div class="col-12 mb-5">
+    @* --- STATS INTEGRATION --- *@
+    <section class="stats-section border-top border-secondary border-opacity-25">
+        <div class="container py-5">
+            <div class="mb-4">
+                <span class="tiny-caps text-secondary"><i class="bi bi-broadcast text-danger me-2"></i>Live Network Throughput</span>
+            </div>
             <Stats />
         </div>
-    </div>
+    </section>
+
+    @* --- FEATURES / PHILOSOPHY --- *@
+    <section class="features-section py-5 border-top border-secondary border-opacity-25">
+        <div class="container py-5">
+            <div class="row g-5">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-shield-lock text-danger display-5 mb-4 d-block"></i>
+                        <h5 class="fw-bold text-white uppercase ls-1">Zero-Knowledge Security</h5>
+                        <p class="text-secondary small">Your financial data is encrypted at the protocol level. We never store your raw access keys.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-lightning-charge text-danger display-5 mb-4 d-block"></i>
+                        <h5 class="fw-bold text-white uppercase ls-1">High-Velocity Trades</h5>
+                        <p class="text-secondary small">Execute equity swaps with millisecond latency. Institutional grade liquidity at your fingertips.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-safe text-danger display-5 mb-4 d-block"></i>
+                        <h5 class="fw-bold text-white uppercase ls-1">Lending Terminals</h5>
+                        <p class="text-secondary small">Access peer-to-peer and bank-backed credit lines instantly with transparent risk assessment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 
 <style>
-    body {
-        background-color: #060606;
-        color: #ffffff;
-        overflow-x: hidden;
+    /* CUSTOM CORE STYLES */
+    .landing-wrapper {
+        min-height: 100vh;
+        font-family: 'Inter', sans-serif;
     }
 
-    .display-1 {
-        font-size: clamp(4rem, 12vw, 8rem);
+    .hero-section {
+        min-height: 90vh;
+        padding: 100px 0;
+    }
+
+    .hero-title {
+        font-size: clamp(3.5rem, 12vw, 9rem);
+        line-height: 0.82;
+        letter-spacing: -6px;
+    }
+
+    .text-outline {
+        color: transparent;
+        -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+    }
+
+    .bg-text-watermark {
+        position: absolute;
+        top: 10%;
+        right: -5%;
+        font-size: 25vw;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.02);
+        letter-spacing: -10px;
+        user-select: none;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .tiny-caps {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-weight: 800;
+    }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .ls-1 {
+        letter-spacing: 1px;
+    }
+
+    /* BUTTONS & HOVERS */
+    .shadow-red {
+        box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
     }
 
     .btn {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
     }
+
+        .btn:hover {
+            transform: translateY(-5px);
+        }
 
     .btn-danger:hover {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        transform: translateY(-3px);
+        background-color: #fff !important;
+        color: #000 !important;
     }
 
-    .btn-outline-light:hover {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        transform: translateY(-3px);
+    /* ANIMATIONS */
+    .fade-in-up {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s forwards ease-out;
     }
 
-    .text-truncate {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    @@keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
+
+    .feature-card {
+        padding: 2rem;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.05);
+        height: 100%;
+        transition: 0.3s;
+    }
+
+        .feature-card:hover {
+            background: rgba(220, 53, 69, 0.05);
+            border-color: #dc3545;
+        }
 </style>

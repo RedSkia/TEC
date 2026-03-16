@@ -3,83 +3,89 @@
 @inject IDbContextFactory<BankApp.Data.BankAppDbContext> DbFactory
 @implements IDisposable
 
-<div class="bg-black border border-secondary shadow-lg">
+<div class="stats-container border border-secondary border-opacity-25 shadow-2xl">
     @if (loaded)
     {
-        <div class="p-5 border-bottom border-secondary">
+        <div class="p-4 p-lg-5">
             <div class="row align-items-center">
-                <div class="col-lg-7">
-                    <span class="text-danger fw-bold small d-block mb-2 text-uppercase" style="letter-spacing: 2px;">Total Bank Deposits</span>
-                    <h2 class="display-3 fw-bold text-white mb-0 text-truncate" style="letter-spacing: -2px;">
+                <div class="col-lg-7 mb-4 mb-lg-0">
+                    <span class="text-danger fw-black tiny-caps d-block mb-2">Total Bank Deposits</span>
+                    <h2 class="display-3 fw-black text-white mb-0 text-truncate tracking-tighter">
                         $@dBalance.ToString("N2")
                     </h2>
                 </div>
-                <div class="col-lg-5 text-lg-end mt-4 mt-lg-0 border-start border-secondary ps-lg-5">
+                <div class="col-lg-5 text-lg-end border-lg-start border-secondary border-opacity-25 ps-lg-5">
                     <div class="mb-3">
-                        <span class="text-secondary small d-block mb-0 fw-bold">PORTFOLIO MARKET VALUE</span>
-                        <div class="h3 fw-bold text-white text-truncate">$@dMarketValue.ToString("N2")</div>
+                        <span class="text-secondary tiny-caps d-block mb-1">Portfolio Market Value</span>
+                        <div class="h3 fw-bold text-white mb-0">$@dMarketValue.ToString("N2")</div>
                     </div>
                     <div>
-                        <span class="text-secondary small d-block mb-0 fw-bold">TOTAL CREDIT EXPOSURE</span>
-                        <div class="h3 fw-bold text-white text-truncate">$@dLoans.ToString("N2")</div>
+                        <span class="text-secondary tiny-caps d-block mb-1">Credit Exposure</span>
+                        <div class="h3 fw-bold text-white mb-0">$@dLoans.ToString("N2")</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row g-0">
-            <div class="col-6 col-md-3 border-end border-secondary p-4 bg-dark bg-opacity-10">
-                <small class="text-secondary d-block mb-1 fw-bold text-uppercase">Total Clients</small>
-                <span class="h4 text-white fw-bold">@dUsers.ToString("N0")</span>
+        <div class="row g-0 border-top border-secondary border-opacity-25">
+            <div class="col-6 col-md-3 border-end border-secondary border-opacity-25 p-4 hover-stat">
+                <small class="text-secondary tiny-caps d-block mb-1">Clients</small>
+                <span class="h4 text-white fw-black font-monospace">@dUsers.ToString("N0")</span>
             </div>
-            <div class="col-6 col-md-3 border-end border-secondary p-4 bg-dark bg-opacity-10">
-                <small class="text-secondary d-block mb-1 fw-bold text-uppercase">Active Sessions</small>
-                <span class="h4 text-white fw-bold">@dLogins.ToString("N0")</span>
+            <div class="col-6 col-md-3 border-end border-secondary border-opacity-25 p-4 hover-stat">
+                <small class="text-secondary tiny-caps d-block mb-1">Sessions</small>
+                <span class="h4 text-white fw-black font-monospace">@dLogins.ToString("N0")</span>
             </div>
-            <div class="col-6 col-md-3 border-end border-secondary p-4 bg-dark bg-opacity-10">
-                <small class="text-secondary d-block mb-1 fw-bold text-uppercase">Market Trades</small>
-                <span class="h4 text-white fw-bold">@dTrades.ToString("N0")</span>
+            <div class="col-6 col-md-3 border-end border-secondary border-opacity-25 p-4 hover-stat">
+                <small class="text-secondary tiny-caps d-block mb-1">Trades</small>
+                <span class="h4 text-white fw-black font-monospace">@dTrades.ToString("N0")</span>
             </div>
-            <div class="col-6 col-md-3 p-4 bg-dark bg-opacity-10">
-                <small class="text-secondary d-block mb-1 fw-bold text-uppercase">Approved Loans</small>
-                <span class="h4 text-white fw-bold">@dLoanCount.ToString("N0")</span>
-            </div>
-        </div>
-
-        <div class="row g-0 border-top border-secondary bg-dark bg-opacity-25">
-            <div class="col-4 border-end border-secondary p-3 text-center">
-                <small class="text-secondary fw-bold text-uppercase me-2">Global Currencies:</small>
-                <span class="text-white fw-bold">@dCurrencies</span>
-            </div>
-            <div class="col-4 border-end border-secondary p-3 text-center">
-                <small class="text-secondary fw-bold text-uppercase me-2">Listed Stocks:</small>
-                <span class="text-white fw-bold">@dStocks</span>
-            </div>
-            <div class="col-4 p-3 text-center">
-                <small class="text-secondary fw-bold text-uppercase me-2">Active Investments:</small>
-                <span class="text-success fw-bold">@dInvestments</span>
+            <div class="col-6 col-md-3 p-4 hover-stat">
+                <small class="text-secondary tiny-caps d-block mb-1">Loans</small>
+                <span class="h4 text-white fw-black font-monospace">@dLoanCount.ToString("N0")</span>
             </div>
         </div>
     }
 </div>
 
+<style>
+    .tracking-tighter {
+        letter-spacing: -4px;
+    }
+
+    .hover-stat {
+        transition: 0.3s;
+        background: rgba(255,255,255,0.01);
+    }
+
+        .hover-stat:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+    .stats-container {
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    @@media (min-width: 992px) {
+        .border-lg-start {
+            border-left: 1px solid rgba(255,255,255,0.1) !important;
+        }
+    }
+</style>
+
 @code {
+    /* (Keep your existing C# logic exactly as it was - it works great!) */
     private bool loaded = false;
     private bool isDisposed = false;
-
-    // Real values from DB
     private int totalUsers, currencyCount, stockVariety, totalTransactions, loginActivities, loanCount, investmentCount;
     private decimal totalBalance, totalMarketValue, totalLoans;
-
-    // Display values for animation
     private int dUsers, dCurrencies, dStocks, dTrades, dLogins, dLoanCount, dInvestments;
     private decimal dBalance, dMarketValue, dLoans;
 
     protected override async Task OnInitializedAsync()
     {
         using var db = await DbFactory.CreateDbContextAsync();
-
-        // Fetch real data
         totalUsers = await db.Users.CountAsync();
         currencyCount = await db.CurrencyTypes.CountAsync();
         stockVariety = await db.Stocks.CountAsync();
@@ -93,18 +99,16 @@
                      ? await db.LoanRequests.Where(l => l.Status == LoanStatus.Approved).SumAsync(l => l.Amount) : 0;
 
         loaded = true;
-        _ = AnimateNumbers(); // Start C# animation thread
+        _ = AnimateNumbers();
     }
 
     private async Task AnimateNumbers()
     {
-        int steps = 40; // Number of increments
+        int steps = 40;
         for (int i = 1; i <= steps; i++)
         {
             if (isDisposed) return;
-
             decimal progress = (decimal)i / steps;
-
             dUsers = (int)(totalUsers * progress);
             dCurrencies = (int)(currencyCount * progress);
             dStocks = (int)(stockVariety * progress);
@@ -112,13 +116,11 @@
             dLogins = (int)(loginActivities * progress);
             dLoanCount = (int)(loanCount * progress);
             dInvestments = (int)(investmentCount * progress);
-
             dBalance = totalBalance * progress;
             dMarketValue = totalMarketValue * progress;
             dLoans = totalLoans * progress;
-
             StateHasChanged();
-            await Task.Delay(15); // Speed of the count
+            await Task.Delay(15);
         }
     }
 
