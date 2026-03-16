@@ -1,4 +1,4 @@
-﻿@* @attribute [Route(AppRoutes.LoginReset)]
+﻿@page "/login/reset"
 @using BankApp.Services
 @using BankApp.Data.Entities.Auth
 @using BlazorApp.Components.Elements
@@ -9,87 +9,77 @@
 @rendermode InteractiveServer
 
 <div class="auth-container d-flex align-items-center justify-content-center min-vh-100 py-5">
-    <div style="width: 100%; max-width: 450px;">
+    <div style="width: 100%; max-width: 450px;" class="fade-in">
 
         <div class="mb-4 text-center">
-            <a href="/" class="text-decoration-none small text-secondary hover-danger fw-bold text-uppercase" style="letter-spacing: 1px;">
-                <i class="bi bi-arrow-left me-1"></i> Return to Terminal
-            </a>
+            <NavLink href="/" class="text-decoration-none tiny-caps text-secondary hover-danger">
+                <i class="bi bi-terminal me-1"></i> Return to Main Terminal
+            </NavLink>
         </div>
 
-        <AuthorizeView Roles="@RoleType.Customer.ToString()">
+        <AuthorizeView>
             <Authorized>
+                @* LOGGED IN VIEW: 
+                   The system knows you. Just enter the new key.
+                *@
                 <InputForm TItem="object"
                            Model="this"
                            OnSubmit="HandleOverride"
-                           ButtonText="OVERRIDE PASSWORD"
+                           ButtonText="UPDATE ACCESS KEY"
                            IsLoading="isBusy"
-                           ButtonClass="btn-outline-danger border-2 fw-bold rounded-0"
-                           Class="bg-dark bg-opacity-75 border border-secondary border-opacity-25 rounded-0 shadow-lg p-4"
-                           style="backdrop-filter: blur(10px);">
+                           ButtonClass="btn-danger fw-black rounded-0 w-100 py-3"
+                           Class="glass-panel p-4 shadow-lg"
+                           style="border-top: 4px solid #dc3545;">
 
                     <HeaderContent>
                         <div class="text-center mb-4">
-                            <h4 class="fw-bold text-white mb-1" style="letter-spacing: -1px;">
-                                SECURITY <span class="text-danger">OVERRIDE.</span>
-                            </h4>
-                            <p class="text-secondary small text-uppercase mb-0" style="letter-spacing: 2px; font-size: 0.65rem;">
-                                Authorized Identity Modification
-                            </p>
+                            <div class="badge bg-danger pulse-red mb-2">SESSION_ACTIVE</div>
+                            <h2 class="fw-black text-white mb-1 tracking-tighter">SEC_ <span class="text-danger">OVERRIDE.</span></h2>
+                            <p class="text-secondary tiny-caps mb-0">Modifying: <span class="text-white">@context.User.Identity?.Name</span></p>
                         </div>
                         @RenderStatus()
                     </HeaderContent>
 
                     <ChildContent>
                         <div class="mb-3">
-                            <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">New Password</label>
-                            <InputText @bind-Value="newPassword"
-                                       type="password"
-                                       class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
-                                       style="border-left: 3px solid #dc3545;"
-                                       placeholder="••••••••" />
+                            <label class="tiny-caps text-secondary mb-1">New Access Key</label>
+                            <input type="password" @bind="newPassword" class="form-control trade-input" placeholder="••••••••" />
+                            <div class="mt-2 text-muted" style="font-size: 0.6rem;">* Internal bypass active. Old key not required.</div>
                         </div>
                     </ChildContent>
                 </InputForm>
             </Authorized>
 
             <NotAuthorized>
+                @* GUEST VIEW: 
+                   Emergency recovery protocol.
+                *@
                 <InputForm TItem="object"
                            Model="this"
                            OnSubmit="HandleGuestReset"
-                           ButtonText="RECOVER ACCOUNT"
+                           ButtonText="INITIALIZE RECOVERY"
                            IsLoading="isBusy"
-                           ButtonClass="btn-outline-danger border-2 fw-bold rounded-0"
-                           Class="bg-dark bg-opacity-75 border border-secondary border-opacity-25 rounded-0 shadow-lg p-4"
-                           style="backdrop-filter: blur(10px);">
+                           ButtonClass="btn-outline-danger fw-black rounded-0 w-100 py-3"
+                           Class="glass-panel p-4 shadow-lg"
+                           style="border-top: 4px solid #6c757d;">
 
                     <HeaderContent>
                         <div class="text-center mb-4">
-                            <h4 class="fw-bold text-white mb-1" style="letter-spacing: -1px;">
-                                ACCOUNT <span class="text-danger">RECOVERY.</span>
-                            </h4>
-                            <p class="text-secondary small text-uppercase mb-0" style="letter-spacing: 2px; font-size: 0.65rem;">
-                                Emergency Protocol Access
-                            </p>
+                            <div class="badge bg-secondary mb-2">EMERGENCY_PROTOCOL</div>
+                            <h2 class="fw-black text-white mb-1 tracking-tighter">ACCOUNT <span class="text-danger">RECOVERY.</span></h2>
+                            <p class="text-secondary tiny-caps mb-0">Identity Access Restoration</p>
                         </div>
                         @RenderStatus()
                     </HeaderContent>
 
                     <ChildContent>
                         <div class="mb-3">
-                            <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Target Username</label>
-                            <InputText @bind-Value="targetUsername"
-                                       class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
-                                       style="border-left: 3px solid #dc3545;"
-                                       placeholder="Username" />
+                            <label class="tiny-caps text-secondary mb-1">Target Identity (Username)</label>
+                            <InputText @bind-Value="targetUsername" class="form-control trade-input" placeholder="UID_UNKNOWN" />
                         </div>
                         <div class="mb-3">
-                            <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Emergency New Password</label>
-                            <InputText @bind-Value="newPassword"
-                                       type="password"
-                                       class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
-                                       style="border-left: 3px solid #dc3545;"
-                                       placeholder="••••••••" />
+                            <label class="tiny-caps text-secondary mb-1">Emergency Access Key</label>
+                            <input type="password" @bind="newPassword" class="form-control trade-input" placeholder="••••••••" />
                         </div>
                     </ChildContent>
                 </InputForm>
@@ -100,15 +90,58 @@
 </div>
 
 <style>
-    .form-control:focus {
-        background-color: #000 !important;
-        border-color: #dc3545 !important;
-        color: #fff !important;
+    .glass-panel {
+        background: #0c0c0c;
+        border: 1px solid #1f1f1f;
+        border-radius: 4px;
     }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .tracking-tighter {
+        letter-spacing: -2px;
+    }
+
+    .tiny-caps {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 700;
+    }
+
+    .trade-input {
+        background: #000 !important;
+        border: 1px solid #333 !important;
+        color: white !important;
+        font-weight: 600;
+        border-radius: 0;
+    }
+
+        .trade-input:focus {
+            border-color: #dc3545 !important;
+            box-shadow: none !important;
+        }
 
     .hover-danger:hover {
         color: #dc3545 !important;
         transition: 0.2s ease;
+    }
+
+    .pulse-red {
+        animation: pulseR 2s infinite;
+        font-size: 9px;
+    }
+
+    @@keyframes pulseR {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
     }
 </style>
 
@@ -126,25 +159,31 @@
         if (string.IsNullOrWhiteSpace(newPassword)) return;
         isBusy = true;
 
+        // In the Authorized view, we pull the username directly from the current context
         var user = await IdentityService.GetCurrentUserAsync();
+
         if (user != null)
         {
             var result = await IdentityService.ResetPassword(user.UserName!, newPassword);
-            ProcessResult(result.Succeeded, result.Succeeded ? "ENCRYPTED: Password Updated." : GetError(result));
+            ProcessResult(result.Succeeded, result.Succeeded ? "ENCRYPTED: Access Key Updated." : GetError(result));
         }
         else
         {
-            ProcessResult(false, "SESSION TIMEOUT: RELOGIN REQUIRED.");
+            ProcessResult(false, "SESSION_EXPIRED: RE-AUTHENTICATION REQUIRED.");
         }
     }
 
     private async Task HandleGuestReset()
     {
-        if (string.IsNullOrWhiteSpace(targetUsername) || string.IsNullOrWhiteSpace(newPassword)) return;
-        isBusy = true;
+        if (string.IsNullOrWhiteSpace(targetUsername) || string.IsNullOrWhiteSpace(newPassword))
+        {
+            ProcessResult(false, "IDENT_MISSING: Provide Username and Key.");
+            return;
+        }
 
+        isBusy = true;
         var result = await IdentityService.ResetPassword(targetUsername, newPassword);
-        ProcessResult(result.Succeeded, result.Succeeded ? "RECOVERY COMPLETE: Access Restored." : GetError(result));
+        ProcessResult(result.Succeeded, result.Succeeded ? "RECOVERY_SUCCESS: Access Restored." : GetError(result));
     }
 
     private void ProcessResult(bool success, string msg)
@@ -164,16 +203,16 @@
     }
 
     private string GetError(Microsoft.AspNetCore.Identity.IdentityResult result)
-        => string.Join(" | ", result.Errors.Select(e => e.Description));
+        => result.Errors.FirstOrDefault()?.Description ?? "UNKNOWN_AUTH_ERROR";
 
     RenderFragment RenderStatus() => __builder =>
     {
         if (statusMessage != null)
         {
-            <div class="alert @(isError ? "alert-danger bg-danger" : "alert-success bg-success") bg-opacity-10 border-0 rounded-0 py-2 small mb-4 fw-bold text-center">
+            <div class="alert @(isError ? "bg-danger" : "bg-success") bg-opacity-10 border-0 rounded-0 py-2 tiny-caps mb-4 text-center @(isError ? "text-danger" : "text-success")">
                 <i class="bi @(isError ? "bi-shield-slash" : "bi-shield-check") me-2"></i>
                 @statusMessage
             </div>
         }
     };
-} *@
+}
