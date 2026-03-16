@@ -109,7 +109,8 @@ builder.Services.AddScoped<IdentityService>(); // Allows injecting IdentityServi
 
 builder.Services.AddScoped<AppNavigator>();
 builder.Services.AddScoped<FinanceService>();
-builder.Services.AddScoped<StockMarketService>();
+builder.Services.AddSingleton<StockMarketService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<StockMarketService>()); //Add Heartbeat service
 
 var app = builder.Build();
 

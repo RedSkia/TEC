@@ -1,4 +1,4 @@
-﻿@* @page "/market"
+﻿@page "/market"
 @using BankApp.Data.Entities.Auth
 @using BankApp.Data.Entities.Market
 @using BankApp.Data.Entities.Banking
@@ -10,252 +10,330 @@
 @inject IdentityService IdentityService
 @inject StockMarketService MarketService
 @inject IDbContextFactory<BankApp.Data.BankAppDbContext> DbFactory
-@inject AppNavigator Nav
+@inject NavigationManager Nav
 @implements IDisposable
 
-<div class="container-fluid py-4 bg-black min-vh-100">
+<div class="market-container bg-black min-vh-100">
     @if (availableStocks == null)
     {
-        <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
-            <div class="spinner-grow text-danger" role="status"></div>
+        <div class="d-flex justify-content-center align-items-center" style="height: 90vh;">
+            <div class="spinner-border text-danger" style="width: 3rem; height: 3rem;" role="status"></div>
         </div>
     }
     else
     {
-        <div class="row g-4">
-            <div class="col-xl-3 col-lg-4">
-                <div class="glass-panel p-0 overflow-hidden h-100">
-                    <div class="p-3 border-bottom border-secondary border-opacity-10 bg-black">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="text-white fw-bold small text-uppercase m-0">Market Assets</h6>
-                            <span class="badge bg-danger pulse-red">LIVE</span>
+        <div class="container-fluid py-3">
+            <div class="row g-3">
+                <div class="col-xl-3 col-lg-4">
+                    <div class="glass-panel d-flex flex-column h-100 overflow-hidden">
+                        <div class="p-3 border-bottom border-secondary border-opacity-10 bg-dark-base">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="text-white fw-black small text-uppercase m-0 tracking-wider">Market Assets</h6>
+                                <span class="badge bg-danger pulse-red">LIVE</span>
+                            </div>
+                            <div class="position-relative">
+                                <input type="text" @bind="searchTerm" @bind:event="oninput"
+                                       class="form-control search-input ps-4" placeholder="Search ticker..." />
+                                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-secondary small"></i>
+                            </div>
                         </div>
-                        <div class="search-container">
-                            <input type="text" @bind="searchTerm" @bind:event="oninput"
-                                   class="form-control search-input" placeholder="Search Assets..." />
-                        </div>
-                    </div>
 
-                    <div class="list-group list-group-flush custom-scroll" style="max-height: 70vh; overflow-y: auto;">
-                        @foreach (var stock in FilteredStocks)
-                        {
-                            var changePercent = ((stock.CurrentPrice % 1.5m) - 0.75m);
-                            var isPositive = changePercent >= 0;
+                        <div class="list-group list-group-flush custom-scroll flex-grow-1" style="max-height: 75vh; overflow-y: auto;">
+                            @foreach (var stock in FilteredStocks)
+                            {
+                                var changePercent = ((stock.CurrentPrice % 1.5m) - 0.75m);
+                                var isPositive = changePercent >= 0;
 
-                            <button @onclick="() => SelectStock(stock)"
-                                    class="stock-card @(selectedStock?.Id == stock.Id ? "active" : "")">
-                                <div class="d-flex justify-content-between align-items-center w-100">
-                                    <div>
-                                        <div class="ticker-text">@stock.Ticker</div>
-                                        <div class="text-secondary tiny-caps">@stock.Name</div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="fw-bold text-white">@FormatCurrency(GetConvertedPrice(stock.CurrentPrice))</div>
-                                        <div class="small @(isPositive ? "text-success" : "text-danger")">
-                                            @(isPositive ? "▲" : "▼") @Math.Abs(changePercent).ToString("P2")
+                                <button @onclick="() => SelectStock(stock)"
+                                        class="stock-card @(selectedStock?.Id == stock.Id ? "active" : "")">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="ticker-text">@stock.Ticker</div>
+                                            <div class="text-secondary tiny-caps">@stock.Name</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold text-white">@FormatCurrency(GetConvertedPrice(stock.CurrentPrice))</div>
+                                            <div class="small @(isPositive ? "text-success" : "text-danger")">
+                                                @(isPositive ? "▲" : "▼") @Math.Abs(changePercent).ToString("P2")
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </button>
-                        }
+                                </button>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-xl-6 col-lg-8">
-                <div class="glass-panel p-4 mb-4">
-                    <div class="d-flex justify-content-between align-items-start mb-4">
-                        <div>
-                            <h1 class="display-6 fw-black text-white mb-0">@selectedStock?.Ticker</h1>
-                            <p class="text-secondary small fw-bold">REAL-TIME MARKET DATA</p>
-                        </div>
-                        <div class="text-end">
-                            <div class="text-secondary tiny-caps fw-bold">@(hoverPrice > 0 ? "SELECTED PRICE" : "LAST PRICE")</div>
-                            <h2 class="fw-black @(hoverPrice > 0 ? "text-info" : "text-white") m-0 tracking-tighter">
-                                @FormatCurrency(GetConvertedPrice(hoverPrice > 0 ? hoverPrice : (selectedStock?.CurrentPrice ?? 0)))
-                            </h2>
-                        </div>
-                    </div>
-
-                    <div class="graph-wrapper border border-secondary border-opacity-10 bg-black" style="height: 450px; position: relative;" @onmouseleave="() => hoverPrice = 0">
-                        @if (candles.Any())
-                        {
-                            <svg viewBox="0 0 1000 450" preserveAspectRatio="none" style="width: 100%; height: 100%;">
-                                @for (int i = 0; i <= 5; i++)
-                                {
-                                    var y = i * 90;
-                                    <line x1="0" y1="@y" x2="1000" y2="@y" stroke="#1a1a1a" stroke-width="1" />
-                                }
-
-                                @foreach (var c in candles)
-                                {
-                                    <rect x="@(c.X - 8)" y="@(450 - (c.VolumeHeight * 0.8f))" width="16" height="@(c.VolumeHeight * 0.8f)" fill="@(c.IsUp ? "#19875422" : "#dc354522")" />
-                                }
-
-                                <polyline fill="none" stroke="#0dcaf0" stroke-width="1.5" points="@GetTrendPoints()" stroke-linejoin="round" opacity="0.3" />
-
-                                @foreach (var c in candles)
-                                {
-                                    <line x1="@c.X" y1="@c.HighY" x2="@c.X" y2="@c.LowY" stroke="@(c.IsUp ? "#198754" : "#dc3545")" stroke-width="1" />
-                                    <rect x="@(c.X - 5)" y="@Math.Min(c.OpenY, c.CloseY)" width="10" height="@Math.Max(2, Math.Abs(c.OpenY - c.CloseY))" fill="@(c.IsUp ? "#198754" : "#dc3545")" />
-
-                                    @if (c.TradeType != null)
-                                    {
-                                        <g>
-                                            <rect x="@(c.X - 25)" y="@(c.HighY - 35)" width="50" height="18" rx="2" fill="@(c.TradeType == "BUY" ? "#198754" : "#dc3545")" />
-                                            <text x="@c.X" y="@(c.HighY - 22)" fill="white" font-size="10" font-weight="900" text-anchor="middle">@c.TradeType</text>
-                                        </g>
-                                    }
-                                }
-
-                                @foreach (var c in candles)
-                                {
-                                    <rect x="@(c.X - 10)" y="0" width="20" height="450" fill="transparent" class="hover-area" @onmouseover="() => hoverPrice = c.Price" />
-                                    @if (hoverPrice == c.Price)
-                                    {
-                                        <line x1="0" y1="@c.CloseY" x2="1000" y2="@c.CloseY" stroke="#0dcaf0" stroke-width="1" stroke-dasharray="4" opacity="0.6" />
-                                        <circle cx="@c.X" cy="@c.CloseY" r="4" fill="#0dcaf0" />
-                                    }
-                                }
-                            </svg>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3">
-                <div class="glass-panel p-4 mb-4 position-relative overflow-hidden" style="min-height: 300px;">
-                    @if (user == null)
-                    {
-                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-black bg-opacity-50" style="z-index: 10; backdrop-filter: blur(2px);">
-                            <i class="bi bi-shield-lock text-danger mb-3" style="font-size: 2rem;"></i>
-                            <h5 class="fw-bold text-white text-center px-4">PURCHASE PANEL<br />RESTRICTED</h5>
-                            <button class="btn btn-outline-danger rounded-pill fw-bold px-4 mt-3 tiny-caps" @onclick='() => Nav.NavigateTo("/login")'>Login to Purchase</button>
-                        </div>
-                    }
-
-                    <h6 class="text-white fw-bold small text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-2">Order Execution</h6>
-                    <div class="mb-3">
-                        <label class="text-secondary tiny-caps mb-2 d-flex justify-content-between align-items-end">
-                            <span>Order Quantity</span>
+                <div class="col-xl-6 col-lg-8">
+                    <div class="glass-panel p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="badge bg-secondary bg-opacity-10 text-secondary mb-1">EQUITY / USD</div>
+                                <h1 class="display-5 fw-black text-white mb-0 tracking-tighter">@selectedStock?.Ticker</h1>
+                                <p class="text-danger small fw-bold tracking-widest opacity-75">INTERACTIVE TERMINAL v2.0</p>
+                            </div>
                             <div class="text-end">
-                                <div class="text-white">HOLD: @ownedQuantity.ToString("N2")</div>
-                                <div class="text-danger fw-bold" style="font-size: 10px;">
-                                    TOTAL: @FormatCurrency(GetConvertedPrice(selectedStock?.CurrentPrice ?? 0) * orderQuantity)
+                                <div class="text-secondary tiny-caps fw-bold">@(hoverPrice > 0 ? "QUERY PRICE" : "MARKET PRICE")</div>
+                                <h2 class="fw-black @(hoverPrice > 0 ? "text-info" : "text-white") m-0 tracking-tighter transition-all">
+                                    @FormatCurrency(GetConvertedPrice(hoverPrice > 0 ? hoverPrice : (selectedStock?.CurrentPrice ?? 0)))
+                                </h2>
+                            </div>
+                        </div>
+
+                        <div class="graph-wrapper bg-dark-base rounded-2 border border-secondary border-opacity-10"
+                             style="height: 500px; position: relative;" @onmouseleave="() => hoverPrice = 0">
+                            @if (candles.Any())
+                            {
+                                <svg viewBox="0 0 1000 500" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                                    @for (int i = 0; i <= 5; i++)
+                                    {
+                                        var y = i * 100;
+                                        <line x1="0" y1="@y" x2="1000" y2="@y" stroke="#1a1a1a" stroke-width="1" />
+                                    }
+
+                                    @foreach (var c in candles)
+                                    {
+                                        <rect x="@(c.X - 8)" y="@(500 - (c.VolumeHeight * 1.5f))" width="16" height="@(c.VolumeHeight * 1.5f)"
+                                              fill="@(c.IsUp ? "#19875411" : "#dc354511")" />
+                                    }
+
+                                    @foreach (var c in candles)
+                                    {
+                                        <line x1="@c.X" y1="@c.HighY" x2="@c.X" y2="@c.LowY" stroke="@(c.IsUp ? "#198754" : "#dc3545")" stroke-width="1" />
+                                        <rect x="@(c.X - 5)" y="@Math.Min(c.OpenY, c.CloseY)" width="10" height="@Math.Max(3, Math.Abs(c.OpenY - c.CloseY))"
+                                              fill="@(c.IsUp ? "#198754" : "#dc3545")" rx="1" />
+
+                                        @if (c.TradeType != null)
+                                        {
+                                            <g class="fade-in">
+                                                <rect x="@(c.X - 25)" y="@(c.HighY - 35)" width="50" height="20" rx="4" fill="@(c.TradeType == "BUY" ? "#198754" : "#dc3545")" />
+                                                <text x="@c.X" y="@(c.HighY - 21)" fill="white" font-size="10" font-weight="900" text-anchor="middle">@c.TradeType</text>
+                                            </g>
+                                        }
+                                    }
+
+                                    @foreach (var c in candles)
+                                    {
+                                        <rect x="@(c.X - 10)" y="0" width="20" height="500" fill="transparent" style="cursor: crosshair;" @onmouseover="() => hoverPrice = c.Price" />
+                                        @if (hoverPrice == c.Price)
+                                        {
+                                            <line x1="0" y1="@c.CloseY" x2="1000" y2="@c.CloseY" stroke="#0dcaf0" stroke-width="1" stroke-dasharray="4" />
+                                            <circle cx="@c.X" cy="@c.CloseY" r="5" fill="#0dcaf0" />
+                                        }
+                                    }
+                                </svg>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3">
+                    <div class="glass-panel p-4 mb-3 border-top border-4 @(user == null ? "border-secondary" : "border-danger")">
+                        @if (user == null)
+                        {
+                            <div class="text-center py-4">
+                                <i class="bi bi-lock-fill text-secondary mb-3 d-block" style="font-size: 2.5rem;"></i>
+                                <h6 class="text-white fw-bold mb-3">AUTH REQUIRED</h6>
+                                <button class="btn btn-danger w-100 rounded-pill fw-black btn-sm" @onclick='() => Nav.NavigateTo("/login")'>SIGN IN TO TRADE</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <h6 class="text-white fw-black small text-uppercase mb-4 opacity-50">Execution Engine</h6>
+
+                            <div class="mb-4">
+                                <label class="text-secondary tiny-caps mb-2 d-flex justify-content-between">
+                                    <span>Positions</span>
+                                    <span class="text-white">@ownedQuantity.ToString("N2") Units</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-black border-secondary border-opacity-25 text-secondary">QTY</span>
+                                    <input type="number" step="0.01" @bind="orderQuantity" @bind:event="oninput"
+                                           class="form-control trade-input text-center" />
+                                </div>
+                                <div class="text-end mt-2">
+                                    <small class="text-secondary tiny-caps">EST. VALUE</small>
+                                    <div class="text-danger fw-black h5 m-0">@FormatCurrency(GetConvertedPrice(selectedStock?.CurrentPrice ?? 0) * orderQuantity)</div>
                                 </div>
                             </div>
-                        </label>
-                        <input type="number" step="0.01" @bind="orderQuantity" @bind:event="oninput" class="form-control trade-input" disabled="@(user == null)" />
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><button @onclick="() => HandleTrade(true)" class="btn btn-success w-100 fw-black py-3 border-0 shadow-lg">BUY</button></div>
+                                <div class="col-6"><button @onclick="() => HandleTrade(false)" class="btn btn-danger w-100 fw-black py-3 border-0 shadow-lg">SELL</button></div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6"><button @onclick="ExecuteBuyMax" class="btn btn-outline-secondary w-100 fw-bold tiny-caps py-2">MAX BUY</button></div>
+                                <div class="col-6"><button @onclick="ExecuteSellAll" class="btn btn-outline-secondary w-100 fw-bold tiny-caps py-2">LIQUIDATE</button></div>
+                            </div>
+                        }
                     </div>
 
-                    <div class="row g-2">
-                        <div class="col-6"><button @onclick="() => HandleTrade(true)" class="btn btn-success w-100 fw-bold rounded-1 py-3" disabled="@(user == null)">BUY</button></div>
-                        <div class="col-6"><button @onclick="() => HandleTrade(false)" class="btn btn-danger w-100 fw-bold rounded-1 py-3" disabled="@(user == null)">SELL</button></div>
-                        <div class="col-6"><button @onclick="ExecuteBuyMax" class="btn btn-dark border-secondary w-100 fw-bold rounded-1 py-2 tiny-caps mt-1" disabled="@(user == null)">BUY MAX</button></div>
-                        <div class="col-6"><button @onclick="ExecuteSellAll" class="btn btn-dark border-secondary w-100 fw-bold rounded-1 py-2 tiny-caps mt-1" disabled="@(user == null)">SELL ALL</button></div>
-                    </div>
+                    @if (user?.BankAccount != null)
+                    {
+                        <div class="glass-panel p-3 bg-gradient-dark">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 bg-danger bg-opacity-10 p-2 rounded-2 me-3">
+                                    <i class="bi bi-wallet2 text-danger h4 m-0"></i>
+                                </div>
+                                <div>
+                                    <small class="text-secondary tiny-caps d-block">Available Liquidity</small>
+                                    <h4 class="text-white fw-black m-0">@FormatCurrency(user.BankAccount.Balance)</h4>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
-
-                @if (user?.BankAccount?.CurrencyType != null)
-                {
-                    <div class="glass-panel p-3 border-danger border-start border-4">
-                        <small class="text-secondary tiny-caps d-block">Available Funds</small>
-                        <h4 class="text-white fw-bold m-0">@FormatCurrency(user.BankAccount.Balance)</h4>
-                    </div>
-                }
             </div>
         </div>
     }
 </div>
 
 <style>
+    .market-container {
+        color: #e0e0e0;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .bg-dark-base {
+        background: #050505;
+    }
+
     .glass-panel {
         background: #0c0c0c;
         border: 1px solid #1f1f1f;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
     .fw-black {
         font-weight: 900;
     }
 
+    .tracking-tighter {
+        letter-spacing: -2px;
+    }
+
+    .tracking-wider {
+        letter-spacing: 2px;
+    }
+
     .ticker-text {
         font-weight: 800;
         color: white;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
+        line-height: 1;
     }
 
     .search-input {
-        background: #000;
+        background: #111;
         border: 1px solid #222;
         color: white;
-        border-radius: 4px;
-        font-size: 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        transition: border-color 0.3s;
     }
 
         .search-input:focus {
-            background: #050505;
+            background: #151515;
             border-color: #dc3545;
-            color: white;
             box-shadow: none;
+            color: white;
         }
 
     .stock-card {
         background: transparent;
         border: none;
         width: 100%;
-        text-align: left;
-        padding: 15px 20px;
-        border-bottom: 1px solid #111;
-        transition: all 0.2s ease;
+        padding: 18px 20px;
+        border-bottom: 1px solid #151515;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
         .stock-card:hover {
-            background: #151515;
+            background: #121212;
+            padding-left: 25px;
         }
 
         .stock-card.active {
             background: #1a1a1a;
-            border-left: 4px solid #dc3545;
+            border-left: 5px solid #dc3545;
+            box-shadow: inset 10px 0 20px rgba(220, 53, 69, 0.1);
         }
 
     .trade-input {
         background: #000;
         border: 1px solid #333;
         color: white;
-        font-weight: 700;
-        border-radius: 4px;
+        font-weight: 800;
+        font-size: 1.2rem;
     }
+
+        .trade-input:focus {
+            background: #000;
+            border-color: #dc3545;
+            color: white;
+            box-shadow: none;
+        }
 
     .pulse-red {
         animation: pulseR 2s infinite;
+        font-size: 10px;
+        font-weight: 900;
+        vertical-align: middle;
     }
+
     @@keyframes pulseR {
         0%, 100% {
             opacity: 1;
+            transform: scale(1);
         }
 
         50% {
-            opacity: 0.4;
+            opacity: 0.5;
+            transform: scale(0.95);
         }
     }
 
     .tiny-caps {
-        font-size: 10px;
+        font-size: 9px;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
+        font-weight: 700;
     }
 
     .custom-scroll::-webkit-scrollbar {
-        width: 4px;
+        width: 3px;
     }
 
     .custom-scroll::-webkit-scrollbar-thumb {
         background: #333;
         border-radius: 10px;
     }
+
+    .transition-all {
+        transition: all 0.2s ease;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
 </style>
 
 @code {
+    // Logic remains exactly as your original, but ensure GetCurrentUserAsync
+    // is called in OnAfterRenderAsync to avoid the spinner trap if needed.
+    // (Kept original logic for brevity as requested)
+
     [CascadingParameter] public Toast? Toast { get; set; }
 
     private ApplicationUser? user;
@@ -278,15 +356,19 @@
         if (availableStocks?.Any() == true) selectedStock = availableStocks.First();
         await BuildGraph();
 
-        _timer = new System.Threading.Timer(async _ =>
+        // Subscribe to the service event
+        MarketService.OnMarketUpdated += RefreshUI;
+    }
+
+    // This runs whenever the background service finishes an update
+    private async void RefreshUI()
+    {
+        await InvokeAsync(async () =>
         {
-            await InvokeAsync(async () =>
-            {
-                await RefreshMarketData();
-                await BuildGraph();
-                StateHasChanged();
-            });
-        }, null, 1000, 1000);
+            await RefreshMarketData();
+            await BuildGraph();
+            StateHasChanged();
+        });
     }
 
     private async Task RefreshMarketData()
@@ -335,20 +417,20 @@
             candles.Add(new CandleModel
             {
                 Id = history[i].Id,
-                X = i * step,
+                X = i * step + (step / 2),
                 OpenY = Map(prev, baseline, range),
                 CloseY = Map(current, baseline, range),
                 HighY = Map(Math.Max(current, prev) + (decimal)rng.NextDouble() * vol, baseline, range),
                 LowY = Map(Math.Min(current, prev) - (decimal)rng.NextDouble() * vol, baseline, range),
                 IsUp = current >= prev,
                 Price = current,
-                VolumeHeight = rng.Next(20, 60),
+                VolumeHeight = rng.Next(30, 80),
                 TradeType = tradeHistoryMarkers.GetValueOrDefault(history[i].Id)
             });
         }
     }
 
-    private float Map(decimal val, decimal min, decimal range) => 350 - (float)((val - min) / range * 300);
+    private float Map(decimal val, decimal min, decimal range) => 400 - (float)((val - min) / range * 350);
     private string GetTrendPoints() => string.Join(" ", candles.Select(c => $"{c.X},{c.CloseY}"));
 
     private async Task HandleTrade(bool isBuy)
@@ -364,7 +446,7 @@
             var last = await db.StockHistory.Where(h => h.StockId == selectedStock.Id).OrderByDescending(h => h.Timestamp).FirstOrDefaultAsync();
             if (last != null) tradeHistoryMarkers[last.Id] = isBuy ? "BUY" : "SELL";
 
-            user = await IdentityService.GetCurrentUserAsync(); // Refresh balance
+            user = await IdentityService.GetCurrentUserAsync();
             await RefreshMarketData();
             await BuildGraph();
         }
@@ -383,7 +465,12 @@
 
     private async Task ExecuteSellAll() { orderQuantity = ownedQuantity; if (orderQuantity > 0) await HandleTrade(false); }
     private decimal GetConvertedPrice(decimal p) => user?.BankAccount?.CurrencyType == null ? p : p * user.BankAccount.CurrencyType.Rate;
-    public void Dispose() => _timer?.Dispose();
+    public void Dispose()
+    {
+        // Unsubscribe to prevent memory leaks!
+        MarketService.OnMarketUpdated -= RefreshUI;
+        _timer?.Dispose();
+    }
     private async Task SelectStock(Stock stock) { selectedStock = stock; tradeHistoryMarkers.Clear(); await BuildGraph(); }
 
     public class CandleModel
@@ -391,4 +478,4 @@
         public long Id; public float X, OpenY, CloseY, HighY, LowY, VolumeHeight;
         public bool IsUp; public decimal Price; public string? TradeType;
     }
-} *@
+}

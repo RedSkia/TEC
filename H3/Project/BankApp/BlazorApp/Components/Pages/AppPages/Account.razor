@@ -1,4 +1,4 @@
-﻿@* @page "/account"
+﻿@page "/account"
 @using BankApp.Data.Entities.Auth
 @using BankApp.Data.Entities.Banking
 @using BankApp.Data.Entities.Lending
@@ -110,7 +110,7 @@
                     {
                         <div class="card bg-dark border-0 shadow-sm p-4 rounded-0 border-start border-danger border-4">
                             <label class="fw-bold small text-secondary text-uppercase mb-2 d-block ls-1">Base Protocol</label>
-                            <select class="form-select bg-black border-0 text-white rounded-0 fw-bold" @onchange="HandleCurrencyChange">
+                            <select class="form-select bg-black border-0 text-white rounded-0 fw-bold shadow-none" @onchange="HandleCurrencyChange">
                                 @foreach (var curr in availableCurrencies)
                                 {
                                     <option value="@curr.Id" selected="@(curr.Id == user.BankAccount.CurrencyTypeId)">
@@ -171,17 +171,12 @@
         user = await IdentityService.GetCurrentUserAsync();
         if (user != null)
         {
-            editModel = new ApplicationUser
-            {
-                FullName = user.FullName,
-                Address = user.Address != null ? new Address
-                {
-                    Street = user.Address.Street,
-                    City = user.Address.City,
-                    ZipCode = user.Address.ZipCode
-                } : new Address()
-            };
-            loanRequest.CurrencyTypeId = user.BankAccount?.CurrencyTypeId ?? 1;
+            // Sync the edit model to current user data
+            editModel.FullName = user.FullName;
+            editModel.Address = user.Address ?? new Address();
+
+            if (loanRequest.CurrencyTypeId == 0)
+                loanRequest.CurrencyTypeId = user.BankAccount?.CurrencyTypeId ?? 1;
         }
     }
 
@@ -241,7 +236,7 @@
             <div class="table-responsive">
                 <table class="table table-dark table-borderless align-middle">
                     <tbody>
-                        @foreach (var tx in user.BankAccount.Transactions.Take(5))
+                        @foreach (var tx in (user.BankAccount.Transactions).Take(5))
                         {
                             <tr class="border-bottom border-secondary border-opacity-10">
                                 <td class="py-3">
@@ -289,7 +284,7 @@
                 <label class="small fw-bold text-secondary text-uppercase mb-2 ls-1">Amount</label>
                 <div class="input-group">
                     <span class="input-group-text bg-dark border-secondary border-opacity-25 text-white">@user?.BankAccount?.CurrencyType?.CurrencyCode</span>
-                    <input type="number" class="form-control bg-black border-secondary border-opacity-50 text-white fw-bold" @bind="transferAmount" placeholder="0.00" />
+                    <input type="number" class="form-control bg-black border-secondary border-opacity-50 text-white fw-bold shadow-none" @bind="transferAmount" placeholder="0.00" />
                 </div>
             </div>
             <button class="btn btn-danger btn-lg rounded-0 fw-bold w-100 py-3 shadow" @onclick="HandleTransfer" disabled="@(isSubmitting || selectedRecipient == null || transferAmount <= 0)">
@@ -310,7 +305,7 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <label class="small fw-bold text-secondary mb-2 uppercase ls-1">Full Legal Name</label>
-                    <input type="text" class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0" @bind="editModel.FullName" />
+                    <input type="text" class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0 shadow-none" @bind="editModel.FullName" />
                 </div>
                 <div class="col-md-6">
                     <label class="small fw-bold text-secondary mb-2 uppercase ls-1">Primary Email</label>
@@ -318,15 +313,15 @@
                 </div>
                 <div class="col-md-12">
                     <label class="small fw-bold text-secondary mb-2 uppercase ls-1">Street Address</label>
-                    <input type="text" class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0" @bind="editModel.Address.Street" />
+                    <input type="text" class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0 shadow-none" @bind="editModel.Address.Street" />
                 </div>
                 <div class="col-md-8">
                     <label class="small fw-bold text-secondary mb-2 uppercase ls-1">City</label>
-                    <input type="text" class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0" @bind="editModel.Address.City" />
+                    <input type="text" class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0 shadow-none" @bind="editModel.Address.City" />
                 </div>
                 <div class="col-md-4">
                     <label class="small fw-bold text-secondary mb-2 uppercase ls-1">Postal Code</label>
-                    <input type="text" class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0" @bind="editModel.Address.ZipCode" maxlength="4" />
+                    <input type="text" class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0 shadow-none" @bind="editModel.Address.ZipCode" maxlength="4" />
                 </div>
                 <div class="col-12 d-flex justify-content-between align-items-center mt-4">
                     <a href="/login/reset" class="btn btn-outline-secondary rounded-0 px-4 fw-bold small uppercase ls-1">REKEY PASSWORD</a>
@@ -350,12 +345,12 @@
                 <label class="small fw-bold text-secondary text-uppercase mb-2 ls-1">Requested Amount</label>
                 <div class="input-group">
                     <span class="input-group-text bg-dark border-secondary border-opacity-25 text-white">@user?.BankAccount?.CurrencyType?.CurrencyCode</span>
-                    <input type="number" class="form-control bg-black border-secondary border-opacity-50 text-white fw-bold" @bind="loanRequest.Amount" />
+                    <input type="number" class="form-control bg-black border-secondary border-opacity-50 text-white fw-bold shadow-none" @bind="loanRequest.Amount" />
                 </div>
             </div>
             <div class="mb-4">
                 <label class="small fw-bold text-secondary text-uppercase mb-2 ls-1">Purpose / Note</label>
-                <textarea class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0" @bind="loanRequest.MessageFromCustomer" rows="3"></textarea>
+                <textarea class="form-control bg-dark border-secondary border-opacity-25 text-white rounded-0 shadow-none" @bind="loanRequest.MessageFromCustomer" rows="3"></textarea>
             </div>
             <button class="btn btn-danger btn-lg rounded-0 fw-bold w-100 py-3 shadow" @onclick="HandleLoanRequest" disabled="@(isSubmitting || loanRequest.Amount <= 0)">
                 SUBMIT FOR REVIEW
@@ -435,4 +430,4 @@
         if (success) Nav.NavigateTo("/", forceLoad: true);
         else { toast.Show("PURGE ERROR", Toast.ToastLevel.Error); isSubmitting = false; }
     }
-} *@
+}
