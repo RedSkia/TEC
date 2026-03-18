@@ -1,0 +1,112 @@
+﻿@page
+@model IndexModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="utf-8" />
+    <title>TEC System Monitor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header-panel {
+            background: #1e293b;
+            padding: 25px 30px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+            .header-panel h1 {
+                margin: 0;
+                font-size: 24px;
+                color: #38bdf8;
+            }
+
+        .btn-swagger {
+            background: #0ea5e9;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .log-container {
+            background: #000;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+
+        .log-header {
+            background: #1e293b;
+            padding: 15px 20px;
+            font-size: 14px;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .log-body {
+            padding: 20px;
+            font-family: 'Consolas', monospace;
+            color: #4ade80;
+            white-space: pre-wrap;
+            font-size: 15px;
+            height: 450px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header-panel">
+            <div>
+                <h1>TEC System Monitor</h1>
+                <p style="color: #94a3b8; font-size: 14px;">Hybrid Web App & Minimal API</p>
+            </div>
+            <a href="/swagger" target="_blank" class="btn-swagger">⚙️ Swagger UI</a>
+        </div>
+        <div class="log-container">
+            <div class="log-header"><span>SERVER TERMINAL</span><span id="status" style="color:#4ade80">● LIVE</span></div>
+            <div class="log-body">@Model.LogContent</div>
+        </div>
+    </div>
+
+    <script>
+        async function refreshLog() {
+            try {
+                const res = await fetch('/api/log');
+                if (res.ok) {
+                    const text = await res.text();
+                    const logBody = document.querySelector('.log-body');
+                    if (logBody.innerText !== text) {
+                        logBody.innerText = text;
+                        logBody.scrollTop = logBody.scrollHeight;
+                    }
+                }
+            } catch (e) { console.error("Log fetch error", e); }
+        }
+        setInterval(refreshLog, 1000); // Opdaterer hvert sekund
+    </script>
+</body>
+</html>

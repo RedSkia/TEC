@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  # Database containeren
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: tec_mssql_hybrid
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=DbPassw0rd
+    ports:
+      - "1433:1433"
+
+  # Din Hybrid WebApp / API
+  webapp:
+    image: ${DOCKER_REGISTRY-}webapp
+    build:
+      context: .
+      dockerfile: WebApp/Dockerfile
+    container_name: tec_hybrid_app
+    ports:
+      - "8080:8080" # Åbner hjemmesiden på localhost:8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # Peger direkte på "db" servicen ovenfor
+      - ConnectionStrings__DefaultConnection=Server=db;Database=TEC;User Id=sa;Password=DbPassw0rd;Encrypt=False;TrustServerCertificate=True;
+    depends_on:
+      - db
