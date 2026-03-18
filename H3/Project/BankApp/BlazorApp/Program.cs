@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using SharedCore.Entities.Auth;
 using SharedCore.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Rewrite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,6 +88,19 @@ builder.Services
 });
 
 // -----------------------------------------------------
+// CORS & CONTROLLERS (THE GATEWAY ADDITIONS)
+// -----------------------------------------------------
+// 1. Allows your external HTML lab to make POST requests
+builder.Services.AddCors(options => {
+    options.AddDefaultPolicy(policy => {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
+// 2. Registers your CheckoutController
+builder.Services.AddControllers();
+
+// -----------------------------------------------------
 // AUTHORIZATION & ANTIFORGERY
 // -----------------------------------------------------
 builder.Services.AddAuthorization(options =>
@@ -108,14 +122,15 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddCascadingAuthenticationState();
 
-// Map the custom IdentityService to the AuthenticationStateProvider
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityService>();
-builder.Services.AddScoped<IdentityService>(); // Allows injecting IdentityService directly if needed
+// 3. FIX: Registers the default HttpClient for your Blazor pages and Webhooks
+builder.Services.AddHttpClient();
 
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityService>();
+builder.Services.AddScoped<IdentityService>();
 builder.Services.AddScoped<AppNavigator>();
 builder.Services.AddScoped<FinanceService>();
 builder.Services.AddSingleton<StockMarketService>();
-builder.Services.AddHostedService(sp => sp.GetRequiredService<StockMarketService>()); //Add Heartbeat service
+builder.Services.AddHostedService(sp => sp.GetRequiredService<StockMarketService>());
 
 var app = builder.Build();
 
@@ -161,10 +176,23 @@ using (var scope = app.Services.CreateScope())
 // -----------------------------------------------------
 // MIDDLEWARE PIPELINE
 // -----------------------------------------------------
+app.UseCors(); // 4. FIX: Must be placed early in the pipeline
+
+
+// 2. ADD THIS URL REWRITE BLOCK
+var rewriteOptions = new RewriteOptions()
+    // ^api/checkout/?$ ensures it ONLY matches the exact path.
+    // If there is an ID after it (e.g., api/checkout/guid), this rule is skipped.
+    .AddRewrite(@"^api/checkout/?$", "api/checkout.html", skipRemainingRules: true);
+
+app.UseRewriter(rewriteOptions);
+
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
+
+app.MapControllers(); // 5. FIX: Exposes the API endpoints
 
 app.MapRazorComponents<BlazorApp.Components.App>()
    .AddInteractiveServerRenderMode();

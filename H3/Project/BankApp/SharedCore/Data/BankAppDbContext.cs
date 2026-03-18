@@ -4,9 +4,6 @@ using SharedCore.Entities.Auth;
 using SharedCore.Entities.Banking;
 using SharedCore.Entities.Lending;
 using SharedCore.Entities.Market;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SharedCore.Data;
 
@@ -23,6 +20,7 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<Investment> Investments { get; set; }
     public DbSet<Stock> Stocks { get; set; }
     public DbSet<StockHistory> StockHistory { get; set; }
+    public DbSet<PaymentIntent> PaymentIntents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -61,14 +59,19 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             new Stock { Id = 10, Name = "OMEGA SOLUTIONS", Ticker = "OMGA", CurrentPrice = 8.50m }
         );
 
-        // --- 2. EAGER LOADING ---
+        // --- 2. EAGER LOADING (AUTO-INCLUDE) ---
         builder.Entity<ApplicationUser>().Navigation(u => u.Address).AutoInclude();
         builder.Entity<ApplicationUser>().Navigation(u => u.BankAccount).AutoInclude();
         builder.Entity<BankAccount>().Navigation(b => b.CurrencyType).AutoInclude();
         builder.Entity<BankAccount>().Navigation(b => b.Investments).AutoInclude();
         builder.Entity<Investment>().Navigation(i => i.Stock).AutoInclude();
 
-        // --- 3. RELATIONSHIPS ---
+        // --- 3. RELATIONSHIPS & CONSTRAINTS ---
+
+        // PaymentIntent: Optimized for Guid lookups from the API
+        builder.Entity<PaymentIntent>()
+            .HasIndex(p => p.Id)
+            .IsUnique();
 
         // One-to-One: User <-> BankAccount
         builder.Entity<BankAccount>()
@@ -91,7 +94,38 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .HasForeignKey(i => i.BankAccountId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Restrict Currency deletion if used
+        // Many-to-One: Transaction -> BankAccount
+        builder.Entity<Transaction>()
+            .HasOne(t => t.BankAccount)
+            .WithMany(b => b.Transactions)
+            .HasForeignKey(t => t.BankAccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Many-to-One: LoanRequest -> BankAccount
+        builder.Entity<LoanRequest>()
+            .HasOne(l => l.BankAccount)
+            .WithMany(b => b.LoanRequests) // Explicit mapping to the collection you added
+            .HasForeignKey(l => l.BankAccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // --- PAYMENT INTENT RELATIONSHIPS (The PayPal Bridge) ---
+
+        // Relationship for the Receiver (Merchant)
+        builder.Entity<PaymentIntent>()
+            .HasOne(p => p.ReceiverBankAccount)
+            .WithMany(b => b.ReceivedPaymentIntents)
+            .HasForeignKey(p => p.ReceiverBankAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Relationship for the Sender (Customer)
+        builder.Entity<PaymentIntent>()
+            .HasOne(p => p.SenderBankAccount)
+            .WithMany(b => b.SentPaymentIntents)
+            .HasForeignKey(p => p.SenderBankAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // --- 4. GLOBAL RESTRICTIONS ---
+
         builder.Entity<Transaction>()
             .HasOne(t => t.CurrencyType)
             .WithMany()

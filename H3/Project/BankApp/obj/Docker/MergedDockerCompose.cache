@@ -13,6 +13,9 @@ services:
       ASPNETCORE_HTTP_PORTS: "8080"
       ASPNETCORE_HTTPS_PORTS: "8081"
       ConnectionStrings__DefaultConnection: Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
+      JWT__Audience: BankApp
+      JWT__Issuer: BankApp
+      JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'
     image: blazorapp
     networks:
       bank-net: null
@@ -78,6 +81,9 @@ services:
       ASPNETCORE_HTTP_PORTS: "8080"
       ASPNETCORE_HTTPS_PORTS: "8081"
       ConnectionStrings__DefaultConnection: Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
+      JWT__Audience: BankApp
+      JWT__Issuer: BankApp
+      JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'
     image: webapi
     networks:
       bank-net: null
@@ -121,3 +127,8 @@ networks:
   bank-net:
     name: dockercompose11790265661367496852_bank-net
     driver: bridge
+x-common-variables:
+  ConnectionStrings__DefaultConnection: Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
+  JWT__Audience: BankApp
+  JWT__Issuer: BankApp
+  JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'

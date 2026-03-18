@@ -1,0 +1,28 @@
+services:
+  consoleapp:
+    image: consoleapp:dev
+    build:
+      args:
+        LAUNCHING_FROM_VS: true
+        BUILD_CONFIGURATION: Debug
+      target: base
+      labels:
+        com.microsoft.created-by: "visual-studio"
+        com.microsoft.visual-studio.project-name: "ConsoleApp"
+    environment:
+      - NUGET_FALLBACK_PACKAGES=/.nuget/fallbackpackages
+    volumes:
+      - D:\Desktop\TEC\H3\Serverside\Restful\ConsoleApp:/app:rw
+      - D:\Desktop\TEC\H3\Serverside\Restful:/src:rw
+      - C:\Users\marcu\vsdbg\vs2017u5:/remote_debugger:rw
+      - D:\Software\Microsoft\VisualStudio\2026\MSBuild\Sdks\Microsoft.Docker.Sdk\tools\linux-x64\net6.0:/VSTools:ro
+      - D:\Software\Microsoft\VisualStudio\2026\Common7\IDE\extensions\Microsoft\managedprojectsystem\HotReload:/HotReloadAgent:ro
+      - C:\Users\marcu\.nuget\packages:/.nuget/packages:ro
+      - D:\Software\Microsoft\VisualStudio\Shared\NuGetPackages:/.nuget/fallbackpackages:ro
+    entrypoint: "dotnet --roll-forward Major /VSTools/DistrolessHelper/DistrolessHelper.dll --wait"
+    labels:
+      com.microsoft.visualstudio.debuggee.program: "dotnet"
+      com.microsoft.visualstudio.debuggee.arguments: " --additionalProbingPath /.nuget/packages --additionalProbingPath /.nuget/fallbackpackages  \"/app/bin/Debug/net10.0/ConsoleApp.dll\""
+      com.microsoft.visualstudio.debuggee.workingdirectory: "/app"
+      com.microsoft.visualstudio.debuggee.killprogram: "dotnet --roll-forward Major /VSTools/DistrolessHelper/DistrolessHelper.dll --stop dotnet"
+    tty: true

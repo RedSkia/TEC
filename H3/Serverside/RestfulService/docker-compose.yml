@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: tec_mssql
+    environment:
+      SA_PASSWORD: "DbPassw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+
+  webapi:
+    image: ${DOCKER_REGISTRY-}webapi
+    build:
+      context: .
+      dockerfile: WebAPI/Dockerfile
+    container_name: tec_api
+    depends_on:
+      - mssql # Nu bare en simpel liste uden betingelser
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=TEC;User Id=sa;Password=DbPassw0rd;Encrypt=False;TrustServerCertificate=True;
+    ports:
+      - "8080:8080"

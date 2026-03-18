@@ -1,0 +1,25 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger", // Åbner swagger når du kører lokalt uden Docker
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5159"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}", // Da RoutePrefix er "", åbner den direkte på roden
+      "environmentVariables": {
+        "ASPNETCORE_HTTP_PORTS": "8080"
+      },
+      "publishAllPorts": true,
+      "useSSL": false // Sat til false for at undgå certifikat-fejl i browseren ved Docker-start
+    }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json"
+}

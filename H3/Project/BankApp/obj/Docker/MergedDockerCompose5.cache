@@ -1,0 +1,140 @@
+name: dockercompose11790265661367496852
+services:
+  blazorapp:
+    build:
+      context: D:\Desktop\TEC\H3\Project\BankApp
+      dockerfile: BlazorApp/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Debug
+        LAUNCHING_FROM_VS: "true"
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: BlazorApp
+      target: base
+    depends_on:
+      database:
+        condition: service_started
+        required: true
+    entrypoint:
+      - dotnet
+      - --roll-forward
+      - Major
+      - /VSTools/DistrolessHelper/DistrolessHelper.dll
+      - --wait
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ASPNETCORE_HTTPS_PORTS: "8081"
+      ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
+      ConnectionStrings__DefaultConnection: Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      JWT__Audience: BankApp
+      JWT__Issuer: BankApp
+      JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'
+      NUGET_FALLBACK_PACKAGES: /.nuget/fallbackpackages
+    image: blazorapp:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /.nuget/packages --additionalProbingPath /.nuget/fallbackpackages  "/app/bin/Debug/net10.0/BlazorApp.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: dotnet --roll-forward Major /VSTools/DistrolessHelper/DistrolessHelper.dll --stop dotnet
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    networks:
+      bank-net: null
+    ports:
+      - mode: ingress
+        target: 8080
+        published: "7001"
+        protocol: tcp
+      - mode: ingress
+        target: 8080
+        protocol: tcp
+      - mode: ingress
+        target: 8081
+        protocol: tcp
+    tty: true
+    volumes:
+      - type: bind
+        source: C:\Users\marcu\AppData\Roaming\Microsoft\UserSecrets
+        target: /home/app/.microsoft/usersecrets
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\AppData\Roaming\Microsoft\UserSecrets
+        target: /root/.microsoft/usersecrets
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\AppData\Roaming\ASP.NET\Https
+        target: /home/app/.aspnet/https
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\AppData\Roaming\ASP.NET\Https
+        target: /root/.aspnet/https
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Desktop\TEC\H3\Project\BankApp\BlazorApp
+        target: /app
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Desktop\TEC\H3\Project\BankApp
+        target: /src
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\vsdbg\vs2017u5
+        target: /remote_debugger
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\marcu\.nuget\packages
+        target: /.nuget/packages
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Software\Microsoft\VisualStudio\Shared\NuGetPackages
+        target: /.nuget/fallbackpackages
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Software\Microsoft\VisualStudio\2026\MSBuild\Sdks\Microsoft.Docker.Sdk\tools\linux-x64\net6.0
+        target: /VSTools
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: D:\Software\Microsoft\VisualStudio\2026\Common7\IDE\extensions\Microsoft\managedprojectsystem\HotReload
+        target: /HotReloadAgent
+        read_only: true
+        bind:
+          create_host_path: true
+  database:
+    container_name: bankapp-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: BankAppPassword123!
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    networks:
+      bank-net: null
+    ports:
+      - mode: ingress
+        target: 1433
+        published: "1433"
+        protocol: tcp
+networks:
+  bank-net:
+    name: dockercompose11790265661367496852_bank-net
+    driver: bridge
+x-common-variables:
+  ConnectionStrings__DefaultConnection: Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
+  JWT__Audience: BankApp
+  JWT__Issuer: BankApp
+  JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'

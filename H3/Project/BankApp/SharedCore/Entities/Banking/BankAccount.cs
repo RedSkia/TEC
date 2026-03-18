@@ -32,4 +32,9 @@ public class BankAccount
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     public virtual ICollection<LoanRequest> LoanRequests { get; set; } = new List<LoanRequest>();
     public virtual ICollection<Investment> Investments { get; set; } = new List<Investment>();
+    // Intents where this account is receiving money
+    public virtual ICollection<PaymentIntent> ReceivedPaymentIntents { get; set; } = new List<PaymentIntent>();
+
+    // Intents where this account is paying money
+    public virtual ICollection<PaymentIntent> SentPaymentIntents { get; set; } = new List<PaymentIntent>();
 }

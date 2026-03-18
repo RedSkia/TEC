@@ -1,4 +1,5 @@
-﻿@attribute [Route(AppRoutes.Login)]
+﻿@page "/login"
+@* Adjust the route attribute to match your AppRoutes.Login if needed *@
 @inject IdentityService IdentityService
 @inject NavigationManager Nav
 @rendermode InteractiveServer
@@ -59,11 +60,11 @@
         </InputForm>
 
         <div class="d-flex justify-content-between mt-3 px-1">
-            <NavLink href="@AppRoutes.LoginRegister" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
+            <NavLink href="/register" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
                 <i class="bi bi-person-plus me-1"></i>Create Account
             </NavLink>
 
-            <NavLink href="login/reset" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
+            <NavLink href="/login/reset" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
                 <i class="bi bi-shield-lock me-1"></i>Forgot Password?
             </NavLink>
         </div>
@@ -89,6 +90,10 @@
 </style>
 
 @code {
+    // 1. Capture the return URL from the query string
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
     [CascadingParameter] public Toast? Toast { get; set; }
 
     private string username = "";
@@ -98,10 +103,10 @@
 
     protected override void OnInitialized()
     {
-        // Fix: If already authenticated, redirect immediately
         if (IdentityService.IsUserAuthenticated())
         {
-            Nav.NavigateTo(AppRoutes.Index);
+            // 2. Smart Redirect for already logged-in users
+            Nav.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl);
         }
     }
 
@@ -123,9 +128,9 @@
 
             if (!string.IsNullOrEmpty(token))
             {
-                // Navigate with true to force a reload, refreshing the AuthProvider
-                // and ensuring the Header updates immediately.
-                Nav.NavigateTo(AppRoutes.Index, true);
+                // 3. Smart Redirect on successful login
+                var targetRoute = string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl;
+                Nav.NavigateTo(targetRoute, true);
             }
             else
             {

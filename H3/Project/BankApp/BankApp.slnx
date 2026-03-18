@@ -4,5 +4,4 @@
     <Build />
   </Project>
   <Project Path="SharedCore/SharedCore.csproj" Id="4f1975e3-8231-41f3-8a98-ea42dc5bf82a" />
-  <Project Path="WebAPI/WebAPI.csproj" Id="d5c4d912-c476-4c69-bc82-02d713d9c2d0" />
 </Solution>

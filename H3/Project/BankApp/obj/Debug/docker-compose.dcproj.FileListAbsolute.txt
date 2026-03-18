@@ -6,13 +6,7 @@ D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\libman.json
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\BlazorApp.staticwebassets.runtime.json
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\BlazorApp.staticwebassets.endpoints.json
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\BlazorApp.exe
-D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\WebAPI.deps.json
-D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\WebAPI.runtimeconfig.json
-D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\WebAPI.staticwebassets.runtime.json
-D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\WebAPI.staticwebassets.endpoints.json
-D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\WebAPI.exe
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\BlazorApp.dll
-D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\WebAPI.dll
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\SharedCore.dll
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\Microsoft.EntityFrameworkCore.dll
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\Microsoft.EntityFrameworkCore.SqlServer.dll
@@ -32,7 +26,6 @@ D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\Microsoft.IdentityModel.Logging.dll
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\Microsoft.IdentityModel.Abstractions.dll
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\Microsoft.Identity.Client.dll
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\BlazorApp.pdb
-D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\WebAPI.pdb
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\SharedCore.pdb
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\cs\Microsoft.Data.SqlClient.resources.dll
 D:\Desktop\TEC\H3\Project\BankApp\bin\Debug\de\Microsoft.Data.SqlClient.resources.dll

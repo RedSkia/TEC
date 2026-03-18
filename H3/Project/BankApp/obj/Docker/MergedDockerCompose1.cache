@@ -28,6 +28,9 @@ services:
       ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
       ConnectionStrings__DefaultConnection: Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
       DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      JWT__Audience: BankApp
+      JWT__Issuer: BankApp
+      JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'
       NUGET_FALLBACK_PACKAGES: /.nuget/fallbackpackages
     image: blazorapp:dev
     labels:
@@ -154,6 +157,9 @@ services:
       ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
       ConnectionStrings__DefaultConnection: Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
       DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      JWT__Audience: BankApp
+      JWT__Issuer: BankApp
+      JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'
       NUGET_FALLBACK_PACKAGES: /.nuget/fallbackpackages
     image: webapi:dev
     labels:
@@ -243,3 +249,8 @@ networks:
   bank-net:
     name: dockercompose11790265661367496852_bank-net
     driver: bridge
+x-common-variables:
+  ConnectionStrings__DefaultConnection: Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
+  JWT__Audience: BankApp
+  JWT__Issuer: BankApp
+  JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'
