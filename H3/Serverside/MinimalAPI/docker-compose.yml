@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: tec_mssql
+    environment:
+      SA_PASSWORD: "DbPassw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+
+  webapi:
+    image: ${DOCKER_REGISTRY-}webapi
+    build:
+      context: .
+      dockerfile: WebAPI/Dockerfile
+    container_name: tec_api
+    depends_on:
+      - mssql
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development # Sikrer at Swagger aktiveres
+      - ASPNETCORE_URLS=http://+:8080      # Tvinger API'et til at lytte på port 8080 internt
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=TEC;User Id=sa;Password=DbPassw0rd;Encrypt=False;TrustServerCertificate=True;
+    ports:
+      - "8080:8080" # Matcher porten, så du kan tilgå det via http://localhost:8080
