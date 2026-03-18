@@ -13,7 +13,6 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["WebAPI/WebAPI.csproj", "WebAPI/"]
-COPY ["SharedCore/SharedCore.csproj", "SharedCore/"]
 RUN dotnet restore "./WebAPI/WebAPI.csproj"
 COPY . .
 WORKDIR "/src/WebAPI"

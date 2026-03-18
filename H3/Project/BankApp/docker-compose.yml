@@ -1,3 +1,9 @@
+x-common-variables: &common-variables
+  ConnectionStrings__DefaultConnection: "Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True"
+  JWT__Key: "#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L"
+  JWT__Issuer: "BankApp"
+  JWT__Audience: "BankApp"
+
 services:
   database:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -10,20 +16,6 @@ services:
     networks:
       - bank-net
 
-  webapi:
-    image: ${DOCKER_REGISTRY-}webapi
-    build:
-      context: .
-      dockerfile: WebAPI/Dockerfile
-    depends_on:
-      - database
-    ports:
-      - "5001:8080" # Access API at localhost:5001
-    environment:
-      - ConnectionStrings__DefaultConnection=Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
-    networks:
-      - bank-net
-
   blazorapp:
     image: ${DOCKER_REGISTRY-}blazorapp
     build:
@@ -32,9 +24,9 @@ services:
     depends_on:
       - database
     ports:
-      - "7001:8080" # Access UI at localhost:7001
+      - "7001:8080" # Everything (UI + API) is now on port 7001
     environment:
-      - ConnectionStrings__DefaultConnection=Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
+      <<: *common-variables
     networks:
       - bank-net
 

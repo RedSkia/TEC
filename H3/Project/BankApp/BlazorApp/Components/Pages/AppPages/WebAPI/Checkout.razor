@@ -1,0 +1,160 @@
+﻿@page "/api/checkout/{IntentId:guid}"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using SharedCore.Data
+@using SharedCore.Entities.Banking
+@using SharedCore.Services
+
+@inject IDbContextFactory<BankAppDbContext> DbFactory
+@inject FinanceService FinanceService
+@inject IdentityService IdentityService
+@inject NavigationManager Nav
+
+<AuthorizeView>
+    <Authorized>
+        <div class="container py-5">
+            <div class="bank-card mx-auto shadow-lg p-5" style="max-width: 500px; border-top: 5px solid #dc3545; background: #111; color: white;">
+                @if (intent == null)
+                {
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-danger"></div>
+                        <p class="mt-3 text-muted tiny-caps">Validating Secure Intent...</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center mb-5">
+                        <h4 class="fw-black uppercase text-white">Authorize Payment</h4>
+                        <span class="badge bg-danger">Onyx Secure Gateway</span>
+                    </div>
+
+                    <div class="bg-black p-4 mb-4 border border-secondary border-opacity-25 text-center">
+                        <h6 class="text-secondary small tiny-caps">Pay to Merchant</h6>
+                        <h5 class="fw-bold text-white uppercase">@intent.MerchantName</h5>
+                        <hr class="border-secondary opacity-25" />
+                        <h1 class="display-5 fw-black text-danger">@intent.Amount.ToString("N2")</h1>
+                        <span class="text-muted small">USD</span>
+                    </div>
+
+                    @* NEW: Display errors if the transaction fails (e.g., Insufficient Funds) *@
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small text-center fw-bold py-2 mb-4">
+                            @errorMessage
+                        </div>
+                    }
+
+                    @* Simplified OnClick handler *@
+                    <button class="btn btn-danger w-100 py-3 fw-bold uppercase mb-3"
+                            @onclick="ProcessAuthorization"
+                            disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Confirm & Pay
+                    </button>
+
+                    <button class="btn btn-outline-secondary w-100 py-2 tiny-caps" @onclick="Cancel">
+                        Cancel & Return
+                    </button>
+                }
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="container py-5 text-center">
+            <div class="bank-card mx-auto p-5" style="max-width: 400px; background: #111;">
+                <i class="bi bi-lock-fill text-danger display-1"></i>
+                <h3 class="text-white fw-black uppercase mt-3">Identity Required</h3>
+                <p class="text-muted">You must be logged into your Onyx Vault account to authorize this external payment.</p>
+                <a href="/login?ReturnUrl=/checkout/@IntentId" class="btn btn-danger w-100 py-2 fw-bold mt-3">Secure Login</a>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter] public Guid IntentId { get; set; }
+
+    private PaymentIntent? intent;
+    private bool isProcessing = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            using var db = await DbFactory.CreateDbContextAsync();
+            intent = await db.PaymentIntents
+                .Include(p => p.ReceiverBankAccount)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == IntentId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Checkout Error: {ex.Message}");
+        }
+    }
+
+    private async Task ProcessAuthorization()
+    {
+        if (intent == null) return;
+
+        isProcessing = true;
+        errorMessage = null; // Clear previous errors
+
+        var user = await IdentityService.GetCurrentUserAsync();
+
+        if (user?.BankAccount == null)
+        {
+            errorMessage = "Bank account not found for current user.";
+            isProcessing = false;
+            return;
+        }
+
+        // 1. Move the money (Debit User -> Credit Merchant)
+        var result = await FinanceService.ExecuteTransfer(
+            user.Id,
+            intent.ReceiverBankAccount.UserId,
+            intent.Amount
+        );
+
+        if (result.Success)
+        {
+            // 2. Finalize the intent directly in the Database
+            using var db = await DbFactory.CreateDbContextAsync();
+            var dbIntent = await db.PaymentIntents.FirstOrDefaultAsync(i => i.Id == IntentId);
+
+            if (dbIntent != null)
+            {
+                dbIntent.SenderBankAccountId = user.BankAccount.Id;
+                dbIntent.Status = PaymentIntentStatus.Completed;
+                await db.SaveChangesAsync();
+
+                // 3. Trigger the Webhook to the external Merchant
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using var client = new HttpClient();
+                        await client.PostAsJsonAsync(dbIntent.WebhookUrl, new { intentId = dbIntent.Id, status = "SUCCESS" });
+                    }
+                    catch { /* Log Webhook failure */ }
+                });
+            }
+
+            // Redirect on success
+            Nav.NavigateTo("/account");
+        }
+        else
+        {
+            // NEW: Show exactly why it failed to the user
+            errorMessage = result.Message;
+        }
+
+        isProcessing = false;
+    }
+
+    private void Cancel() => Nav.NavigateTo("/account");
+}

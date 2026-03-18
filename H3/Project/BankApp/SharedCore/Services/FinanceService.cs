@@ -51,26 +51,35 @@ public class FinanceService(IDbContextFactory<BankAppDbContext> dbFactory)
     public async Task<(bool Success, string Message)> ExecuteTransfer(string senderId, string recipientId, decimal amount)
     {
         using var db = await dbFactory.CreateDbContextAsync();
-        using var transaction = await db.Database.BeginTransactionAsync();
-        try
+        var strategy = db.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
         {
-            var s = await db.BankAccounts.Include(a => a.CurrencyType).FirstOrDefaultAsync(a => a.UserId == senderId);
-            var r = await db.BankAccounts.Include(a => a.CurrencyType).FirstOrDefaultAsync(a => a.UserId == recipientId);
+            using var transaction = await db.Database.BeginTransactionAsync();
+            try
+            {
+                var s = await db.BankAccounts.Include(a => a.CurrencyType).FirstOrDefaultAsync(a => a.UserId == senderId);
+                var r = await db.BankAccounts.Include(a => a.CurrencyType).FirstOrDefaultAsync(a => a.UserId == recipientId);
 
-            if (s == null || r == null || s.Balance < amount) return (false, "Invalid accounts or insufficient funds.");
+                if (s == null || r == null || s.Balance < amount) return (false, "Invalid accounts or insufficient funds.");
 
-            decimal received = Math.Round((amount / s.CurrencyType.Rate) * r.CurrencyType.Rate, 2);
-            s.Balance -= amount;
-            r.Balance += received;
+                decimal received = Math.Round((amount / s.CurrencyType.Rate) * r.CurrencyType.Rate, 2);
+                s.Balance -= amount;
+                r.Balance += received;
 
-            AppendTransaction(db, s.Id, -amount, s.CurrencyTypeId, TransactionType.Transfer, $"Transfer sent to {r.AccountNumber}");
-            AppendTransaction(db, r.Id, received, r.CurrencyTypeId, TransactionType.Transfer, $"Transfer received from {s.AccountNumber}");
+                AppendTransaction(db, s.Id, -amount, s.CurrencyTypeId, TransactionType.Transfer, $"Transfer sent to {r.AccountNumber}");
+                AppendTransaction(db, r.Id, received, r.CurrencyTypeId, TransactionType.Transfer, $"Transfer received from {s.AccountNumber}");
 
-            await db.SaveChangesAsync();
-            await transaction.CommitAsync();
-            return (true, "Success");
-        }
-        catch (Exception ex) { return (false, ex.Message); }
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return (true, "Success");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return (false, ex.Message);
+            }
+        });
     }
 
     public async Task<bool> UpdateAccountCurrency(string userId, int targetId)
@@ -125,22 +134,31 @@ public class FinanceService(IDbContextFactory<BankAppDbContext> dbFactory)
     public async Task<(bool Success, string Message)> RepayLoanAsync(int loanId)
     {
         using var db = await dbFactory.CreateDbContextAsync();
-        using var transaction = await db.Database.BeginTransactionAsync();
-        try
+        var strategy = db.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
         {
-            var loan = await db.LoanRequests.Include(l => l.BankAccount).FirstOrDefaultAsync(l => l.Id == loanId);
-            if (loan == null || loan.Status != LoanStatus.Approved) return (false, "Invalid loan state.");
-            if (loan.BankAccount.Balance < loan.Amount) return (false, "Insufficient balance.");
+            using var transaction = await db.Database.BeginTransactionAsync();
+            try
+            {
+                var loan = await db.LoanRequests.Include(l => l.BankAccount).FirstOrDefaultAsync(l => l.Id == loanId);
+                if (loan == null || loan.Status != LoanStatus.Approved) return (false, "Invalid loan state.");
+                if (loan.BankAccount.Balance < loan.Amount) return (false, "Insufficient balance.");
 
-            loan.BankAccount.Balance -= loan.Amount;
-            loan.Status = LoanStatus.Paid;
-            AppendTransaction(db, loan.BankAccountId, -loan.Amount, loan.CurrencyTypeId, TransactionType.Loan, $"Loan Repayment: {loan.RequestReference[..8]}");
+                loan.BankAccount.Balance -= loan.Amount;
+                loan.Status = LoanStatus.Paid;
+                AppendTransaction(db, loan.BankAccountId, -loan.Amount, loan.CurrencyTypeId, TransactionType.Loan, $"Loan Repayment: {loan.RequestReference[..8]}");
 
-            await db.SaveChangesAsync();
-            await transaction.CommitAsync();
-            return (true, "Loan successfully repaid.");
-        }
-        catch (Exception ex) { return (false, ex.Message); }
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return (true, "Loan successfully repaid.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return (false, ex.Message);
+            }
+        });
     }
 
     public async Task<List<LoanRequest>> GetAllLoanRequestsAsync()
@@ -156,22 +174,38 @@ public class FinanceService(IDbContextFactory<BankAppDbContext> dbFactory)
     public async Task<bool> UpdateLoanStatusAsync(int loanId, LoanStatus status, string? officerId, string? response = null)
     {
         using var db = await dbFactory.CreateDbContextAsync();
-        var loan = await db.LoanRequests.FindAsync(loanId);
-        if (loan == null) return false;
+        var strategy = db.Database.CreateExecutionStrategy();
 
-        loan.Status = status;
-        if (!string.IsNullOrEmpty(officerId)) loan.AssignedOfficerId = officerId;
-        if (!string.IsNullOrEmpty(response)) loan.ResponseFromOfficer = response;
-
-        if (status == LoanStatus.Approved)
+        return await strategy.ExecuteAsync(async () =>
         {
-            var account = await db.BankAccounts.FindAsync(loan.BankAccountId);
-            if (account != null)
+            using var transaction = await db.Database.BeginTransactionAsync();
+            try
             {
-                account.Balance += loan.Amount;
-                AppendTransaction(db, account.Id, loan.Amount, loan.CurrencyTypeId, TransactionType.Loan, $"Loan Disbursement: {loan.RequestReference[..8]}");
+                var loan = await db.LoanRequests.FindAsync(loanId);
+                if (loan == null) return false;
+
+                loan.Status = status;
+                if (!string.IsNullOrEmpty(officerId)) loan.AssignedOfficerId = officerId;
+                if (!string.IsNullOrEmpty(response)) loan.ResponseFromOfficer = response;
+
+                if (status == LoanStatus.Approved)
+                {
+                    var account = await db.BankAccounts.FindAsync(loan.BankAccountId);
+                    if (account != null)
+                    {
+                        account.Balance += loan.Amount;
+                        AppendTransaction(db, account.Id, loan.Amount, loan.CurrencyTypeId, TransactionType.Loan, $"Loan Disbursement: {loan.RequestReference[..8]}");
+                    }
+                }
+                var success = await db.SaveChangesAsync() > 0;
+                await transaction.CommitAsync();
+                return success;
             }
-        }
-        return await db.SaveChangesAsync() > 0;
+            catch
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+        });
     }
 }

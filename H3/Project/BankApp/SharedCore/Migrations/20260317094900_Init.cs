@@ -351,6 +351,36 @@ namespace SharedCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PaymentIntents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    MerchantName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    WebhookUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReceiverBankAccountId = table.Column<int>(type: "int", nullable: false),
+                    SenderBankAccountId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentIntents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PaymentIntents_BankAccounts_ReceiverBankAccountId",
+                        column: x => x.ReceiverBankAccountId,
+                        principalTable: "BankAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PaymentIntents_BankAccounts_SenderBankAccountId",
+                        column: x => x.SenderBankAccountId,
+                        principalTable: "BankAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Transactions",
                 columns: table => new
                 {
@@ -512,6 +542,22 @@ namespace SharedCore.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PaymentIntents_Id",
+                table: "PaymentIntents",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentIntents_ReceiverBankAccountId",
+                table: "PaymentIntents",
+                column: "ReceiverBankAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentIntents_SenderBankAccountId",
+                table: "PaymentIntents",
+                column: "SenderBankAccountId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StockHistory_StockId",
                 table: "StockHistory",
                 column: "StockId");
@@ -556,6 +602,9 @@ namespace SharedCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "LoginActivities");
+
+            migrationBuilder.DropTable(
+                name: "PaymentIntents");
 
             migrationBuilder.DropTable(
                 name: "StockHistory");

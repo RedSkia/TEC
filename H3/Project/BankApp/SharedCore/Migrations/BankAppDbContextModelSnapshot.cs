@@ -447,6 +447,49 @@ namespace SharedCore.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SharedCore.Entities.Banking.PaymentIntent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MerchantName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ReceiverBankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SenderBankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WebhookUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.HasIndex("ReceiverBankAccountId");
+
+                    b.HasIndex("SenderBankAccountId");
+
+                    b.ToTable("PaymentIntents");
+                });
+
             modelBuilder.Entity("SharedCore.Entities.Banking.Transaction", b =>
                 {
                     b.Property<int>("Id")
@@ -777,6 +820,24 @@ namespace SharedCore.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SharedCore.Entities.Banking.PaymentIntent", b =>
+                {
+                    b.HasOne("SharedCore.Entities.Banking.BankAccount", "ReceiverBankAccount")
+                        .WithMany("ReceivedPaymentIntents")
+                        .HasForeignKey("ReceiverBankAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SharedCore.Entities.Banking.BankAccount", "SenderBankAccount")
+                        .WithMany("SentPaymentIntents")
+                        .HasForeignKey("SenderBankAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ReceiverBankAccount");
+
+                    b.Navigation("SenderBankAccount");
+                });
+
             modelBuilder.Entity("SharedCore.Entities.Banking.Transaction", b =>
                 {
                     b.HasOne("SharedCore.Entities.Banking.BankAccount", "BankAccount")
@@ -867,6 +928,10 @@ namespace SharedCore.Migrations
                     b.Navigation("Investments");
 
                     b.Navigation("LoanRequests");
+
+                    b.Navigation("ReceivedPaymentIntents");
+
+                    b.Navigation("SentPaymentIntents");
 
                     b.Navigation("Transactions");
                 });

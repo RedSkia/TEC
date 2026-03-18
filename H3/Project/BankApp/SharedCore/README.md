@@ -1,0 +1,1 @@
+﻿dotnet ef migrations add Init --project SharedCore --startup-project BlazorApp -v
