@@ -88,16 +88,14 @@ builder.Services
 });
 
 // -----------------------------------------------------
-// CORS & CONTROLLERS (THE GATEWAY ADDITIONS)
+// CORS & CONTROLLERS
 // -----------------------------------------------------
-// 1. Allows your external HTML lab to make POST requests
 builder.Services.AddCors(options => {
     options.AddDefaultPolicy(policy => {
         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });
 });
 
-// 2. Registers your CheckoutController
 builder.Services.AddControllers();
 
 // -----------------------------------------------------
@@ -115,18 +113,20 @@ builder.Services.AddAntiforgery(options =>
 });
 
 // -----------------------------------------------------
-// BLAZOR & CUSTOM SERVICES
+// BLAZOR & CUSTOM SERVICES (THE FIX IS HERE)
 // -----------------------------------------------------
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-
 builder.Services.AddCascadingAuthenticationState();
-
-// 3. FIX: Registers the default HttpClient for your Blazor pages and Webhooks
 builder.Services.AddHttpClient();
 
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityService>();
+// 1. Register the IdentityService itself first
 builder.Services.AddScoped<IdentityService>();
+
+// 2. Point the AuthenticationStateProvider to use that SAME instance
+builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
+    sp.GetRequiredService<IdentityService>());
+
 builder.Services.AddScoped<AppNavigator>();
 builder.Services.AddScoped<FinanceService>();
 builder.Services.AddSingleton<StockMarketService>();
@@ -176,13 +176,9 @@ using (var scope = app.Services.CreateScope())
 // -----------------------------------------------------
 // MIDDLEWARE PIPELINE
 // -----------------------------------------------------
-app.UseCors(); // 4. FIX: Must be placed early in the pipeline
+app.UseCors();
 
-
-// 2. ADD THIS URL REWRITE BLOCK
 var rewriteOptions = new RewriteOptions()
-    // ^api/checkout/?$ ensures it ONLY matches the exact path.
-    // If there is an ID after it (e.g., api/checkout/guid), this rule is skipped.
     .AddRewrite(@"^api/checkout/?$", "api/checkout.html", skipRemainingRules: true);
 
 app.UseRewriter(rewriteOptions);
@@ -192,7 +188,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
-app.MapControllers(); // 5. FIX: Exposes the API endpoints
+app.MapControllers();
 
 app.MapRazorComponents<BlazorApp.Components.App>()
    .AddInteractiveServerRenderMode();

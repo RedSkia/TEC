@@ -1,12 +1,14 @@
 ﻿@implements IDisposable
-@inject NavigationManager Nav
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AppNavigator Navigator
 @inject IdentityService IdentityService
 @inject AuthenticationStateProvider AuthProvider
 
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top border-bottom border-white border-opacity-10 shadow-lg py-2 bg-black">
     <div class="container">
-
-        <div class="navbar-brand d-flex align-items-center py-0 user-select-none" role="button" @onclick='() => Nav.NavigateTo(AppRoutes.Index)'>
+        @* Brand / Logo *@
+        <div class="navbar-brand d-flex align-items-center py-0 user-select-none pointer"
+             @onclick='() => Navigator.NavigateTo(AppRoutes.Index)'>
             <img src="assets/logo.png" alt="RedSkia Logo" style="height: 45px; width: auto;" class="me-3 object-fit-contain">
             <div class="lh-1">
                 <span class="fw-bolder fs-4 text-white d-block tracking-tight" style="letter-spacing: -1px;">REDSKIA</span>
@@ -19,35 +21,25 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-
             <ul class="navbar-nav me-auto ms-lg-5 py-3 py-lg-0 border-top border-white border-opacity-10 border-top-lg-0 mt-2 mt-lg-0">
                 <li class="nav-item">
-                    <NavLink class="nav-link px-lg-3 py-2 fw-bold text-uppercase small tracking-widest text-center text-lg-start"
-                             href="@AppRoutes.Dashboard"
-                             Match="NavLinkMatch.All">
-                        Dashboard
-                    </NavLink>
+                    <span class="nav-link px-lg-3 py-2 fw-bold text-uppercase small tracking-widest text-center text-lg-start pointer"
+                          @onclick='() => Navigator.NavigateTo(AppRoutes.Dashboard)'>Dashboard</span>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link px-lg-3 py-2 fw-bold text-uppercase small tracking-widest text-center text-lg-start"
-                             href="@AppRoutes.Market">
-                        Market
-                    </NavLink>
+                    <span class="nav-link px-lg-3 py-2 fw-bold text-uppercase small tracking-widest text-center text-lg-start pointer"
+                          @onclick='() => Navigator.NavigateTo(AppRoutes.Market)'>Market</span>
                 </li>
             </ul>
 
             <div class="d-flex flex-column flex-lg-row gap-3 align-items-center py-3 py-lg-0 border-top border-white border-opacity-10 border-top-lg-0 mt-2 mt-lg-0">
-
                 <AuthorizeView>
                     <Authorized>
-                        @* FIX: We use 'context.User' here. Even if 'currentUser' is still loading from the DB, 
-                           the header will NOT disappear because the AuthState already knows who you are.
-                        *@
                         <div class="d-flex flex-column flex-lg-row align-items-center gap-3 ps-lg-3 w-100">
 
-                            <div class="d-flex align-items-center gap-3 order-1 order-lg-0 border border-white border-opacity-10 rounded-pill pe-4 ps-2 py-1 transition-base hover-bg-dark"
-                                 role="button"
-                                 @onclick='() => Nav.NavigateTo("/account")'>
+                            @* Profile Capsule *@
+                            <div class="d-flex align-items-center gap-3 order-1 order-lg-0 border border-white border-opacity-10 rounded-pill pe-4 ps-2 py-1 transition-base hover-bg-dark pointer"
+                                 @onclick='() => Navigator.NavigateTo(AppRoutes.Account)'>
 
                                 <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm border border-white border-opacity-25"
                                      style="width: 38px; height: 38px; background-color: @(currentRole?.RoleColor ?? "#c80000"); flex-shrink: 0; font-size: 0.9rem;">
@@ -63,7 +55,7 @@
                                                  color: @(currentRole?.RoleColor ?? "#808080");
                                                  border: 1px solid @(currentRole?.RoleColor ?? "#808080")66;
                                                  font-size: 0.55rem; letter-spacing: 1px;">
-                                        @(currentRole?.Name?.ToUpper() ?? "CLIENT")
+                                        @FormatRole(currentRole?.Name)
                                     </span>
                                 </div>
                             </div>
@@ -74,21 +66,19 @@
                             </button>
                         </div>
                     </Authorized>
-
                     <NotAuthorized>
                         <div class="d-flex flex-column flex-lg-row gap-2 w-100 w-lg-auto text-center">
                             <button class="btn btn-link text-white-50 text-decoration-none fw-bold small py-2"
-                                    @onclick='() => Nav.NavigateTo(AppRoutes.Login)'>
+                                    @onclick='() => Navigator.NavigateTo(AppRoutes.Login)'>
                                 LOGIN
                             </button>
                             <button class="btn btn-primary rounded-pill px-4 py-2 shadow-lg fw-bold w-100 w-lg-auto text-uppercase"
-                                    @onclick='() => Nav.NavigateTo(AppRoutes.LoginRegister)'>
+                                    @onclick='() => Navigator.NavigateTo(AppRoutes.LoginRegister)'>
                                 SIGN UP
                             </button>
                         </div>
                     </NotAuthorized>
                 </AuthorizeView>
-
             </div>
         </div>
     </div>
@@ -110,16 +100,18 @@
 
     private async void AuthChanged(Task<AuthenticationState> task)
     {
-        // Fix: Ensure the task is resolved before loading the user
-        await task;
-        await LoadUser();
-        await InvokeAsync(StateHasChanged);
+        await InvokeAsync(async () =>
+        {
+            await LoadUser();
+            StateHasChanged();
+        });
     }
 
     private async Task LoadUser()
     {
-        // Use the IdentityService to fetch the actual User model
-        if (IdentityService.IsUserAuthenticated())
+        var state = await AuthProvider.GetAuthenticationStateAsync();
+
+        if (state.User.Identity?.IsAuthenticated == true)
         {
             currentUser = await IdentityService.GetCurrentApplicationUserAsync();
             currentRole = await IdentityService.GetCurrentApplicationRoleAsync();
@@ -131,19 +123,27 @@
         }
     }
 
+    private string FormatRole(string? roleName)
+    {
+        if (string.IsNullOrEmpty(roleName)) return "CUSTOMER";
+        if (roleName.Equals("LoanOfficer", StringComparison.OrdinalIgnoreCase)) return "OFFICER";
+        return roleName.ToUpper();
+    }
+
     private string GetInitials(string? name)
     {
         if (string.IsNullOrWhiteSpace(name)) return "??";
         var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 0) return "??";
-        if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
-        return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+
+        if (parts.Length >= 2) return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+
+        return parts[0][0].ToString().ToUpper();
     }
 
     private async Task HandleLogout()
     {
         await IdentityService.Logout();
-        Nav.NavigateTo(AppRoutes.Index, true);
+        await Navigator.NavigateTo(AppRoutes.Index);
     }
 
     public void Dispose()

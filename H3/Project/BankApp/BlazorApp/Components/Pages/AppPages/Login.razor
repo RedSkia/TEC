@@ -1,7 +1,7 @@
 ﻿@page "/login"
 @* Adjust the route attribute to match your AppRoutes.Login if needed *@
 @inject IdentityService IdentityService
-@inject NavigationManager Nav
+@inject AppNavigator Navigator
 @rendermode InteractiveServer
 
 <div class="auth-container d-flex align-items-center justify-content-center min-vh-100">
@@ -106,7 +106,7 @@
         if (IdentityService.IsUserAuthenticated())
         {
             // 2. Smart Redirect for already logged-in users
-            Nav.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl);
+            Navigator.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl);
         }
     }
 
@@ -128,9 +128,9 @@
 
             if (!string.IsNullOrEmpty(token))
             {
-                // 3. Smart Redirect on successful login
-                var targetRoute = string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl;
-                Nav.NavigateTo(targetRoute, true);
+                // Use your custom Navigator without the 'true' reload flag
+                var targetRoute = string.IsNullOrEmpty(ReturnUrl) ? AppRoutes.Index : ReturnUrl;
+                await Navigator.NavigateTo(targetRoute);
             }
             else
             {
