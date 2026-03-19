@@ -35,6 +35,11 @@ app.UseSwaggerUI(options => {
 
 // Endpoint til live-opdatering af loggen
 app.MapGet("/api/log", (ILogService logService) => Results.Content(logService.ReadLog()));
+app.MapDelete("/api/log", (ILogService logService) =>
+{
+    logService.DeleteLog();
+    return Results.NoContent();
+});
 
 app.MapRazorPages();
 app.MapTeacherEndpoints();

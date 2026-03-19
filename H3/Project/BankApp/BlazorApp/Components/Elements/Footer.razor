@@ -1,13 +1,14 @@
 ﻿@using System.Security.Claims
-@inject AppNavigator AppNavigator
+@using System.Reflection
+@inject AppNavigator Navigator
 @inject IdentityService IdentityService
 
 <footer class="text-white pt-5 pb-4 border-top border-white border-opacity-10 mt-auto" style="background: #050505;">
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-5 text-center text-lg-start">
-                <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-3"
-                     style="cursor: pointer;" @onclick='() => AppNavigator.NavigateTo(AppRoutes.Index)'>
+                <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-3 pointer"
+                     @onclick='() => Navigator.NavigateTo(AppRoutes.Index)'>
                     <img src="assets/logo.png" alt="RedSkia" height="50" class="me-2">
                     <div class="lh-1">
                         <h5 class="fw-bold mb-0 tracking-tight">REDSKIA <span class="text-danger">BANKING</span></h5>
@@ -17,11 +18,6 @@
                 <p class="small text-white-50 w-75 mx-auto mx-lg-0 mb-4">
                     Institutional-grade security. Next-generation speed. The premier vault for global digital assets and liquidity.
                 </p>
-                <div class="d-flex justify-content-center justify-content-lg-start gap-3 opacity-50">
-                    <i class="bi bi-twitter-x pointer hover-white transition-base"></i>
-                    <i class="bi bi-linkedin pointer hover-white transition-base"></i>
-                    <i class="bi bi-github pointer hover-white transition-base"></i>
-                </div>
             </div>
 
             <div class="col-6 col-lg-3 offset-lg-1 text-start">
@@ -33,7 +29,7 @@
                             {
                                 <li class="mb-2">
                                     <span class="text-white-50 text-decoration-none hover-white pointer d-inline-block transition-transform"
-                                          @onclick="() => AppNavigator.NavigateTo(route.Value)">
+                                          @onclick="() => Navigator.NavigateTo(route.Value)">
                                         @FormatRouteName(route.Key)
                                     </span>
                                 </li>
@@ -44,7 +40,7 @@
                             {
                                 <li class="mb-2">
                                     <span class="text-white-50 text-decoration-none hover-white pointer d-inline-block transition-transform"
-                                          @onclick="() => AppNavigator.NavigateTo(route.Value)">
+                                          @onclick="() => Navigator.NavigateTo(route.Value)">
                                         @FormatRouteName(route.Key)
                                     </span>
                                 </li>
@@ -72,13 +68,7 @@
         </div>
 
         <div class="text-center mt-5 pt-4 border-top border-white border-opacity-5">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-                <p class="small text-white-50 mb-0">&copy; @DateTime.Now.Year <span class="text-white fw-bold">RedSkia Banking Inc.</span></p>
-                <div class="d-flex gap-4 small text-white-50">
-                    <span class="pointer hover-white transition-base" @onclick='() => AppNavigator.NavigateTo("/privacy")'>Privacy Policy</span>
-                    <span class="pointer hover-white transition-base" @onclick='() => AppNavigator.NavigateTo("/terms")'>Terms of Service</span>
-                </div>
-            </div>
+            <p class="small text-white-50 mb-0">&copy; @DateTime.Now.Year <span class="text-white fw-bold">RedSkia Banking Inc.</span> All rights reserved.</p>
         </div>
     </div>
 </footer>
@@ -96,17 +86,26 @@
             var routeValue = field.GetValue(null)?.ToString() ?? "#";
             var attr = field.GetCustomAttribute<RouteRoleAttribute>();
 
-            // Route is public (no attribute)
+            // 1. Public Routes (No Attribute)
             if (attr == null)
             {
                 yield return new KeyValuePair<string, string>(field.Name, routeValue);
                 continue;
             }
 
-            // Route requires a role - Ask the service to verify the current principal
-            if (IdentityService.IsUserAuthenticated() && IdentityService.IsUserInRole(attr.Role))
+            // 2. Protected Routes (IdentityService check)
+            if (IdentityService.IsUserAuthenticated())
             {
-                yield return new KeyValuePair<string, string>(field.Name, routeValue);
+                // Admin bypass (sees everything)
+                if (IdentityService.IsUserInRole(RoleType.Admin))
+                {
+                    yield return new KeyValuePair<string, string>(field.Name, routeValue);
+                }
+                // Officer check (sees only Officer level, no Admin level)
+                else if (IdentityService.IsUserInRole(RoleType.LoanOfficer) && attr.Role == RoleType.LoanOfficer)
+                {
+                    yield return new KeyValuePair<string, string>(field.Name, routeValue);
+                }
             }
         }
     }

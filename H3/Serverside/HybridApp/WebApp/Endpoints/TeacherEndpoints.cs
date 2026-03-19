@@ -31,10 +31,6 @@ public static class TeacherEndpoints
 
             var created = repo.CreateTeacher(newTeacher);
 
-            // KRAV 3: Log til tekstfil (AddTeacher)
-            var logMessage = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] AddTeacher kaldt. Lærer oprettet: {created.Name}\n";
-            System.IO.File.AppendAllText("log.txt", logMessage);
-
             return Results.Created($"/api/teacher/{created.TeacherId}", created);
         });
 

@@ -39,9 +39,14 @@ public class IdentityService : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        // Optimization: Don't read from JS if we already have the state in memory
+        if (_currentUser.Identity?.IsAuthenticated == true)
+        {
+            return new AuthenticationState(_currentUser);
+        }
+
         try
         {
-            // Attempt to retrieve the token from local storage to persist sessions
             var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
 
             if (!string.IsNullOrEmpty(token))
@@ -52,8 +57,7 @@ public class IdentityService : AuthenticationStateProvider
         }
         catch
         {
-            // Catch blocks are necessary here because JS Interop is not available 
-            // during the very first phase of server-side prerendering (if enabled later)
+            // Prerendering failsafe
         }
 
         return new AuthenticationState(_currentUser);
@@ -67,62 +71,53 @@ public class IdentityService : AuthenticationStateProvider
     // -----------------------------------------------------
     // LOGIN
     // -----------------------------------------------------
-
     public async Task<string?> Login(string username, string password)
     {
         var user = await _userManager.FindByNameAsync(username);
         using var db = await _dbFactory.CreateDbContextAsync();
 
-        // 1. Check if user exists and password is correct
         if (user == null || !await _userManager.CheckPasswordAsync(user, password))
         {
-            // Log the failure
-            db.LoginActivities.Add(new LoginActivity
-            {
-                UserId = user?.Id ?? "UNKNOWN", // Handle null user case
-                Status = LoginStatus.InvalidPassword,
-                LoginTime = DateTime.UtcNow
-            });
+            db.LoginActivities.Add(new LoginActivity { UserId = user?.Id ?? "UNKNOWN", Status = LoginStatus.InvalidPassword, LoginTime = DateTime.UtcNow });
             await db.SaveChangesAsync();
-            return null; // Exit here for bad credentials
+            return null;
         }
 
-        // 2. If code reaches here, credentials are valid. Proceed with token.
         var roles = await _userManager.GetRolesAsync(user);
         var token = GenerateJwtToken(user, roles);
 
         var identity = new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
         _currentUser = new ClaimsPrincipal(identity);
 
-        // Save token to browser local storage
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
 
-        // Log the success
-        db.LoginActivities.Add(new LoginActivity
-        {
-            UserId = user.Id,
-            Status = LoginStatus.Success,
-            LoginTime = DateTime.UtcNow
-        });
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_currentUser)));
 
+        db.LoginActivities.Add(new LoginActivity { UserId = user.Id, Status = LoginStatus.Success, LoginTime = DateTime.UtcNow });
         await db.SaveChangesAsync();
+
         return token;
     }
 
     // -----------------------------------------------------
     // LOGOUT
     // -----------------------------------------------------
-
     public async Task Logout()
     {
+        // 1. Wipe the internal principal immediately
         _currentUser = new ClaimsPrincipal(new ClaimsIdentity());
 
-        // Remove token from browser local storage
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        // 2. Remove token from storage
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        }
+        catch { }
 
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        // 3. Notify the UI instantly with the empty state
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_currentUser)));
     }
+
 
     // -----------------------------------------------------
     // PASSWORD MANAGEMENT
@@ -141,20 +136,16 @@ public class IdentityService : AuthenticationStateProvider
             });
         }
 
-        // 1. Generate a password reset token (Internal bypass)
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-        // 2. Apply the new password using that token
         var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
 
-        // Optional: Log the activity
         if (result.Succeeded)
         {
             using var db = await _dbFactory.CreateDbContextAsync();
             db.LoginActivities.Add(new LoginActivity
             {
                 UserId = user.Id,
-                Status = LoginStatus.Success, // You could add a 'SecurityOverride' status to your enum
+                Status = LoginStatus.Success,
                 LoginTime = DateTime.UtcNow
             });
             await db.SaveChangesAsync();
@@ -218,12 +209,12 @@ public class IdentityService : AuthenticationStateProvider
 
         return await db.Users
             .Include(u => u.Address)
-            .Include(u => u.LoginActivities) // <--- FETCH LOGIN LOGS
+            .Include(u => u.LoginActivities)
             .Include(u => u.BankAccount)
                 .ThenInclude(b => b!.CurrencyType)
             .Include(u => u.BankAccount)
                 .ThenInclude(b => b!.Transactions)
-                    .ThenInclude(t => t.CurrencyType) // Include this for correct symbols
+                    .ThenInclude(t => t.CurrencyType)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == userId);
     }
@@ -244,10 +235,8 @@ public class IdentityService : AuthenticationStateProvider
 
         if (user == null) return false;
 
-        // Update top-level info
         user.FullName = updatedData.FullName;
 
-        // Handle Address update/creation
         if (user.Address == null)
         {
             user.Address = updatedData.Address;
@@ -272,7 +261,7 @@ public class IdentityService : AuthenticationStateProvider
 
         if (result.Succeeded)
         {
-            await Logout(); // Terminate session after purge
+            await Logout();
             return true;
         }
         return false;
