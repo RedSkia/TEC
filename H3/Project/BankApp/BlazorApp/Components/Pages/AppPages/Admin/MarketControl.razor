@@ -1,163 +1,284 @@
-﻿@page "/admin/market"
+﻿@attribute [Route(AppRoutes.AdminMarketControl)]
+
 @inject StockMarketService Market
 @inject FinanceService Finance
 @inject IJSRuntime JS
+@inject AppNavigator Navigator
 
 <AuthorizeView Roles="Admin">
     <Authorized>
-        <div class="admin-wrapper bg-black min-vh-100 text-white pb-5">
+        <div class="admin-wrapper min-vh-100 text-white pb-5 position-relative">
 
-            @* --- TOP NAVIGATION --- *@
-            <div class="border-bottom border-secondary border-opacity-25 py-3 mb-5">
-                <div class="container d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="bg-danger" style="width: 30px; height: 2px;"></div>
-                        <span class="tiny-caps fw-black">System Authority Terminal</span>
+            @* Subtil baggrunds-effekt for at få glasset til at se bedre ud *@
+            <div class="position-absolute top-0 start-50 translate-middle-x bg-danger rounded-circle blur-bg" style="width: 600px; height: 300px; opacity: 0.05; pointer-events: none;"></div>
+
+            <div class="container fade-in position-relative" style="z-index: 1;">
+
+                <div class="mb-5">
+                    <h1 class="display-5 fw-bolder mb-1 tracking-tight">Market Control</h1>
+                    <div class="d-flex align-items-center gap-2 text-secondary small">
+                        <i class="bi bi-graph-up-arrow text-danger"></i>
+                        <span>Global Market Status: <strong class="text-white">@Market.GetGlobalState().ToString()</strong></span>
                     </div>
                 </div>
-            </div>
-
-            <div class="container fade-in">
-                <h1 class="display-3 fw-black mb-5 tracking-tighter uppercase">Market <span class="text-danger">Control.</span></h1>
 
                 @* --- GLOBAL MASTER SWITCHES --- *@
                 <div class="row g-4 mb-5">
                     <div class="col-md-4">
-                        <button class="btn @(Market.GetGlobalState() == MarketState.ForcedPump ? "btn-success" : "btn-outline-success") w-100 rounded-0 py-4 tiny-caps fw-black"
-                                @onclick="() => Market.SetGlobalOverride(MarketState.ForcedPump)">
-                            <i class="bi bi-lightning-fill me-2"></i> Global Pump
-                        </button>
+                        <div class="glass-panel p-3 custom-hover-lift transition-base h-100 d-flex flex-column justify-content-center">
+                            <button class="btn @(Market.GetGlobalState() == MarketState.ForcedPump ? "btn-success" : "btn-glass-success") w-100 rounded-pill py-3 fw-bold shadow-sm"
+                                    @onclick="() => UpdateGlobalState(MarketState.ForcedPump)">
+                                <i class="bi bi-lightning-fill me-2"></i> Trigger Global Pump
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-4">
-                        <button class="btn @(Market.GetGlobalState() == MarketState.ForcedCrash ? "btn-danger" : "btn-outline-danger") w-100 rounded-0 py-4 tiny-caps fw-black"
-                                @onclick="() => Market.SetGlobalOverride(MarketState.ForcedCrash)">
-                            <i class="bi bi-radioactive me-2"></i> Global Crash
-                        </button>
+                        <div class="glass-panel p-3 custom-hover-lift transition-base h-100 d-flex flex-column justify-content-center">
+                            <button class="btn @(Market.GetGlobalState() == MarketState.ForcedCrash ? "btn-danger" : "btn-glass-danger") w-100 rounded-pill py-3 fw-bold shadow-sm"
+                                    @onclick="() => UpdateGlobalState(MarketState.ForcedCrash)">
+                                <i class="bi bi-radioactive me-2"></i> Trigger Global Crash
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-4">
-                        <button class="btn btn-outline-secondary w-100 rounded-0 py-4 tiny-caps fw-black"
-                                @onclick="() => Market.SetGlobalOverride(MarketState.Normal)">
-                            <i class="bi bi-shield-check me-2"></i> Restore All
-                        </button>
+                        <div class="glass-panel p-3 custom-hover-lift transition-base h-100 d-flex flex-column justify-content-center">
+                            <button class="btn btn-glass-light w-100 rounded-pill py-3 fw-bold shadow-sm"
+                                    @onclick="() => UpdateGlobalState(MarketState.Normal)">
+                                <i class="bi bi-shield-check me-2"></i> Restore Normalcy
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="row g-5">
+                <div class="row g-4">
                     @* --- INDIVIDUAL REGISTRY --- *@
                     <div class="col-lg-8">
-                        <span class="tiny-caps text-secondary d-block mb-4">Asset Manipulation registry</span>
-                        <div class="table-responsive">
-                            <table class="table table-dark align-middle border-0">
-                                <thead>
-                                    <tr class="tiny-caps text-secondary" style="font-size: 10px;">
-                                        <th class="ps-0 border-0">Entity</th>
-                                        <th class="border-0 text-center">Protocol Status</th>
-                                        <th class="text-end pe-0 border-0">Commands</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var s in availableStocks)
-                                    {
-                                        var state = Market.GetStockState(s.Id);
-                                        <tr class="border-bottom border-secondary border-opacity-10 @(state == MarketState.ForcedPump ? "bg-success bg-opacity-10" : state == MarketState.ForcedCrash ? "bg-danger bg-opacity-10" : "")">
-                                            <td class="ps-0 py-4">
-                                                <div class="fw-black fs-5">@s.Ticker</div>
-                                                <div class="tiny-caps text-secondary">@s.Name</div>
-                                            </td>
-                                            <td class="text-center">
-                                                @if (state != MarketState.Normal)
-                                                {
-                                                    <span class="badge rounded-0 @(state == MarketState.ForcedPump ? "bg-success" : "bg-danger") tiny-caps p-2">
-                                                        @state.ToString().ToUpper()
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-secondary opacity-25 tiny-caps">Stable</span>
-                                                }
-                                            </td>
-                                            <td class="text-end pe-0">
-                                                <div class="btn-group shadow-sm">
-                                                    <button class="btn btn-sm @(state == MarketState.ForcedPump ? "btn-success" : "btn-outline-success") rounded-0 px-3"
-                                                            @onclick="() => Market.SetStockOverride(s.Id, MarketState.ForcedPump)">
-                                                        PUMP
-                                                    </button>
-                                                    <button class="btn btn-sm @(state == MarketState.ForcedCrash ? "btn-danger" : "btn-outline-danger") rounded-0 px-3"
-                                                            @onclick="() => Market.SetStockOverride(s.Id, MarketState.ForcedCrash)">
-                                                        CRASH
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-secondary rounded-0 px-3"
-                                                            @onclick="() => Market.SetStockOverride(s.Id, MarketState.Normal)">
-                                                        RESET
-                                                    </button>
-                                                </div>
-                                            </td>
+                        <div class="glass-panel p-4 h-100">
+                            <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-white border-opacity-10">
+                                <div class="bg-white bg-opacity-10 p-2 rounded-3 me-3"><i class="bi bi-sliders text-white fs-5"></i></div>
+                                <h5 class="fw-bold mb-0">Asset Manipulation Registry</h5>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-borderless text-white align-middle mb-0 custom-table">
+                                    <thead class="border-bottom border-white border-opacity-10">
+                                        <tr class="text-secondary small text-uppercase" style="letter-spacing: 1px;">
+                                            <th class="ps-3 py-3 fw-semibold">Asset Entity</th>
+                                            <th class="text-center py-3 fw-semibold">Protocol Status</th>
+                                            <th class="text-end pe-3 py-3 fw-semibold">Action Commands</th>
                                         </tr>
-                                    }
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var s in availableStocks)
+                                        {
+                                            var state = Market.GetStockState(s.Id);
+                                            <tr class="border-bottom border-white border-opacity-5 transition-base custom-hover-bg">
+                                                <td class="ps-3 py-3">
+                                                    <div class="fw-bold fs-5 text-white mb-1">@s.Ticker</div>
+                                                    <div class="text-secondary small">@s.Name</div>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (state != MarketState.Normal)
+                                                    {
+                                                        <span class="badge rounded-pill px-3 py-2 fw-semibold @(state == MarketState.ForcedPump ? "bg-success text-white" : "bg-danger text-white")">
+                                                            @state.ToString().ToUpper()
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge rounded-pill px-3 py-2 fw-semibold bg-white bg-opacity-10 text-secondary">
+                                                            STABLE
+                                                        </span>
+                                                    }
+                                                </td>
+                                                <td class="text-end pe-3">
+                                                    <div class="btn-group shadow-sm">
+                                                        <button class="btn btn-sm @(state == MarketState.ForcedPump ? "btn-success" : "btn-outline-success") px-3 fw-semibold"
+                                                                @onclick="() => UpdateStockState(s.Id, MarketState.ForcedPump, s.Ticker)">
+                                                            PUMP
+                                                        </button>
+                                                        <button class="btn btn-sm @(state == MarketState.ForcedCrash ? "btn-danger" : "btn-outline-danger") px-3 fw-semibold"
+                                                                @onclick="() => UpdateStockState(s.Id, MarketState.ForcedCrash, s.Ticker)">
+                                                            CRASH
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-secondary px-3 fw-semibold"
+                                                                @onclick="() => UpdateStockState(s.Id, MarketState.Normal, s.Ticker)">
+                                                            RESET
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
                     @* --- CAPITAL SEIZURE --- *@
                     <div class="col-lg-4">
-                        <div class="p-4 border border-secondary border-opacity-25 sticky-top" style="top: 20px;">
-                            <span class="tiny-caps text-danger d-block mb-4">Capital Seizure</span>
-                            <select class="form-select bg-black border-secondary text-white rounded-0 mb-3" @bind="targetUserId">
-                                <option value="">Target Identity...</option>
+                        <div class="glass-panel p-4 sticky-top" style="top: 100px; background: rgba(220, 53, 69, 0.03);">
+                            <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-white border-opacity-10">
+                                <div class="bg-danger bg-opacity-10 p-2 rounded-3 me-3"><i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i></div>
+                                <h5 class="fw-bold mb-0 text-danger">Capital Override</h5>
+                            </div>
+
+                            <label class="form-label text-secondary small fw-semibold">Target Identity</label>
+                            <select class="form-select glass-input rounded-3 mb-3" @bind="targetUserId">
+                                <option value="">Select Target...</option>
                                 @foreach (var u in targetUsers)
                                 {
                                     <option value="@u.Id">@u.FullName ($@u.BankAccount.Balance.ToString("N0"))</option>
                                 }
                             </select>
-                            <input type="number" class="form-control bg-black border-secondary text-white rounded-0 mb-3" @bind="adjustmentAmount" placeholder="Amount..." />
-                            <button class="btn btn-danger w-100 rounded-0 tiny-caps py-2 fw-bold" @onclick="ExecuteAdjustment">Execute Seizure</button>
+
+                            <label class="form-label text-secondary small fw-semibold">Adjustment Amount (- to deduct)</label>
+                            <input type="number" class="form-control glass-input rounded-3 mb-4" @bind="adjustmentAmount" placeholder="Amount..." />
+
+                            <button class="btn btn-danger w-100 rounded-pill py-3 fw-bold custom-hover-lift shadow-sm" @onclick="ExecuteAdjustment">
+                                Execute Override
+                            </button>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </Authorized>
     <NotAuthorized>
-        <div class="min-vh-100 bg-black d-flex align-items-center justify-content-center text-center font-monospace">
-            <div>
-                <h1 class="display-1 fw-black text-danger mb-0">403</h1>
-                <div class="bg-danger text-black fw-bold px-3 py-1 mb-4 tiny-caps">Access Denied</div>
-                <p class="text-secondary tiny-caps">Unauthorized root terminal access detected.</p>
-                <a href="/" class="btn btn-outline-light rounded-0 mt-4 tiny-caps px-4">Exit System</a>
+        <div class="min-vh-100 bg-darker d-flex align-items-center justify-content-center text-center">
+            <div class="glass-panel p-5 rounded-4 max-w-sm">
+                <i class="bi bi-shield-lock text-danger display-1 mb-3"></i>
+                <h2 class="fw-bolder text-white mb-2">Access Denied</h2>
+                <p class="text-secondary mb-0">You do not have permission to view this page.</p>
+                <button class="btn btn-glass-light rounded-pill mt-4 px-4 py-2" @onclick='() => Navigator.NavigateTo("/")'>Exit System</button>
             </div>
         </div>
     </NotAuthorized>
 </AuthorizeView>
 
 <style>
-    .admin-wrapper {
-        font-family: 'Inter', sans-serif;
+    /* Base Styles */
+    .bg-darker {
+        background-color: #050505;
+        font-family: 'Inter', system-ui, sans-serif;
     }
 
-    .fw-black {
-        font-weight: 900;
+    .tracking-tight {
+        letter-spacing: -0.5px;
     }
 
-    .tracking-tighter {
-        letter-spacing: -4px;
+    .transition-base {
+        transition: all 0.25s ease;
     }
 
-    .tiny-caps {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 3px;
-        font-weight: 800;
+    /* Glassmorphism Core */
+    .glass-header {
+        background: rgba(5, 5, 5, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
     }
 
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1.25rem;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    /* Glass Inputs */
+    .glass-input {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+        transition: all 0.2s ease;
+    }
+
+        .glass-input:focus {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .glass-input::placeholder {
+            color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        /* Option styling in select */
+        .glass-input option {
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+
+    /* Glass Buttons */
+    .btn-glass-light {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+        .btn-glass-light:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+    .btn-glass-danger {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.2);
+        color: #ff6b7b;
+    }
+
+        .btn-glass-danger:hover {
+            background: #dc3545;
+            color: #fff;
+        }
+
+    .btn-glass-success {
+        background: rgba(25, 135, 84, 0.1);
+        border: 1px solid rgba(25, 135, 84, 0.2);
+        color: #75b798;
+    }
+
+        .btn-glass-success:hover {
+            background: #198754;
+            color: #fff;
+        }
+
+    /* Hover Effects */
+    .custom-hover-bg:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .custom-hover-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important;
+    }
+
+    /* Table Adjustments */
+    .custom-table th {
+        color: #adb5bd;
+        font-weight: 600;
+    }
+
+    .custom-table td {
+        vertical-align: middle;
+    }
+
+    /* Background Blur Blob */
+    .blur-bg {
+        filter: blur(100px);
+    }
+
+    /* Animations */
     .fade-in {
-        animation: fadeIn 0.6s ease-out;
+        animation: fadeIn 0.4s ease-out forwards;
     }
-
     @@keyframes fadeIn {
         from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(15px);
         }
 
         to {
@@ -165,18 +286,11 @@
             transform: translateY(0);
         }
     }
-
-    /* Active State Backgrounds */
-    .bg-success.bg-opacity-10 {
-        background-color: rgba(25, 135, 84, 0.1) !important;
-    }
-
-    .bg-danger.bg-opacity-10 {
-        background-color: rgba(220, 53, 69, 0.1) !important;
-    }
 </style>
 
 @code {
+    [CascadingParameter] public Toast? Toast { get; set; }
+
     private List<ApplicationUser> targetUsers = new();
     private List<Stock> availableStocks = new();
     private string targetUserId = "";
@@ -189,12 +303,57 @@
         Market.OnMarketUpdated += () => InvokeAsync(StateHasChanged);
     }
 
+    private void UpdateGlobalState(MarketState state)
+    {
+        Market.SetGlobalOverride(state);
+
+        if (state == MarketState.Normal)
+            Toast?.Show("Global market restored to Normal operations.", Toast.ToastLevel.Success);
+        else if (state == MarketState.ForcedPump)
+            Toast?.Show("Global Market forced to PUMP.", Toast.ToastLevel.Success);
+        else
+            Toast?.Show("Global Market forced to CRASH.", Toast.ToastLevel.Error);
+    }
+
+    private void UpdateStockState(int stockId, MarketState state, string ticker)
+    {
+        Market.SetStockOverride(stockId, state);
+
+        if (state == MarketState.Normal)
+            Toast?.Show($"{ticker} restored to normal state.", Toast.ToastLevel.Success);
+        else
+            Toast?.Show($"{ticker} protocol forced to {state.ToString().ToUpper()}.", Toast.ToastLevel.Warning);
+    }
+
     private async Task ExecuteAdjustment()
     {
-        if (string.IsNullOrEmpty(targetUserId)) return;
-        await Finance.AdjustUserBalance(targetUserId, adjustmentAmount, "ADMIN_SEIZURE");
-        adjustmentAmount = 0;
-        targetUsers = await Finance.GetAdminTargetList();
-        StateHasChanged();
+        if (string.IsNullOrEmpty(targetUserId))
+        {
+            Toast?.Show("Please select a target identity.", Toast.ToastLevel.Warning);
+            return;
+        }
+
+        if (adjustmentAmount == 0)
+        {
+            Toast?.Show("Adjustment amount cannot be zero.", Toast.ToastLevel.Warning);
+            return;
+        }
+
+        // Optional check for Admin safeguard depending on your logic, otherwise execute:
+        bool success = await Finance.AdjustUserBalance(targetUserId, adjustmentAmount, "ADMIN_SEIZURE");
+
+        if (success)
+        {
+            string action = adjustmentAmount > 0 ? "added to" : "deducted from";
+            Toast?.Show($"Successfully {action} user account: ${Math.Abs(adjustmentAmount):N2}.", Toast.ToastLevel.Success);
+
+            adjustmentAmount = 0;
+            targetUsers = await Finance.GetAdminTargetList();
+            StateHasChanged();
+        }
+        else
+        {
+            Toast?.Show("Failed to apply adjustment. System error.", Toast.ToastLevel.Error);
+        }
     }
 }

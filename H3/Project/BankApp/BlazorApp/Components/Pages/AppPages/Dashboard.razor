@@ -1,151 +1,198 @@
-﻿@page "/dashboard"
+﻿@attribute [Route(AppRoutes.Dashboard)]
+
 @rendermode InteractiveServer
+
+@using System.Globalization
+@using Microsoft.EntityFrameworkCore
+@using SharedCore.Data
+@using SharedCore.Entities.Banking
 
 @inject IdentityService IdentityService
 @inject FinanceService FinanceService
 @inject NavigationManager Nav
+@inject IDbContextFactory<BankAppDbContext> DbFactory
 
-<div class="dashboard-container bg-black min-vh-100 text-white">
-    <div class="container py-5 fade-in">
+<div class="dashboard-wrapper min-vh-100 position-relative pb-5">
+    @* Baggrunds-effekt for Glassmorphism *@
+    <div class="position-absolute top-0 start-0 bg-danger rounded-circle blur-bg" style="width: 400px; height: 400px; opacity: 0.04; pointer-events: none;"></div>
+    <div class="position-absolute bottom-0 end-0 bg-danger rounded-circle blur-bg" style="width: 600px; height: 600px; opacity: 0.03; pointer-events: none;"></div>
+
+    <div class="container py-5 position-relative" style="z-index: 1;">
 
         @if (user == null)
         {
-            <div class="text-center py-5">
-                <div class="spinner-border text-danger" role="status"></div>
-                <p class="tiny-caps text-secondary mt-3">Establishing Secure Uplink...</p>
+            <div class="d-flex flex-column justify-content-center align-items-center" style="height: 70vh;">
+                <div class="spinner-border text-danger mb-4" style="width: 3rem; height: 3rem;" role="status"></div>
+                <h5 class="fw-bold text-white tracking-widest text-uppercase fade-in">Decrypting Identity...</h5>
+                <p class="text-secondary small font-monospace fade-in" style="animation-delay: 0.2s;">Establishing secure connection to RedSkia Network</p>
             </div>
         }
         else
         {
-            @* --- HEADER: WELCOME & PROTOCOL STATUS --- *@
-            <div class="d-flex justify-content-between align-items-end mb-5">
+            @* --- HEADER: GREETING & STATUS --- *@
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 fade-in">
                 <div>
-                    <h1 class="fw-black tracking-tighter uppercase mb-0" style="font-size: 3rem;">
-                        COMMAND <span class="text-danger">CENTER.</span>
+                    <h5 class="text-danger fw-bold tracking-widest text-uppercase mb-1">@GetGreeting()</h5>
+                    <h1 class="display-4 fw-black text-white mb-0 tracking-tighter text-uppercase">
+                        @user.FullName<span class="text-danger">.</span>
                     </h1>
-                    <div class="d-flex align-items-center gap-3 mt-2">
-                        <span class="badge bg-danger rounded-0 tiny-caps">Level: Authorized</span>
-                        <span class="text-secondary tiny-caps font-monospace">Terminal_ID: @user.Id.Substring(0, 8)</span>
+                    <div class="d-flex align-items-center gap-3 mt-3">
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 tiny-caps">
+                            <i class="bi bi-shield-check me-1"></i> SECURE UPLINK
+                        </span>
+                        <span class="text-secondary tiny-caps font-monospace">
+                            ID: @user.Id.Substring(0, 8)
+                        </span>
                     </div>
                 </div>
-                <div class="text-end d-none d-md-block">
-                    <div class="text-secondary tiny-caps mb-1">Current Timestamp (UTC)</div>
-                    <div class="fw-bold font-monospace">@DateTime.UtcNow.ToString("yyyy.MM.dd | HH:mm:ss")</div>
-                </div>
-            </div>
-
-            @* --- TOP ROW: PRIMARY DATA WIDGETS --- *@
-            <div class="row g-4 mb-4">
-                @* 1. Total Liquidity *@
-                <div class="col-lg-4">
-                    <div class="stat-card bg-danger p-4 h-100 shadow-lg border-start border-white border-4">
-                        <div class="d-flex justify-content-between mb-3">
-                            <span class="tiny-caps fw-black">Available Capital</span>
-                            <i class="bi bi-wallet2 fs-4"></i>
-                        </div>
-                        <h2 class="display-5 fw-black tracking-tighter mb-0">
-                            @FormatValue(user.BankAccount?.Balance ?? 0)
-                        </h2>
-                        <div class="tiny-caps opacity-75 mt-2">Verified: @user.BankAccount?.CurrencyType?.CurrencyCode</div>
-                    </div>
-                </div>
-
-                @* 2. Market Exposure *@
-                <div class="col-lg-4">
-                    <div class="stat-card bg-dark border border-secondary border-opacity-25 p-4 h-100">
-                        <div class="d-flex justify-content-between mb-3 text-secondary">
-                            <span class="tiny-caps">Market Value</span>
-                            <i class="bi bi-graph-up-arrow fs-4 text-danger"></i>
-                        </div>
-                        <h2 class="display-5 fw-black tracking-tighter mb-0 text-white">
-                            @FormatValue(marketValue)
-                        </h2>
-                        <div class="tiny-caps text-success mt-2">
-                            <i class="bi bi-caret-up-fill me-1"></i>Active Portfolio
-                        </div>
-                    </div>
-                </div>
-
-                @* 3. Debt/Loan Status *@
-                <div class="col-lg-4">
-                    <div class="stat-card bg-dark border border-secondary border-opacity-25 p-4 h-100">
-                        <div class="d-flex justify-content-between mb-3 text-secondary">
-                            <span class="tiny-caps">Active Liability</span>
-                            <i class="bi bi-bank fs-4 text-warning"></i>
-                        </div>
-                        <h2 class="display-5 fw-black tracking-tighter mb-0 @(totalDebt > 0 ? "text-warning" : "text-secondary opacity-25")">
-                            @FormatValue(totalDebt)
-                        </h2>
-                        <div class="tiny-caps text-secondary mt-2">Outstanding Loan Protocols</div>
+                <div class="text-md-end mt-4 mt-md-0 d-none d-sm-block">
+                    <div class="text-secondary tiny-caps mb-1">System Time (UTC)</div>
+                    <div class="fw-bold font-monospace text-white fs-5 bg-black bg-opacity-50 px-3 py-2 rounded-3 border border-secondary border-opacity-25">
+                        @DateTime.UtcNow.ToString("HH:mm:ss")
+                        <span class="text-danger"> | </span>
+                        @DateTime.UtcNow.ToString("dd.MM.yyyy")
                     </div>
                 </div>
             </div>
 
-            @* --- MIDDLE ROW: CONTROL PAD & RECENT ACTIVITY --- *@
-            <div class="row g-4">
-                @* QUICK ACTIONS - THE "CONTROL PAD" *@
-                <div class="col-lg-4">
-                    <div class="glass-panel p-4 h-100 border-top border-danger border-4">
-                        <h6 class="tiny-caps text-danger mb-4">Quick Command Pad</h6>
-                        <div class="d-grid gap-2">
-                            <button @onclick='() => Nav.NavigateTo("/account")' class="btn btn-outline-light rounded-0 text-start p-3 tiny-caps hover-red">
-                                <i class="bi bi-arrow-left-right me-3"></i> Transfer Assets
+            @* --- HERO METRICS: NET WORTH --- *@
+            <div class="glass-panel p-4 p-md-5 mb-5 fade-in" style="animation-delay: 0.1s;">
+                <div class="row align-items-center">
+                    <div class="col-lg-5 mb-4 mb-lg-0 border-end border-secondary border-opacity-10">
+                        <div class="tiny-caps text-secondary mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-globe text-danger"></i> Total Net Worth
+                        </div>
+                        <h1 class="display-3 fw-black tracking-tighter text-white mb-0">
+                            @FormatValue(netWorth)
+                        </h1>
+                        <div class="text-secondary fw-bold mt-1">@user.BankAccount?.CurrencyType?.CurrencyCode</div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="row g-3 px-lg-4">
+                            <div class="col-sm-4">
+                                <div class="p-3 bg-white bg-opacity-5 rounded-4 border border-white border-opacity-10 custom-hover-lift transition-base h-100">
+                                    <div class="tiny-caps text-secondary mb-2">Liquid Cash</div>
+                                    <h4 class="fw-bold text-white m-0 tracking-tight">@FormatValue(user.BankAccount?.Balance ?? 0)</h4>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="p-3 bg-white bg-opacity-5 rounded-4 border border-white border-opacity-10 custom-hover-lift transition-base h-100">
+                                    <div class="tiny-caps text-secondary mb-2">Market Assets</div>
+                                    <h4 class="fw-bold text-success m-0 tracking-tight">@FormatValue(marketValue)</h4>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="p-3 bg-danger bg-opacity-10 rounded-4 border border-danger border-opacity-25 custom-hover-lift transition-base h-100">
+                                    <div class="tiny-caps text-danger mb-2">Liabilities</div>
+                                    <h4 class="fw-bold text-danger m-0 tracking-tight">@FormatValue(totalDebt)</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 fade-in" style="animation-delay: 0.2s;">
+
+                @* --- LEFT COLUMN: TRANSACTIONS & STATS --- *@
+                <div class="col-xl-8">
+                    <div class="glass-panel p-4 h-100 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-white border-opacity-10">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-white bg-opacity-10 p-2 rounded-3">
+                                    <i class="bi bi-activity text-white fs-5"></i>
+                                </div>
+                                <h5 class="fw-bold text-white mb-0">Recent Activity Log</h5>
+                            </div>
+                            <button class="btn btn-sm btn-glass-light rounded-pill px-3 tiny-caps fw-bold" @onclick='() => Nav.NavigateTo("/account?tab=Overview")'>
+                                View Ledger
                             </button>
-                            <button @onclick='() => Nav.NavigateTo("/market")' class="btn btn-outline-light rounded-0 text-start p-3 tiny-caps hover-red">
-                                <i class="bi bi-cpu me-3"></i> Access Market Intel
-                            </button>
-                            <button @onclick='() => Nav.NavigateTo("/account")' class="btn btn-outline-light rounded-0 text-start p-3 tiny-caps hover-red">
-                                <i class="bi bi-safe me-3"></i> Request Funding
-                            </button>
-                            <button @onclick='() => Nav.NavigateTo("/")' class="btn btn-outline-danger rounded-0 text-start p-3 tiny-caps">
-                                <i class="bi bi-power me-3"></i> Terminate Session
-                            </button>
+                        </div>
+
+                        <div class="flex-grow-1">
+                            @if (user.BankAccount?.Transactions == null || !user.BankAccount.Transactions.Any())
+                            {
+                                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center py-5 opacity-50">
+                                    <i class="bi bi-inboxes text-secondary display-4 mb-3"></i>
+                                    <p class="text-secondary tiny-caps">No ledger activity detected.</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="list-group list-group-flush bg-transparent gap-2">
+                                    @foreach (var tx in user.BankAccount.Transactions.OrderByDescending(t => t.CreatedAt).Take(5))
+                                    {
+                                        bool isDeposit = tx.Amount > 0;
+                                        string iconClass = isDeposit ? "bi-arrow-down-left text-success" : "bi-arrow-up-right text-danger";
+                                        string bgClass = isDeposit ? "bg-success bg-opacity-10" : "bg-danger bg-opacity-10";
+
+                                        <div class="list-group-item bg-transparent border border-white border-opacity-5 rounded-3 p-3 mb-2 d-flex align-items-center justify-content-between custom-hover-bg transition-base">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="@bgClass rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="bi @iconClass fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-bold text-white mb-0 text-capitalize">@tx.Type.ToString()</h6>
+                                                    <small class="text-secondary opacity-75">@tx.Note</small>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <h6 class="fw-bold font-monospace mb-0 @(isDeposit ? "text-success" : "text-white")">
+                                                    @(isDeposit ? "+" : "")@FormatValue(tx.Amount)
+                                                </h6>
+                                                <small class="text-secondary font-monospace tiny-caps">@tx.CreatedAt.ToString("MMM dd, HH:mm")</small>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
 
-                @* TRANSACTION FEED *@
-                <div class="col-lg-8">
-                    <div class="glass-panel p-4 h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h6 class="tiny-caps text-secondary mb-0">System Log Feed</h6>
-                            <button class="btn btn-link text-danger tiny-caps p-0 text-decoration-none" @onclick='() => Nav.NavigateTo("/account")'>Full Ledger</button>
+                @* --- RIGHT COLUMN: QUICK COMMAND PAD --- *@
+                <div class="col-xl-4">
+                    <div class="glass-panel p-4 h-100 d-flex flex-column">
+                        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-white border-opacity-10">
+                            <div class="bg-danger bg-opacity-10 p-2 rounded-3">
+                                <i class="bi bi-grid-1x2-fill text-danger fs-5"></i>
+                            </div>
+                            <h5 class="fw-bold text-white mb-0">Command Pad</h5>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-dark table-hover align-middle border-0 mb-0">
-                                <tbody>
-                                    @if (user.BankAccount?.Transactions == null || !user.BankAccount.Transactions.Any())
-                                    {
-                                        <tr><td class="text-center py-5 text-secondary tiny-caps">No recent movements logged.</td></tr>
-                                    }
-                                    else
-                                    {
-                                        @foreach (var tx in user.BankAccount.Transactions.OrderByDescending(t => t.CreatedAt).Take(5))
-                                        {
-                                            <tr class="border-secondary border-opacity-10">
-                                                <td class="py-3">
-                                                    <div class="fw-bold uppercase" style="font-size: 0.8rem;">@tx.Type</div>
-                                                    <div class="text-secondary small">@tx.Note</div>
-                                                </td>
-                                                <td class="text-secondary font-monospace small">@tx.CreatedAt.ToString("MM.dd")</td>
-                                                <td class="text-end fw-bold @(tx.Amount < 0 ? "text-danger" : "text-success") font-monospace pe-3">
-                                                    @(tx.Amount < 0 ? "-" : "+") @FormatValue(Math.Abs(tx.Amount))
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                </tbody>
-                            </table>
+
+                        <div class="row g-3 flex-grow-1">
+                            <div class="col-6">
+                                <button class="btn btn-action w-100 h-100 p-4 d-flex flex-column align-items-center justify-content-center gap-2 rounded-4" @onclick='() => Nav.NavigateTo("/account?tab=Transfer")'>
+                                    <i class="bi bi-send-fill fs-3 text-white"></i>
+                                    <span class="tiny-caps fw-bold">Transfer</span>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-action w-100 h-100 p-4 d-flex flex-column align-items-center justify-content-center gap-2 rounded-4" @onclick='() => Nav.NavigateTo("/market")'>
+                                    <i class="bi bi-graph-up-arrow fs-3 text-success"></i>
+                                    <span class="tiny-caps fw-bold">Trade</span>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-action w-100 h-100 p-4 d-flex flex-column align-items-center justify-content-center gap-2 rounded-4" @onclick='() => Nav.NavigateTo("/account?tab=Lending")'>
+                                    <i class="bi bi-bank fs-3 text-warning"></i>
+                                    <span class="tiny-caps fw-bold">Finance</span>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-action-danger w-100 h-100 p-4 d-flex flex-column align-items-center justify-content-center gap-2 rounded-4" @onclick='() => Nav.NavigateTo("/")'>
+                                    <i class="bi bi-box-arrow-right fs-3"></i>
+                                    <span class="tiny-caps fw-bold">Logout</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
 
             @* --- FOOTER: BANK-WIDE STATS --- *@
-            <div class="mt-5 pt-5 border-top border-secondary border-opacity-10">
-                <div class="mb-4">
-                    <span class="tiny-caps text-secondary"><i class="bi bi-globe text-danger me-2"></i>Global Registry Overview</span>
-                </div>
+            <div class="mt-5 fade-in" style="animation-delay: 0.3s;">
                 <Stats />
             </div>
         }
@@ -153,46 +200,109 @@
 </div>
 
 <style>
+    /* Base Variables & Typography */
+    .bg-darker {
+        background-color: #050505;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+
     .fw-black {
         font-weight: 900;
     }
 
     .tracking-tighter {
-        letter-spacing: -3px;
+        letter-spacing: -2px;
+    }
+
+    .tracking-tight {
+        letter-spacing: -0.5px;
+    }
+
+    .tracking-widest {
+        letter-spacing: 2px;
     }
 
     .tiny-caps {
-        font-size: 11px;
+        font-size: 10px;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        font-weight: 700;
+        letter-spacing: 1.5px;
+        font-weight: 800;
     }
 
-    .stat-card {
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        cursor: default;
+    .transition-base {
+        transition: all 0.2s ease-in-out;
     }
 
-        .stat-card:hover {
-            transform: scale(1.02);
-        }
+    /* Glassmorphism Core */
+    .blur-bg {
+        filter: blur(120px);
+    }
 
     .glass-panel {
         background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     }
 
-    .hover-red:hover {
-        background-color: #dc3545 !important;
-        border-color: #dc3545 !important;
-        color: white !important;
+    /* Buttons & Interactions */
+    .btn-glass-light {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
     }
 
+        .btn-glass-light:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+    .btn-action {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #adb5bd;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+    .btn-action-danger {
+        background: rgba(220, 53, 69, 0.05);
+        border: 1px solid rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .btn-action-danger:hover {
+            background: #dc3545;
+            color: #fff;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
+        }
+
+    .custom-hover-lift:hover {
+        transform: translateY(-3px);
+    }
+
+    .custom-hover-bg:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Animations */
     .fade-in {
-        animation: fadeIn 0.5s ease-out;
+        animation: fadeInUp 0.5s ease-out forwards;
+        opacity: 0;
     }
 
-    @@keyframes fadeIn {
+    @@keyframes fadeInUp {
         from {
             opacity: 0;
             transform: translateY(20px);
@@ -209,6 +319,7 @@
     private ApplicationUser? user;
     private decimal marketValue = 0;
     private decimal totalDebt = 0;
+    private decimal netWorth = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -216,15 +327,30 @@
 
         if (user?.BankAccount != null)
         {
-            // Fetch the user's loans to calculate total debt
+            using var db = await DbFactory.CreateDbContextAsync();
+
             var loans = await FinanceService.GetUserLoansAsync(user.BankAccount.Id);
             totalDebt = loans.Where(l => l.Status == LoanStatus.Approved).Sum(l => l.Amount);
 
-            // Note: In a real app, you'd calculate investment market value here.
-            // For now, let's look at their investment count or mock a value based on stocks.
-            marketValue = 12450.50m; // Mock value - link to your real stock math later
+            // Fetch REAL market value from the database
+            marketValue = await db.Investments
+                .Include(i => i.Stock)
+                .Where(i => i.BankAccountId == user.BankAccount.Id)
+                .SumAsync(i => i.Quantity * i.Stock.CurrentPrice);
+
+            // Calculate actual net worth based on available factors
+            netWorth = (user.BankAccount.Balance + marketValue) - totalDebt;
         }
     }
 
     private string FormatValue(decimal val) => val.ToString("N2", new CultureInfo("en-US"));
+
+    private string GetGreeting()
+    {
+        var hour = DateTime.Now.Hour;
+        if (hour >= 5 && hour < 12) return "Good Morning";
+        if (hour >= 12 && hour < 17) return "Good Afternoon";
+        if (hour >= 17 && hour < 22) return "Good Evening";
+        return "Good Night";
+    }
 }

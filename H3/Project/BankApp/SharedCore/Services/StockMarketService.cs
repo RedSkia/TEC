@@ -64,22 +64,22 @@ public class StockMarketService(IDbContextFactory<BankAppDbContext> dbFactory) :
 
             if (activeState != MarketState.Normal)
             {
-                // Forced manipulation: High velocity moves
+                // Forced manipulation: Strong, directional momentum (0.5% til 2% pr. sekund)
                 fluctuation = activeState == MarketState.ForcedPump
-                    ? GetRandomDecimal(0.04m, 0.08m)
-                    : GetRandomDecimal(-0.08m, -0.04m);
+                    ? GetRandomDecimal(0.005m, 0.02m)
+                    : GetRandomDecimal(-0.02m, -0.005m);
             }
             else
             {
-                // Normal market behavior
-                fluctuation = GetRandomDecimal(-0.025m, 0.025m);
+                // Normal market behavior: Realistic micro-fluctuations (-0.3% til +0.3% pr. sekund)
+                fluctuation = GetRandomDecimal(-0.003m, 0.003m);
             }
 
             stock.CurrentPrice = Math.Round(stock.CurrentPrice * (1 + fluctuation), 2);
 
-            // Floor and Ceiling Clamps
-            if (stock.CurrentPrice <= 0.10m) stock.CurrentPrice = 0.15m;
-            if (stock.CurrentPrice >= 5000m) stock.CurrentPrice = 4800m;
+            // Floor and 16-bit Ceiling Clamps
+            if (stock.CurrentPrice <= 0.01m) stock.CurrentPrice = 0.01m; // Penny stock floor
+            if (stock.CurrentPrice >= 65535m) stock.CurrentPrice = 65535m; // 16-bit absolute maximum
 
             // Log history for charts
             db.StockHistory.Add(new StockHistory

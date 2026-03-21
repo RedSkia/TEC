@@ -1,28 +1,21 @@
-﻿@page "/login/reset"
+﻿@attribute [Route(AppRoutes.LoginReset)]
+
 @inject IdentityService IdentityService
-@inject NavigationManager Nav
+@inject AppNavigator Navigator
 @rendermode InteractiveServer
 
 <div class="auth-container d-flex align-items-center justify-content-center min-vh-100 py-5">
     <div style="width: 100%; max-width: 450px;" class="fade-in">
 
-        <div class="mb-4 text-center">
-            <NavLink href="/" class="text-decoration-none tiny-caps text-secondary hover-danger">
-                <i class="bi bi-terminal me-1"></i> Return to Main Terminal
-            </NavLink>
-        </div>
-
         <AuthorizeView>
             <Authorized>
-                @* LOGGED IN VIEW: 
-                   The system knows you. Just enter the new key.
-                *@
                 <InputForm TItem="object"
                            Model="this"
                            OnSubmit="HandleOverride"
                            ButtonText="UPDATE ACCESS KEY"
+                           ButtonTabIndex="2"
                            IsLoading="isBusy"
-                           ButtonClass="btn-danger fw-black rounded-0 w-100 py-3"
+                           FormName="override-form"
                            Class="glass-panel p-4 shadow-lg"
                            style="border-top: 4px solid #dc3545;">
 
@@ -30,7 +23,7 @@
                         <div class="text-center mb-4">
                             <div class="badge bg-danger pulse-red mb-2">SESSION_ACTIVE</div>
                             <h2 class="fw-black text-white mb-1 tracking-tighter">SEC_ <span class="text-danger">OVERRIDE.</span></h2>
-                            <p class="text-secondary tiny-caps mb-0">Modifying: <span class="text-white">@context.User.Identity?.Name</span></p>
+                            <p class="text-secondary tiny-caps mb-0">Modifying Identity: <span class="text-white">@context.User.Identity?.Name</span></p>
                         </div>
                         @RenderStatus()
                     </HeaderContent>
@@ -38,23 +31,24 @@
                     <ChildContent>
                         <div class="mb-3">
                             <label class="tiny-caps text-secondary mb-1">New Access Key</label>
-                            <input type="password" @bind="newPassword" class="form-control trade-input" placeholder="••••••••" />
-                            <div class="mt-2 text-muted" style="font-size: 0.6rem;">* Internal bypass active. Old key not required.</div>
+                            <InputText @bind-Value="newPassword" type="password" tabindex="1" autofocus class="form-control trade-input" placeholder="••••••••" />
                         </div>
                     </ChildContent>
+
+                    <FooterContent>
+                        @RenderReturnLink(3)
+                    </FooterContent>
                 </InputForm>
             </Authorized>
 
             <NotAuthorized>
-                @* GUEST VIEW: 
-                   Emergency recovery protocol.
-                *@
                 <InputForm TItem="object"
                            Model="this"
                            OnSubmit="HandleGuestReset"
                            ButtonText="INITIALIZE RECOVERY"
+                           ButtonTabIndex="3"
                            IsLoading="isBusy"
-                           ButtonClass="btn-outline-danger fw-black rounded-0 w-100 py-3"
+                           FormName="recovery-form"
                            Class="glass-panel p-4 shadow-lg"
                            style="border-top: 4px solid #6c757d;">
 
@@ -70,13 +64,17 @@
                     <ChildContent>
                         <div class="mb-3">
                             <label class="tiny-caps text-secondary mb-1">Target Identity (Username)</label>
-                            <InputText @bind-Value="targetUsername" class="form-control trade-input" placeholder="UID_UNKNOWN" />
+                            <InputText @bind-Value="targetUsername" tabindex="1" autofocus class="form-control trade-input" placeholder="UID_UNKNOWN" />
                         </div>
                         <div class="mb-3">
                             <label class="tiny-caps text-secondary mb-1">Emergency Access Key</label>
-                            <input type="password" @bind="newPassword" class="form-control trade-input" placeholder="••••••••" />
+                            <InputText @bind-Value="newPassword" type="password" tabindex="2" class="form-control trade-input" placeholder="••••••••" />
                         </div>
                     </ChildContent>
+
+                    <FooterContent>
+                        @RenderReturnLink(4)
+                    </FooterContent>
                 </InputForm>
             </NotAuthorized>
         </AuthorizeView>
@@ -112,11 +110,15 @@
         color: white !important;
         font-weight: 600;
         border-radius: 0;
+        border-left: 3px solid transparent;
+        transition: 0.2s;
     }
 
         .trade-input:focus {
             border-color: #dc3545 !important;
+            border-left: 3px solid #dc3545;
             box-shadow: none !important;
+            outline: none;
         }
 
     .hover-danger:hover {
@@ -151,10 +153,13 @@
 
     private async Task HandleOverride()
     {
-        if (string.IsNullOrWhiteSpace(newPassword)) return;
-        isBusy = true;
+        if (string.IsNullOrWhiteSpace(newPassword))
+        {
+            ProcessResult(false, "KEY_REQUIRED: ENTER NEW ACCESS KEY.");
+            return;
+        }
 
-        // In the Authorized view, we pull the username directly from the current context
+        isBusy = true;
         var user = await IdentityService.GetCurrentUserAsync();
 
         if (user != null)
@@ -209,5 +214,16 @@
                 @statusMessage
             </div>
         }
+    };
+
+    RenderFragment RenderReturnLink(int tabIndex) => __builder =>
+    {
+        <div class="text-center mt-2">
+            <Button Text="Return to Main Terminal" 
+                       Icon="bi-terminal" 
+                       Destination="/" 
+                       TabIndex="@tabIndex" 
+                       Class="tiny-caps text-secondary hover-danger" />
+        </div>
     };
 }

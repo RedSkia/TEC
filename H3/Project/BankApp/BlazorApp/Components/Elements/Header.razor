@@ -4,15 +4,16 @@
 @inject IdentityService IdentityService
 @inject AuthenticationStateProvider AuthProvider
 
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top border-bottom border-white border-opacity-10 shadow-lg py-2 bg-black">
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top border-bottom border-white border-opacity-10 shadow-lg py-3 bg-black">
     <div class="container">
+
         @* Brand / Logo *@
-        <div class="navbar-brand d-flex align-items-center py-0 user-select-none pointer"
+        <div class="navbar-brand d-flex align-items-center py-0 user-select-none pointer brand-hover"
              @onclick='() => Navigator.NavigateTo(AppRoutes.Index)'>
-            <img src="assets/logo.png" alt="RedSkia Logo" style="height: 45px; width: auto;" class="me-3 object-fit-contain">
+            <img src="assets/logo.png" alt="RedSkia Logo" style="height: 52px; width: auto;" class="me-3 object-fit-contain">
             <div class="lh-1">
-                <span class="fw-bolder fs-4 text-white d-block tracking-tight" style="letter-spacing: -1px;">REDSKIA</span>
-                <small class="text-danger fw-bold text-uppercase" style="letter-spacing: 3px; font-size: 0.6rem;">Banking</small>
+                <span class="fw-bolder fs-3 text-white d-block tracking-tight" style="letter-spacing: -1px;">REDSKIA</span>
+                <small class="text-danger fw-bold text-uppercase" style="letter-spacing: 4px; font-size: 0.8rem;">Banking</small>
             </div>
         </div>
 
@@ -21,14 +22,19 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto ms-lg-5 py-3 py-lg-0 border-top border-white border-opacity-10 border-top-lg-0 mt-2 mt-lg-0">
-                <li class="nav-item">
-                    <span class="nav-link px-lg-3 py-2 fw-bold text-uppercase small tracking-widest text-center text-lg-start pointer"
-                          @onclick='() => Navigator.NavigateTo(AppRoutes.Dashboard)'>Dashboard</span>
+            @* Tilføjet align-items-center for at centrere på mobil *@
+            <ul class="navbar-nav me-auto ms-lg-5 py-3 py-lg-0 border-top border-white border-opacity-10 border-top-lg-0 mt-3 mt-lg-0 gap-lg-2 align-items-center align-items-lg-start">
+                <li class="nav-item w-100 text-center text-lg-start">
+                    <Button Text="Dashboard"
+                            Icon="bi-grid-1x2-fill"
+                            Destination="@AppRoutes.Dashboard"
+                            Class="nav-link nav-link-custom px-lg-3 py-2 fw-bold text-uppercase small tracking-widest pointer" />
                 </li>
-                <li class="nav-item">
-                    <span class="nav-link px-lg-3 py-2 fw-bold text-uppercase small tracking-widest text-center text-lg-start pointer"
-                          @onclick='() => Navigator.NavigateTo(AppRoutes.Market)'>Market</span>
+                <li class="nav-item w-100 text-center text-lg-start">
+                    <Button Text="Market"
+                            Icon="bi-graph-up-arrow"
+                            Destination="@AppRoutes.Market"
+                            Class="nav-link nav-link-custom px-lg-3 py-2 fw-bold text-uppercase small tracking-widest pointer" />
                 </li>
             </ul>
 
@@ -38,44 +44,53 @@
                         <div class="d-flex flex-column flex-lg-row align-items-center gap-3 ps-lg-3 w-100">
 
                             @* Profile Capsule *@
-                            <div class="d-flex align-items-center gap-3 order-1 order-lg-0 border border-white border-opacity-10 rounded-pill pe-4 ps-2 py-1 transition-base hover-bg-dark pointer"
+                            <div class="d-flex align-items-center gap-3 order-1 order-lg-0 border border-white border-opacity-10 rounded-0 pe-4 ps-2 py-1 transition-base hover-bg-dark pointer"
                                  @onclick='() => Navigator.NavigateTo(AppRoutes.Account)'>
 
                                 <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm border border-white border-opacity-25"
-                                     style="width: 38px; height: 38px; background-color: @(currentRole?.RoleColor ?? "#c80000"); flex-shrink: 0; font-size: 0.9rem;">
+                                     style="width: 42px; height: 42px; background-color: @(currentRole?.RoleColor ?? "#dc3545"); flex-shrink: 0; font-size: 1rem;">
                                     @GetInitials(currentUser?.FullName ?? context.User.Identity?.Name)
                                 </div>
 
                                 <div class="text-center text-lg-start">
-                                    <div class="text-white fw-bold lh-1 mb-1" style="font-size: 0.85rem;">
+                                    <div class="text-white fw-bold lh-1 mb-1" style="font-size: 0.9rem;">
                                         @(currentUser?.FullName ?? context.User.Identity?.Name ?? "User")
                                     </div>
-                                    <span class="badge rounded-pill fw-bolder px-2 py-1"
+                                    <span class="badge rounded-0 fw-bolder px-2 py-1"
                                           style="background-color: @(currentRole?.RoleColor ?? "#808080")33;
                                                  color: @(currentRole?.RoleColor ?? "#808080");
                                                  border: 1px solid @(currentRole?.RoleColor ?? "#808080")66;
-                                                 font-size: 0.55rem; letter-spacing: 1px;">
+                                                 font-size: 0.6rem; letter-spacing: 1px;">
                                         @FormatRole(currentRole?.Name)
                                     </span>
                                 </div>
                             </div>
 
-                            <button class="btn btn-outline-danger btn-sm rounded-pill px-4 py-2 order-0 order-lg-1 w-100 w-lg-auto fw-bold"
-                                    @onclick="HandleLogout">
-                                LOGOUT
-                            </button>
+                            <Button Text="LOGOUT"
+                                    Icon="bi-box-arrow-right"
+                                    Destination="@AppRoutes.Index"
+                                    OnBeforeNavigate="PerformLogout"
+                                    NavigateDelay="200"
+                                    Class="btn-nav-custom auth-btn-outline px-4 py-2 order-0 order-lg-1 w-100 w-lg-auto fw-bold text-uppercase" />
                         </div>
                     </Authorized>
+
                     <NotAuthorized>
-                        <div class="d-flex flex-column flex-lg-row gap-2 w-100 w-lg-auto text-center">
-                            <button class="btn btn-link text-white-50 text-decoration-none fw-bold small py-2"
-                                    @onclick='() => Navigator.NavigateTo(AppRoutes.Login)'>
-                                LOGIN
-                            </button>
-                            <button class="btn btn-primary rounded-pill px-4 py-2 shadow-lg fw-bold w-100 w-lg-auto text-uppercase"
-                                    @onclick='() => Navigator.NavigateTo(AppRoutes.LoginRegister)'>
-                                SIGN UP
-                            </button>
+                        <div class="d-flex flex-row gap-4 w-100 w-lg-auto text-center align-items-center justify-content-center justify-content-lg-start mt-2 mt-lg-0">
+
+                            <Button Text="LOGIN"
+                                    Icon="bi-shield-lock-fill"
+                                    Destination="@AppRoutes.Login"
+                                    NavigateDelay="150"
+                                    Class="btn-nav-custom auth-btn-outline px-4 py-2 fw-bold small text-uppercase text-nowrap" />
+
+                            @* Sign Up designet ligesom Dashboard/Market *@
+                            <Button Text="SIGN UP"
+                                    Icon="bi-person-plus-fill"
+                                    Destination="@AppRoutes.LoginRegister"
+                                    NavigateDelay="150"
+                                    Class="nav-link nav-link-custom px-2 py-2 fw-bold small tracking-widest text-uppercase text-nowrap pointer" />
+
                         </div>
                     </NotAuthorized>
                 </AuthorizeView>
@@ -83,6 +98,70 @@
         </div>
     </div>
 </nav>
+
+<style>
+    /* Hover animation for Logo */
+    .brand-hover {
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+        .brand-hover:hover {
+            opacity: 0.8;
+            transform: scale(1.02);
+        }
+
+    /* Profile Capsule hover */
+    .hover-bg-dark {
+        transition: background-color 0.2s ease;
+    }
+
+        .hover-bg-dark:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+    /* Red underline hover animation for links */
+    .nav-link-custom {
+        position: relative;
+        overflow: hidden;
+        color: #adb5bd !important; /* Grå standardfarve */
+        transition: color 0.3s ease;
+    }
+
+        .nav-link-custom:hover {
+            color: #fff !important; /* Hvid ved hover */
+        }
+
+        .nav-link-custom::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #dc3545; /* RedSkia Rød */
+            transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .nav-link-custom:hover::after {
+            width: 80%;
+        }
+
+    /* Outline Red Buttons for Auth (Login / Logout) */
+    .btn-nav-custom.auth-btn-outline {
+        border: 1px solid #dc3545 !important;
+        color: #dc3545 !important;
+        background-color: transparent !important;
+        border-radius: 0 !important;
+        transform: none !important;
+        transition: background-color 0.2s ease, color 0.2s ease !important;
+    }
+
+        .btn-nav-custom.auth-btn-outline:hover {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+        }
+</style>
 
 @code {
     private ApplicationUser? currentUser;
@@ -140,10 +219,9 @@
         return parts[0][0].ToString().ToUpper();
     }
 
-    private async Task HandleLogout()
+    private async Task PerformLogout()
     {
         await IdentityService.Logout();
-        await Navigator.NavigateTo(AppRoutes.Index);
     }
 
     public void Dispose()

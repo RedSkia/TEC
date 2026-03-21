@@ -1,4 +1,5 @@
 ﻿@page "/api/checkout/{IntentId:guid}"
+
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
 @using SharedCore.Data
@@ -10,69 +11,142 @@
 @inject IdentityService IdentityService
 @inject NavigationManager Nav
 
-<AuthorizeView>
-    <Authorized>
-        <div class="container py-5">
-            <div class="bank-card mx-auto shadow-lg p-5" style="max-width: 500px; border-top: 5px solid #dc3545; background: #111; color: white;">
+<div class="checkout-wrapper min-vh-100 position-relative d-flex align-items-center justify-content-center py-5">
+    @* Subtil rød glød baggrund *@
+    <div class="position-absolute top-50 start-50 translate-middle bg-danger rounded-circle blur-bg" style="width: 400px; height: 400px; opacity: 0.05; pointer-events: none;"></div>
+
+    <AuthorizeView>
+        <Authorized>
+            <div class="glass-panel p-5 shadow-lg position-relative" style="max-width: 500px; width: 100%; border-top: 4px solid #dc3545; z-index: 1;">
                 @if (intent == null)
                 {
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-danger"></div>
-                        <p class="mt-3 text-muted tiny-caps">Validating Secure Intent...</p>
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-danger mb-3" style="width: 3rem; height: 3rem;"></div>
+                        <h6 class="text-white fw-bold tracking-widest text-uppercase">Validating Secure Intent...</h6>
+                        <p class="text-secondary small">Establishing encrypted connection to merchant</p>
                     </div>
                 }
                 else
                 {
-                    <div class="text-center mb-5">
-                        <h4 class="fw-black uppercase text-white">Authorize Payment</h4>
-                        <span class="badge bg-danger">Onyx Secure Gateway</span>
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-shield-lock-fill text-danger fs-4"></i>
+                            <h4 class="fw-black text-white m-0 tracking-tight text-uppercase">Authorize Payment</h4>
+                        </div>
+                        <br />
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-3 py-2 fw-bold tracking-widest small">
+                            REDSKIA SECURE GATEWAY
+                        </span>
                     </div>
 
-                    <div class="bg-black p-4 mb-4 border border-secondary border-opacity-25 text-center">
-                        <h6 class="text-secondary small tiny-caps">Pay to Merchant</h6>
-                        <h5 class="fw-bold text-white uppercase">@intent.MerchantName</h5>
-                        <hr class="border-secondary opacity-25" />
-                        <h1 class="display-5 fw-black text-danger">@intent.Amount.ToString("N2")</h1>
-                        <span class="text-muted small">USD</span>
+                    <div class="bg-black bg-opacity-50 rounded-4 p-4 mb-4 border border-secondary border-opacity-25 text-center transition-base custom-hover-glow">
+                        <p class="text-secondary small fw-bold tracking-widest text-uppercase mb-1">Pay to Merchant</p>
+                        <h4 class="fw-black text-white text-uppercase mb-4">@intent.MerchantName</h4>
+
+                        <div class="d-flex justify-content-center align-items-baseline gap-2">
+                            <h1 class="display-4 fw-black text-danger m-0 tracking-tighter">@intent.Amount.ToString("N2")</h1>
+                            <span class="text-secondary fw-bold fs-5">USD</span>
+                        </div>
                     </div>
 
-                    @* NEW: Display errors if the transaction fails (e.g., Insufficient Funds) *@
                     @if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small text-center fw-bold py-2 mb-4">
-                            @errorMessage
+                        <div class="alert alert-danger border border-danger border-opacity-25 bg-danger bg-opacity-10 text-danger small fw-bold rounded-3 text-center mb-4">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorMessage
                         </div>
                     }
 
-                    @* Simplified OnClick handler *@
-                    <button class="btn btn-danger w-100 py-3 fw-bold uppercase mb-3"
-                            @onclick="ProcessAuthorization"
-                            disabled="@isProcessing">
-                        @if (isProcessing)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2"></span>
-                        }
-                        Confirm & Pay
-                    </button>
+                    <div class="d-flex flex-column gap-3">
+                        <button class="btn btn-danger rounded-pill px-4 py-3 fw-black w-100 text-uppercase tracking-widest transition-base shadow-sm"
+                                @onclick="ProcessAuthorization"
+                                disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                <span>PROCESSING...</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-check-circle-fill me-2"></i> CONFIRM & PAY</span>
+                            }
+                        </button>
 
-                    <button class="btn btn-outline-secondary w-100 py-2 tiny-caps" @onclick="Cancel">
-                        Cancel & Return
-                    </button>
+                        <button class="btn btn-glass-light rounded-pill w-100 py-3 fw-bold text-uppercase tracking-widest transition-base"
+                                @onclick="Cancel" disabled="@isProcessing">
+                            Cancel & Return
+                        </button>
+                    </div>
                 }
             </div>
-        </div>
-    </Authorized>
-    <NotAuthorized>
-        <div class="container py-5 text-center">
-            <div class="bank-card mx-auto p-5" style="max-width: 400px; background: #111;">
-                <i class="bi bi-lock-fill text-danger display-1"></i>
-                <h3 class="text-white fw-black uppercase mt-3">Identity Required</h3>
-                <p class="text-muted">You must be logged into your Onyx Vault account to authorize this external payment.</p>
-                <a href="/login?ReturnUrl=/checkout/@IntentId" class="btn btn-danger w-100 py-2 fw-bold mt-3">Secure Login</a>
+        </Authorized>
+        <NotAuthorized>
+            <div class="glass-panel p-5 text-center shadow-lg position-relative" style="max-width: 450px; width: 100%; border-top: 4px solid #dc3545; z-index: 1;">
+                <i class="bi bi-fingerprint text-danger display-1 mb-4 d-block"></i>
+                <h3 class="fw-black text-white tracking-tight mb-3 text-uppercase">Identity Required</h3>
+                <p class="text-secondary small mb-5">You must be authenticated with the RedSkia network to authorize this external transaction.</p>
+                <a href="/login?ReturnUrl=/api/checkout/@IntentId" class="btn btn-danger rounded-pill px-4 py-3 fw-black w-100 text-uppercase tracking-widest transition-base shadow-sm">
+                    Access Secure Login
+                </a>
             </div>
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+<style>
+    /* Styling baseret på dit design-system */
+    .bg-darker {
+        background-color: #050505;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    .tracking-tight {
+        letter-spacing: -0.5px;
+    }
+
+    .tracking-tighter {
+        letter-spacing: -2px;
+    }
+
+    .tracking-widest {
+        letter-spacing: 2px;
+    }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .transition-base {
+        transition: all 0.25s ease;
+    }
+
+    .blur-bg {
+        filter: blur(100px);
+    }
+
+    .glass-panel {
+        background: rgba(20, 20, 20, 0.7);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1.5rem;
+    }
+
+    .btn-glass-light {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+        .btn-glass-light:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+    .custom-hover-glow:hover {
+        box-shadow: 0 0 30px rgba(220, 53, 69, 0.1);
+        border-color: rgba(220, 53, 69, 0.3) !important;
+    }
+</style>
 
 @code {
     [Parameter] public Guid IntentId { get; set; }
@@ -102,18 +176,17 @@
         if (intent == null) return;
 
         isProcessing = true;
-        errorMessage = null; // Clear previous errors
+        errorMessage = null;
 
         var user = await IdentityService.GetCurrentUserAsync();
 
         if (user?.BankAccount == null)
         {
-            errorMessage = "Bank account not found for current user.";
+            errorMessage = "Account details not found for current identity.";
             isProcessing = false;
             return;
         }
 
-        // 1. Move the money (Debit User -> Credit Merchant)
         var result = await FinanceService.ExecuteTransfer(
             user.Id,
             intent.ReceiverBankAccount.UserId,
@@ -122,7 +195,6 @@
 
         if (result.Success)
         {
-            // 2. Finalize the intent directly in the Database
             using var db = await DbFactory.CreateDbContextAsync();
             var dbIntent = await db.PaymentIntents.FirstOrDefaultAsync(i => i.Id == IntentId);
 
@@ -132,7 +204,7 @@
                 dbIntent.Status = PaymentIntentStatus.Completed;
                 await db.SaveChangesAsync();
 
-                // 3. Trigger the Webhook to the external Merchant
+                // Notificer Webhook i baggrunden
                 _ = Task.Run(async () =>
                 {
                     try
@@ -140,16 +212,14 @@
                         using var client = new HttpClient();
                         await client.PostAsJsonAsync(dbIntent.WebhookUrl, new { intentId = dbIntent.Id, status = "SUCCESS" });
                     }
-                    catch { /* Log Webhook failure */ }
+                    catch { /* Ignorer fejl i webhook opkaldet til lab-test */ }
                 });
             }
 
-            // Redirect on success
-            Nav.NavigateTo("/account");
+            Nav.NavigateTo("/account"); // Eller en success-side
         }
         else
         {
-            // NEW: Show exactly why it failed to the user
             errorMessage = result.Message;
         }
 

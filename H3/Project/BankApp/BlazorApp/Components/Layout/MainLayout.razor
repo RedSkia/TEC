@@ -1,40 +1,41 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="min-vh-100 bg-black overflow-hidden" style="font-family: 'Inter', sans-serif; color: #f8f9fa;">
+<div class="app-shell min-vh-100 d-flex flex-column">
 
-    @* --- INSTITUTIONAL ATMOSPHERE --- *@
-    <div class="position-fixed w-100 h-100 z-0">
-        <div class="position-absolute top-0 end-0 w-75 h-75 opacity-20"
-             style="background: radial-gradient(circle at 80% 0%, #dc3545 0%, transparent 60%); filter: blur(150px);"></div>
-
-        <div class="position-absolute inset-0 opacity-5"
-             style="background-image: linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px); background-size: 100px 100px;"></div>
+    @* --- THE ATMOSPHERE (Dual-Tone Studio Lighting) --- *@
+    <div class="ambient-scene">
+        <div class="glow-crimson"></div>
+        <div class="glow-slate"></div>
+        <div class="surface-grain"></div>
     </div>
 
-    @* --- GLOBAL NOTIFICATION LAYER --- *@
+    @* --- GLOBAL HUD --- *@
     <Toast @ref="_toast" />
 
-    @* --- NAVIGATION --- *@
-    <div class="sticky-top z-3 backdrop-blur-xl border-bottom border-secondary border-opacity-10">
+    @* --- HEADER HUB --- *@
+    <header class="hud-top sticky-top">
         <Header />
-        <div class="laser-line"></div>
-    </div>
+        @* STATIC LASER LINE *@
+        <div class="laser-line-static"></div>
+    </header>
 
-    @* --- MAIN VIEWPORT --- *@
-    <main class="position-relative z-2">
-        <div class="page-content container-fluid px-lg-5">
-            @* Pass the notification instance down to all pages *@
-            <CascadingValue Value="_toast">
-                @Body
-            </CascadingValue>
+    @* --- DYNAMIC VIEWPORT --- *@
+    <main class="flex-grow-1 position-relative z-2">
+        <div class="container-fluid px-lg-5">
+            <div class="content-fade">
+                <CascadingValue Value="_toast">
+                    @Body
+                </CascadingValue>
+            </div>
         </div>
     </main>
 
-    @* --- FOOTER --- *@
-    <div class="position-relative z-2 bg-black py-5">
-        <div class="laser-line position-absolute top-0"></div>
-        <Footer />
-    </div>
+    @* --- SYSTEM FOOTER --- *@
+    <footer class="hud-bottom position-relative z-2">
+        @* STATIC LASER LINE *@
+        <div class="laser-line-static"></div>
+            <Footer />
+    </footer>
 </div>
 
 @code {
@@ -42,50 +43,118 @@
 }
 
 <style>
-    .inset-0 {
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
+    :root {
+        --skia-red: #ff3131;
+        --skia-red-glow: rgba(255, 49, 49, 0.15);
+        --skia-onyx: #08080a; /* Slightly lighter than pure black for depth */
+        --skia-surface: rgba(255, 255, 255, 0.03);
     }
 
-    .laser-line {
+    /* --- SHELL SETUP --- */
+    .app-shell {
+        background: radial-gradient(circle at 50% 50%, #111114 0%, var(--skia-onyx) 100%);
+        color: #e8e8e8;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+    }
+
+    /* --- AMBIENT LIGHTING (No Animation) --- */
+    .ambient-scene {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .glow-crimson {
+        position: absolute;
+        top: -10%;
+        right: -5%;
+        width: 55vw;
+        height: 55vw;
+        background: radial-gradient(circle, var(--skia-red-glow) 0%, transparent 70%);
+        filter: blur(100px);
+    }
+
+    .glow-slate {
+        position: absolute;
+        bottom: -15%;
+        left: -5%;
+        width: 45vw;
+        height: 45vw;
+        background: radial-gradient(circle, rgba(100, 150, 255, 0.04) 0%, transparent 60%);
+        filter: blur(80px);
+    }
+
+    .surface-grain {
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='n'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3%3C/filter%3%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3%3C/svg%3");
+        opacity: 0.05;
+        mix-blend-mode: soft-light;
+    }
+
+    /* --- HUD ELEMENTS --- */
+    .hud-top {
+        backdrop-filter: blur(25px) saturate(160%);
+        background: rgba(8, 8, 10, 0.8);
+    }
+
+    .hud-bottom {
+        background: rgba(5, 5, 7, 0.4);
+        margin-top: auto;
+    }
+
+    /* --- THE STATIC LASER LINE --- */
+    .laser-line-static {
         height: 1px;
         width: 100%;
-        background: linear-gradient(90deg, transparent 0%, rgba(220, 53, 69, 0.1) 10%, rgba(220, 53, 69, 1) 50%, rgba(220, 53, 69, 0.1) 90%, transparent 100%);
-        box-shadow: 0px 0px 15px rgba(220, 53, 69, 0.4);
-        opacity: 0.8;
+        background: linear-gradient(90deg, transparent 0%, rgba(255, 49, 49, 0.2) 15%, var(--skia-red) 50%, rgba(255, 49, 49, 0.2) 85%, transparent 100%);
+        box-shadow: 0 0 12px var(--skia-red-glow);
     }
 
-    .backdrop-blur-xl {
-        backdrop-filter: blur(30px) saturate(200%);
-        background: rgba(0,0,0,0.85) !important;
-    }
-
-    .page-content {
-        padding-top: 3rem;
+    /* --- CONTENT VIEWPORT --- */
+    main {
+        padding-top: 3.5rem;
         padding-bottom: 5rem;
     }
 
-    ::selection {
-        background: #dc3545;
-        color: white;
+    .content-fade {
+        animation: pageSlide 0.4s ease-out;
     }
 
+    @@keyframes pageSlide {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* --- SCROLLBAR (Onyx Style) --- */
     ::-webkit-scrollbar {
-        width: 4px;
+        width: 5px;
     }
 
     ::-webkit-scrollbar-track {
-        background: #000;
+        background: transparent;
     }
 
     ::-webkit-scrollbar-thumb {
-        background: #333;
-        border-radius: 0px;
+        background: #252528;
+        border-radius: 0;
     }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #dc3545;
+            background: var(--skia-red);
         }
+
+    ::selection {
+        background: var(--skia-red);
+        color: white;
+    }
 </style>

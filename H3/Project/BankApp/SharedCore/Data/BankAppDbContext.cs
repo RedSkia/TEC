@@ -62,8 +62,16 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         // --- 2. EAGER LOADING (AUTO-INCLUDE) ---
         builder.Entity<ApplicationUser>().Navigation(u => u.Address).AutoInclude();
         builder.Entity<ApplicationUser>().Navigation(u => u.BankAccount).AutoInclude();
+
+        // FIX: Added LoginActivities so they load with the User
+        builder.Entity<ApplicationUser>().Navigation(u => u.LoginActivities).AutoInclude();
+
         builder.Entity<BankAccount>().Navigation(b => b.CurrencyType).AutoInclude();
         builder.Entity<BankAccount>().Navigation(b => b.Investments).AutoInclude();
+
+        // FIX: Added Transactions so they load with the BankAccount
+        builder.Entity<BankAccount>().Navigation(b => b.Transactions).AutoInclude();
+
         builder.Entity<Investment>().Navigation(i => i.Stock).AutoInclude();
 
         // --- 3. RELATIONSHIPS & CONSTRAINTS ---
@@ -104,7 +112,7 @@ public class BankAppDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         // Many-to-One: LoanRequest -> BankAccount
         builder.Entity<LoanRequest>()
             .HasOne(l => l.BankAccount)
-            .WithMany(b => b.LoanRequests) // Explicit mapping to the collection you added
+            .WithMany(b => b.LoanRequests)
             .HasForeignKey(l => l.BankAccountId)
             .OnDelete(DeleteBehavior.Cascade);
 

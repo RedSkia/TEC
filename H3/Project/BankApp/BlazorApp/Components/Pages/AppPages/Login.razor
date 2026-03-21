@@ -1,5 +1,5 @@
-﻿@page "/login"
-@* Adjust the route attribute to match your AppRoutes.Login if needed *@
+﻿@attribute [Route(AppRoutes.Login)]
+
 @inject IdentityService IdentityService
 @inject AppNavigator Navigator
 @rendermode InteractiveServer
@@ -7,13 +7,14 @@
 <div class="auth-container d-flex align-items-center justify-content-center min-vh-100">
     <div style="width: 100%; max-width: 400px;">
 
+        @* TItem is set to string, and we pass the username as the model just to satisfy the EditForm *@
         <InputForm TItem="string"
                    Model="username"
                    OnSubmit="HandleLogin"
                    ButtonText="LOGIN"
+                   ButtonTabIndex="3"
                    LoadingText="AUTHENTICATING..."
                    IsLoading="busy"
-                   ButtonClass="btn-outline-danger border-2 fw-bold rounded-0"
                    FormName="login-form"
                    Class="bg-dark bg-opacity-75 border border-secondary border-opacity-25 rounded-0 shadow-lg p-4"
                    style="backdrop-filter: blur(10px);">
@@ -30,6 +31,7 @@
 
                 @if (error != null)
                 {
+                    @* Manual Error Bar - Matches your RedSkia style *@
                     <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small rounded-0 mb-4 py-2 fw-bold text-uppercase text-center">
                         <i class="bi bi-shield-lock-fill me-2"></i> @error
                     </div>
@@ -39,63 +41,48 @@
             <ChildContent>
                 <div class="mb-3">
                     <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Username</label>
-                    <InputText @bind-Value="username"
-                               class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
-                               style="border-left: 3px solid #dc3545;"
-                               placeholder="Enter Username"
-                               autocomplete="username" />
+                    <InputText @bind-Value="username" 
+                               tabindex="1" 
+                               autofocus 
+                               class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" 
+                               style="border-left: 3px solid #dc3545;" 
+                               placeholder="Enter Username" />
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label text-secondary small fw-bold text-uppercase" style="font-size: 0.7rem;">Password</label>
-                    <InputText @bind-Value="password"
-                               type="password"
-                               class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2"
-                               style="border-left: 3px solid #dc3545;"
-                               placeholder="••••••••"
-                               autocomplete="current-password" />
+                    <InputText @bind-Value="password" 
+                               tabindex="2" 
+                               type="password" 
+                               class="form-control bg-black border-secondary border-opacity-50 text-white rounded-0 shadow-none py-2" 
+                               style="border-left: 3px solid #dc3545;" 
+                               placeholder="••••••••" />
                 </div>
             </ChildContent>
 
+            <FooterContent>
+                <div class="d-flex justify-content-between mt-1 px-1">
+                    <Button Text="Create Account" 
+                               Icon="bi-person-plus" 
+                               Destination="@AppRoutes.LoginRegister" 
+                               TabIndex="4"
+                               Class="link-secondary small fw-bold text-uppercase hover-danger" />
+
+                    <Button Text="Forgot Password?"
+                               Icon="bi-shield-lock" 
+                               Destination="@AppRoutes.LoginReset" 
+                               TabIndex="5"
+                               Class="link-secondary small fw-bold text-uppercase hover-danger" />
+                </div>
+            </FooterContent>
         </InputForm>
-
-        <div class="d-flex justify-content-between mt-3 px-1">
-            <NavLink href="/register" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
-                <i class="bi bi-person-plus me-1"></i>Create Account
-            </NavLink>
-
-            <NavLink href="/login/reset" class="link-secondary text-decoration-none small fw-bold text-uppercase hover-danger" style="font-size: 0.65rem; letter-spacing: 1px;">
-                <i class="bi bi-shield-lock me-1"></i>Forgot Password?
-            </NavLink>
-        </div>
     </div>
 </div>
 
-<style>
-    .form-control:focus {
-        background-color: #000 !important;
-        border-color: #dc3545 !important;
-        color: #fff !important;
-    }
-
-    .form-control::placeholder {
-        color: #444 !important;
-        font-size: 0.8rem;
-    }
-
-    .hover-danger:hover {
-        color: #dc3545 !important;
-        transition: 0.2s ease;
-    }
-</style>
-
 @code {
-    // 1. Capture the return URL from the query string
-    [SupplyParameterFromQuery]
-    public string? ReturnUrl { get; set; }
-
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
     [CascadingParameter] public Toast? Toast { get; set; }
-
+    
     private string username = "";
     private string password = "";
     private bool busy;
@@ -104,49 +91,41 @@
     protected override void OnInitialized()
     {
         if (IdentityService.IsUserAuthenticated())
-        {
-            // 2. Smart Redirect for already logged-in users
             Navigator.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl);
-        }
     }
 
     async Task HandleLogin()
     {
+        // 1. Manual Validation Check
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            error = "CREDENTIALS REQUIRED";
-            Toast?.Show(error, Toast.ToastLevel.Warning);
+            error = "CREDENTIALS_REQUIRED";
+            Toast?.Show("Identification Failed: Missing fields.", Toast.ToastLevel.Warning);
             return;
         }
 
         busy = true;
         error = null;
 
-        try
+        try 
         {
             var token = await IdentityService.Login(username, password);
-
             if (!string.IsNullOrEmpty(token))
             {
-                // Use your custom Navigator without the 'true' reload flag
-                var targetRoute = string.IsNullOrEmpty(ReturnUrl) ? AppRoutes.Index : ReturnUrl;
-                await Navigator.NavigateTo(targetRoute);
+                await Navigator.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? AppRoutes.Index : ReturnUrl);
             }
-            else
+            else 
             {
-                error = "ACCESS DENIED";
+                // 2. Business Logic Errors
+                error = "ACCESS_DENIED";
                 Toast?.Show("Authentication Failed: Invalid Credentials.", Toast.ToastLevel.Error);
             }
+        } 
+        catch 
+        { 
+            error = "SYSTEM_OFFLINE"; 
+            Toast?.Show("Critical: Security server unreachable.", Toast.ToastLevel.Error);
         }
-        catch (Exception ex)
-        {
-            error = "CRITICAL FAILURE";
-            Toast?.Show("System Error: Security service unreachable.", Toast.ToastLevel.Error);
-            Console.WriteLine($"Login Error: {ex.Message}");
-        }
-        finally
-        {
-            busy = false;
-        }
+        finally { busy = false; }
     }
 }
