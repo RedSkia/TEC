@@ -34,6 +34,10 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Elements/Button.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xCdXR0b24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Elements/Footer.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xGb290ZXIucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -42,8 +46,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xIZWFkZXIucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Elements/InputAutoControl.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xJbnB1dEF1dG9Db250cm9sLnJhem9y
+[D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Elements/InputAutocomplete.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbGVtZW50c1xJbnB1dEF1dG9jb21wbGV0ZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Elements/InputForm.razor]
@@ -70,16 +74,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xBZG1pblxNYXJrZXRDb250cm9sLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Pages/AppPages/Admin/UserManagement.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xBZG1pblxVc2VyTWFuYWdlbWVudC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Pages/AppPages/Dashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xEYXNoYm9hcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Pages/AppPages/Index.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xJbmRleC5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Pages/AppPages/Investments.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xJbnZlc3RtZW50cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Pages/AppPages/Login.razor]
@@ -98,8 +102,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xNYXJrZXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Pages/AppPages/Officer/Loans.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xPZmZpY2VyXExvYW5zLnJhem9y
+[D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Pages/AppPages/Officer/LoanManagement.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBcHBQYWdlc1xPZmZpY2VyXExvYW5NYW5hZ2VtZW50LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Desktop/TEC/H3/Project/BankApp/BlazorApp/Components/Pages/AppPages/WebAPI/Checkout.razor]

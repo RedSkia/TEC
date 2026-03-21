@@ -1,0 +1,83 @@
+﻿@inject AppNavigator Navigator
+
+<button type="button"
+        class="btn-nav-custom @Class @(isNavigating ? "navigating" : "")"
+        tabindex="@TabIndex"
+        disabled="@isNavigating"
+        @onclick="HandleNavigation">
+
+    @if (isNavigating)
+    {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+    }
+    else if (!string.IsNullOrEmpty(Icon))
+    {
+        <i class="bi @Icon me-2"></i>
+    }
+
+    <span>@Text</span>
+</button>
+
+<style>
+    .btn-nav-custom {
+        background: transparent;
+        border: none;
+        padding: 0;
+        color: inherit;
+        font-family: inherit;
+        transition: 0.2s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-nav-custom.navigating {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        .btn-nav-custom:disabled {
+            pointer-events: none;
+        }
+</style>
+
+@code {
+    [Parameter] public string Text { get; set; } = "";
+    [Parameter] public string Icon { get; set; } = "";
+    [Parameter] public string Destination { get; set; } = "/";
+    [Parameter] public string Class { get; set; } = "";
+    [Parameter] public int TabIndex { get; set; } = 0;
+
+    // Callback hvis du vil køre noget logik i forældren før navigation
+    [Parameter] public EventCallback OnBeforeNavigate { get; set; }
+    [Parameter] public int NavigateDelay { get; set; } = 0;
+
+    private volatile bool isNavigating;
+
+    private async Task HandleNavigation()
+    {
+        if (NavigateDelay > 0)
+        {
+            if (isNavigating) return;
+            isNavigating = true;
+
+            if (OnBeforeNavigate.HasDelegate)
+            {
+                await OnBeforeNavigate.InvokeAsync();
+            }
+
+            // Simuler en lille "system-tænkepause" for effekten (valgfrit)
+            await Task.Delay(NavigateDelay);
+            isNavigating = false;
+        }
+        else if (OnBeforeNavigate.HasDelegate)
+        {
+            // Sikrer at callbacket også kører, selvom der ikke er delay
+            await OnBeforeNavigate.InvokeAsync();
+        }
+
+        // Naviger via vores Navigator
+        await Navigator.NavigateTo(Destination);
+    }
+}

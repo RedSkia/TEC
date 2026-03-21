@@ -6,78 +6,175 @@
 <footer class="text-white pt-5 pb-4 border-top border-white border-opacity-10 mt-auto" style="background: #050505;">
     <div class="container">
         <div class="row g-4">
-            <div class="col-lg-5 text-center text-lg-start">
-                <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-3 pointer"
+
+            @* 1. BRAND SECTION *@
+            <div class="col-lg-4 text-center text-lg-start">
+                <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-4 pointer brand-hover"
                      @onclick='() => Navigator.NavigateTo(AppRoutes.Index)'>
-                    <img src="assets/logo.png" alt="RedSkia" height="50" class="me-2">
+                    <img src="assets/logo.png" alt="RedSkia Logo" style="height: 52px; width: auto;" class="me-3 object-fit-contain">
                     <div class="lh-1">
-                        <h5 class="fw-bold mb-0 tracking-tight">REDSKIA <span class="text-danger">BANKING</span></h5>
-                        <small class="text-white-50 tiny-text uppercase tracking-widest" style="font-size: 0.6rem;">SECURE ASSET MANAGEMENT</small>
+                        <span class="fw-bolder fs-3 text-white d-block tracking-tight" style="letter-spacing: -1px;">REDSKIA</span>
+                        <small class="text-danger fw-bold text-uppercase" style="letter-spacing: 4px; font-size: 0.8rem;">Banking</small>
                     </div>
                 </div>
-                <p class="small text-white-50 w-75 mx-auto mx-lg-0 mb-4">
+                <p class="small text-white-50 w-100 w-lg-75 mx-auto mx-lg-0 mb-4" style="line-height: 1.6;">
                     Institutional-grade security. Next-generation speed. The premier vault for global digital assets and liquidity.
                 </p>
             </div>
 
-            <div class="col-6 col-lg-3 offset-lg-1 text-start">
-                <h6 class="small fw-bold text-uppercase mb-4 text-danger ls-wide">Sitemap</h6>
+            @* 2. GENERAL SITEMAP (Public/All Users) *@
+            <div class="col-6 col-lg-2 text-start">
+                <h6 class="small fw-bold text-uppercase mb-4 text-danger ls-wide" style="letter-spacing: 2px;">Sitemap</h6>
                 <ul class="list-unstyled small">
-                    <AuthorizeView>
-                        <Authorized>
-                            @foreach (var route in GetFilteredRoutes(context.User))
-                            {
-                                <li class="mb-2">
-                                    <span class="text-white-50 text-decoration-none hover-white pointer d-inline-block transition-transform"
-                                          @onclick="() => Navigator.NavigateTo(route.Value)">
-                                        @FormatRouteName(route.Key)
-                                    </span>
-                                </li>
-                            }
-                        </Authorized>
-                        <NotAuthorized>
-                            @foreach (var route in GetFilteredRoutes(null))
-                            {
-                                <li class="mb-2">
-                                    <span class="text-white-50 text-decoration-none hover-white pointer d-inline-block transition-transform"
-                                          @onclick="() => Navigator.NavigateTo(route.Value)">
-                                        @FormatRouteName(route.Key)
-                                    </span>
-                                </li>
-                            }
-                        </NotAuthorized>
-                    </AuthorizeView>
+                    @foreach (var route in GetRoutesByRole(null))
+                    {
+                        <li class="mb-3">
+                            <span class="footer-link-custom text-white-50 text-decoration-none pointer d-inline-block small text-uppercase fw-bold" style="letter-spacing: 1px;"
+                                  @onclick="() => Navigator.NavigateTo(route.Value)">
+                                @FormatRouteName(route.Key)
+                            </span>
+                        </li>
+                    }
                 </ul>
             </div>
 
-            <div class="col-6 col-lg-3 text-start">
-                <h6 class="small fw-bold text-uppercase mb-4 text-danger ls-wide">System</h6>
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <div class="rounded-circle bg-success animate-pulse" style="width: 8px; height: 8px;"></div>
-                    <span class="small text-white-50">All Systems Operational</span>
+            @* 3. OFFICER TERMINAL (Only Admin & Officers) *@
+            <AuthorizeView Roles="Admin, LoanOfficer">
+                <div class="col-6 col-lg-2 text-start">
+                    <h6 class="small fw-bold text-uppercase mb-4 text-danger ls-wide" style="letter-spacing: 2px;">Officer</h6>
+                    <ul class="list-unstyled small">
+                        @foreach (var route in GetRoutesByRole(RoleType.LoanOfficer))
+                        {
+                            <li class="mb-3">
+                                <span class="footer-link-custom text-white-50 text-decoration-none pointer d-inline-block small text-uppercase fw-bold" style="letter-spacing: 1px;"
+                                      @onclick="() => Navigator.NavigateTo(route.Value)">
+                                    @FormatRouteName(route.Key)
+                                </span>
+                            </li>
+                        }
+                    </ul>
                 </div>
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <i class="bi bi-patch-check-fill text-primary small"></i>
-                    <span class="small text-white-50">Tier 4 Data Center</span>
+            </AuthorizeView>
+
+            @* 4. ADMIN TERMINAL (Only Admin) *@
+            <AuthorizeView Roles="Admin">
+                <div class="col-6 col-lg-2 text-start">
+                    <h6 class="small fw-bold text-uppercase mb-4 text-danger ls-wide" style="letter-spacing: 2px;">Admin</h6>
+                    <ul class="list-unstyled small">
+                        @foreach (var route in GetRoutesByRole(RoleType.Admin))
+                        {
+                            <li class="mb-3">
+                                <span class="footer-link-custom text-white-50 text-decoration-none pointer d-inline-block small text-uppercase fw-bold" style="letter-spacing: 1px;"
+                                      @onclick="() => Navigator.NavigateTo(route.Value)">
+                                    @FormatRouteName(route.Key)
+                                </span>
+                            </li>
+                        }
+                    </ul>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-shield-lock-fill text-white-50 small"></i>
-                    <span class="small text-white-50">AES-256 Encrypted</span>
+            </AuthorizeView>
+
+            @* 5. SYSTEM STATUS *@
+            <div class="col-12 col-lg-2 text-center text-lg-start mt-4 mt-lg-0">
+                <h6 class="small fw-bold text-uppercase mb-4 text-danger ls-wide" style="letter-spacing: 2px;">System</h6>
+
+                <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-3 mb-3">
+                    <div class="rounded-circle bg-success animate-pulse" style="width: 10px; height: 10px;"></div>
+                    <span class="small text-white-50 fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">Operational</span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-3 mb-3">
+                    <i class="bi bi-patch-check-fill text-primary" style="font-size: 1.1rem;"></i>
+                    <span class="small text-white-50 fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">Tier 4 Vault</span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-3">
+                    <i class="bi bi-shield-lock-fill text-white-50" style="font-size: 1.1rem;"></i>
+                    <span class="small text-white-50 fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">AES-256 Auth</span>
                 </div>
             </div>
+
         </div>
 
-        <div class="text-center mt-5 pt-4 border-top border-white border-opacity-5">
-            <p class="small text-white-50 mb-0">&copy; @DateTime.Now.Year <span class="text-white fw-bold">RedSkia Banking Inc.</span> All rights reserved.</p>
+        <div class="text-center mt-5 pt-4 border-top border-white border-opacity-10">
+            <p class="small text-white-50 mb-0" style="letter-spacing: 1px;">
+                &copy; @DateTime.Now.Year <span class="text-white fw-bold">REDSKIA BANKING</span>. ALL RIGHTS RESERVED.
+            </p>
         </div>
     </div>
 </footer>
+
+<style>
+    /* Hover animation for Logo */
+    .brand-hover {
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+        .brand-hover:hover {
+            opacity: 0.8;
+            transform: scale(1.02);
+        }
+
+    /* Red underline hover animation for Footer Links */
+    .footer-link-custom {
+        position: relative;
+        padding-bottom: 2px;
+        transition: color 0.3s ease;
+    }
+
+        .footer-link-custom:hover {
+            color: #ffffff !important;
+        }
+
+        .footer-link-custom::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #dc3545; /* RedSkia Rød */
+            transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .footer-link-custom:hover::after {
+            width: 100%;
+        }
+
+    /* Pulse animation for System Status */
+    .animate-pulse {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        animation: pulse-animation 2s infinite;
+    }
+
+    @@keyframes pulse-animation {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        }
+
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+        }
+
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+        }
+    }
+</style>
 
 @code {
     private string FormatRouteName(string name) =>
         System.Text.RegularExpressions.Regex.Replace(name, "([A-Z])", " $1").Trim();
 
-    private IEnumerable<KeyValuePair<string, string>> GetFilteredRoutes(ClaimsPrincipal? user)
+    /// <summary>
+    /// Filters AppRoutes based on the required role.
+    /// targetRole = null returns public routes.
+    /// targetRole = RoleType returns routes specifically tagged with that role.
+    /// </summary>
+    private IEnumerable<KeyValuePair<string, string>> GetRoutesByRole(RoleType? targetRole)
     {
         var fields = typeof(AppRoutes).GetFields(BindingFlags.Public | BindingFlags.Static).Where(f => f.IsLiteral);
 
@@ -86,26 +183,15 @@
             var routeValue = field.GetValue(null)?.ToString() ?? "#";
             var attr = field.GetCustomAttribute<RouteRoleAttribute>();
 
-            // 1. Public Routes (No Attribute)
-            if (attr == null)
+            // If we are looking for Public routes (targetRole is null)
+            if (targetRole == null && attr == null)
             {
                 yield return new KeyValuePair<string, string>(field.Name, routeValue);
-                continue;
             }
-
-            // 2. Protected Routes (IdentityService check)
-            if (IdentityService.IsUserAuthenticated())
+            // If we are looking for specific Role routes
+            else if (targetRole != null && attr?.Role == targetRole)
             {
-                // Admin bypass (sees everything)
-                if (IdentityService.IsUserInRole(RoleType.Admin))
-                {
-                    yield return new KeyValuePair<string, string>(field.Name, routeValue);
-                }
-                // Officer check (sees only Officer level, no Admin level)
-                else if (IdentityService.IsUserInRole(RoleType.LoanOfficer) && attr.Role == RoleType.LoanOfficer)
-                {
-                    yield return new KeyValuePair<string, string>(field.Name, routeValue);
-                }
+                yield return new KeyValuePair<string, string>(field.Name, routeValue);
             }
         }
     }

@@ -1,20 +1,21 @@
 ﻿@typeparam TItem
 
-<div class="card border-0 shadow-sm @Class">
+<div class="card border-0 @Class" style="background: transparent;">
     @if (HeaderContent is not null)
     {
-        <div class="card-header bg-transparent border-0 pt-4 pb-0">
+        <div class="card-header bg-transparent border-0 p-0 mb-4">
             @HeaderContent
         </div>
     }
 
-    <div class="card-body p-4">
-        @* Supply the FormName to the EditForm for SSR/Interactive compatibility *@
+    <div class="card-body p-0">
         <EditForm Model="@Model" OnValidSubmit="HandleValidSubmit" FormName="@FormName" @attributes="AdditionalAttributes">
             <DataAnnotationsValidator />
 
-            @* CRITICAL: Catch-all for errors not tied to a specific property (Identity errors) *@
-            <ValidationSummary class="text-danger small mb-3" />
+            @* Standardized RedSkia Error Display - Forced no-bullets *@
+            <div class="validation-summary-wrapper">
+                <ValidationSummary class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger small rounded-0 mb-4 py-2 fw-bold text-uppercase text-center list-unstyled" />
+            </div>
 
             <div class="form-fields">
                 @ChildContent
@@ -23,39 +24,67 @@
             <div class="form-actions mt-4">
                 <button type="submit"
                         disabled="@IsLoading"
-                        class="btn @ButtonClass w-100 py-2 fw-bold d-flex align-items-center justify-content-center">
+                        tabindex="@ButtonTabIndex"
+                        class="btn @ButtonClass w-100 py-3 fw-bold d-flex align-items-center justify-content-center transition-all">
                     @if (IsLoading)
                     {
                         <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                        <span>@(string.IsNullOrEmpty(LoadingText) ? ButtonText : LoadingText)</span>
+                        <span style="letter-spacing: 1px;">@(string.IsNullOrEmpty(LoadingText) ? ButtonText : LoadingText)</span>
                     }
                     else
                     {
-                        @ButtonText
+                        <span style="letter-spacing: 1px;">@ButtonText</span>
                     }
                 </button>
             </div>
         </EditForm>
     </div>
+
+    @if (FooterContent is not null)
+    {
+        <div class="card-footer bg-transparent border-0 p-0 mt-3">
+            @FooterContent
+        </div>
+    }
 </div>
 
 @code {
     [Parameter, EditorRequired] public TItem Model { get; set; } = default!;
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
     [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
     [Parameter, EditorRequired] public EventCallback OnSubmit { get; set; }
 
-    [Parameter] public string ButtonText { get; set; } = "Submit";
+    [Parameter] public string ButtonText { get; set; } = "SUBMIT";
     [Parameter] public string? LoadingText { get; set; }
     [Parameter] public string FormName { get; set; } = "form";
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public string? Class { get; set; }
 
-    // Default to btn-primary, but allows btn-danger for your Terminal theme
-    [Parameter] public string ButtonClass { get; set; } = "btn-primary";
+    [Parameter] public int ButtonTabIndex { get; set; } = 0;
+    [Parameter] public string ButtonClass { get; set; } = "btn-outline-danger border-2 rounded-0";
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     private Task HandleValidSubmit() => OnSubmit.InvokeAsync();
 }
+
+<style>
+    .transition-all {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-outline-danger:hover:not(:disabled) {
+        background-color: #dc3545 !important;
+        color: white !important;
+        box-shadow: 0 0 15px rgba(220, 53, 69, 0.4);
+    }
+
+    /* Target the built-in Blazor validation list to remove bullets */
+    .validation-summary-wrapper ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+</style>

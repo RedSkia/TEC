@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-// Updated Namespace to reflect it lives in BlazorApp now
 namespace BlazorApp.Controllers;
 
 [ApiController]
@@ -33,7 +32,11 @@ public class CheckoutController(IDbContextFactory<BankAppDbContext> dbFactory) :
         db.PaymentIntents.Add(intent);
         await db.SaveChangesAsync();
 
-        return Ok(new { redirectUrl = $"http://localhost:7001/checkout/{intent.Id}" });
+        // Dynamisk URL-generering i stedet for hardcoded localhost!
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var redirectUrl = $"{baseUrl}/api/checkout/{intent.Id}";
+
+        return Ok(new { redirectUrl });
     }
 
     [HttpGet("intent/{id}")]
@@ -61,12 +64,13 @@ public class CheckoutController(IDbContextFactory<BankAppDbContext> dbFactory) :
         intent.Status = PaymentIntentStatus.Completed;
         await db.SaveChangesAsync();
 
+        // Kør webhook kald i baggrunden uden at blokere
         _ = Task.Run(async () => {
             try
             {
                 await _httpClient.PostAsJsonAsync(intent.WebhookUrl, new { intentId = intent.Id, status = "SUCCESS" });
             }
-            catch { /* Log error */ }
+            catch { /* Log webhook fejl stille */ }
         });
 
         return Ok();

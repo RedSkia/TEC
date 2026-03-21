@@ -10,6 +10,7 @@ public class AppNavigator(NavigationManager nav, AuthenticationStateProvider aut
 {
     public async Task NavigateTo(string route)
     {
+        route = string.IsNullOrEmpty(route) ? AppRoutes.Index : route;
         var field = typeof(AppRoutes).GetFields(BindingFlags.Public | BindingFlags.Static)
             .FirstOrDefault(f => f.GetValue(null)?.ToString() == route);
 

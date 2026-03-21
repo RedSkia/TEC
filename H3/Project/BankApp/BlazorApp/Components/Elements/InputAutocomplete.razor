@@ -1,0 +1,229 @@
+﻿@typeparam TItem
+
+<div class="redskia-input-container @(isFocused ? "focused" : "") position-relative overflow-visible">
+
+    @* GHOST SUGGESTION LAYER (Grayed out match) *@
+    <div class="ghost-layer position-absolute px-3 py-2 pointer-events-none"
+         style="z-index: 1; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">
+        <span style="color: transparent;">@Value</span><span class="text-secondary opacity-50">@ghostText</span>
+    </div>
+
+    @* THE ACTUAL INPUT *@
+    <div class="input-wrapper position-relative bg-black border border-secondary border-opacity-25 rounded-0"
+         style="z-index: 2;">
+        <input type="text"
+               class="form-control bg-transparent border-0 text-white py-2 px-3 shadow-none font-monospace"
+               style="font-size: 0.9rem;"
+               placeholder="@Placeholder"
+               autocomplete="off"
+               value="@Value"
+               @oninput="HandleInput"
+               @onkeydown="HandleKeyDown"
+               @onfocus="() => isFocused = true"
+               @onblur="HandleBlur" />
+
+        <div class="focus-bar"></div>
+    </div>
+
+    @* THE MATRIX DROPDOWN *@
+    @if (isDropdownVisible && FilteredItems.Any())
+    {
+        <div class="suggestion-matrix position-absolute w-100 shadow-lg mt-1 bg-black border border-secondary border-opacity-50"
+             style="top: 100%; left: 0; z-index: 1050;">
+
+            <div class="tiny-caps px-3 py-1 text-secondary bg-dark bg-opacity-25 border-bottom border-secondary border-opacity-10" style="font-size: 9px;">
+                Found @FilteredItems.Count matches [Arrows to Nav]
+            </div>
+
+            <div class="list-group list-group-flush rounded-0">
+                @for (int i = 0; i < Math.Min(FilteredItems.Count, MaxSuggestions); i++)
+                {
+                    var index = i;
+                    var item = FilteredItems[i];
+                    <button type="button"
+                            class="list-group-item list-group-item-action bg-black text-white border-0 py-2 px-3 d-flex align-items-center transition-base @(selectedIndex == index ? "active-selection" : "")"
+                            @onclick="() => SelectItem(item)">
+                        @ItemTemplate(item)
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .redskia-input-container {
+        transition: all 0.3s ease;
+    }
+
+    .input-wrapper {
+        transition: border-color 0.3s ease;
+    }
+
+    .redskia-input-container.focused .input-wrapper {
+        border-color: rgba(220, 53, 69, 0.5) !important;
+    }
+
+    .focus-bar {
+        position: absolute;
+        bottom: -1px;
+        left: 50%;
+        width: 0;
+        height: 1px;
+        background: #dc3545;
+        transition: all 0.4s ease;
+        transform: translateX(-50%);
+    }
+
+    .redskia-input-container.focused .focus-bar {
+        width: 100%;
+    }
+
+    /* Highlighted Item via Arrows */
+    .active-selection {
+        background-color: rgba(220, 53, 69, 0.2) !important;
+        color: #fff !important;
+        padding-left: 1.8rem !important;
+        border-left: 3px solid #dc3545 !important;
+    }
+
+    .list-group-item:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .font-monospace {
+        font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+    }
+
+    .suggestion-matrix {
+        animation: slideDown 0.15s ease-out;
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .pointer-events-none {
+        pointer-events: none;
+    }
+</style>
+
+@code {
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public IEnumerable<TItem> Data { get; set; } = Enumerable.Empty<TItem>();
+    [Parameter] public Func<TItem, string> SearchSelector { get; set; } = default!;
+    [Parameter] public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
+    [Parameter] public EventCallback<TItem> OnItemSelected { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Execute query...";
+    [Parameter] public int MaxSuggestions { get; set; } = 5;
+
+    private List<TItem> FilteredItems = new();
+    private string ghostText = "";
+    private bool isDropdownVisible = false;
+    private bool isFocused = false;
+    private int selectedIndex = 0; // Tracks keyboard navigation
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString() ?? "";
+        await ValueChanged.InvokeAsync(Value);
+        selectedIndex = 0; // Always reset to the top of the list on a new keystroke
+
+        if (!string.IsNullOrWhiteSpace(Value))
+        {
+            FilteredItems = Data
+                .Where(x => SearchSelector(x).Contains(Value, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            isDropdownVisible = FilteredItems.Any();
+
+            // Fix: Call the exact same ghost logic used by the arrow keys
+            if (isDropdownVisible)
+            {
+                UpdateGhostFromSelection();
+            }
+            else
+            {
+                ghostText = "";
+            }
+        }
+        else
+        {
+            ResetState();
+        }
+    }
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (!FilteredItems.Any()) return;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                selectedIndex = (selectedIndex + 1) % Math.Min(FilteredItems.Count, MaxSuggestions);
+                UpdateGhostFromSelection();
+                break;
+
+            case "ArrowUp":
+                selectedIndex = (selectedIndex - 1 + Math.Min(FilteredItems.Count, MaxSuggestions)) % Math.Min(FilteredItems.Count, MaxSuggestions);
+                UpdateGhostFromSelection();
+                break;
+
+            case "Tab":
+            case "Enter":
+            case "ArrowRight":
+                await SelectItem(FilteredItems[selectedIndex]);
+                break;
+
+            case "Escape":
+                isDropdownVisible = false;
+                break;
+        }
+    }
+
+    private void UpdateGhostFromSelection()
+    {
+        var current = FilteredItems[selectedIndex];
+        var text = SearchSelector(current);
+        if (text.StartsWith(Value, StringComparison.OrdinalIgnoreCase))
+        {
+            ghostText = text.Substring(Value.Length);
+        }
+        else
+        {
+            ghostText = "";
+        }
+    }
+
+    private async Task SelectItem(TItem item)
+    {
+        Value = SearchSelector(item);
+        await ValueChanged.InvokeAsync(Value);
+        await OnItemSelected.InvokeAsync(item);
+        ResetState();
+    }
+
+    private void ResetState()
+    {
+        FilteredItems.Clear();
+        ghostText = "";
+        isDropdownVisible = false;
+        selectedIndex = 0;
+    }
+
+    private async Task HandleBlur()
+    {
+        await Task.Delay(200);
+        isFocused = false;
+        isDropdownVisible = false;
+        StateHasChanged();
+    }
+}

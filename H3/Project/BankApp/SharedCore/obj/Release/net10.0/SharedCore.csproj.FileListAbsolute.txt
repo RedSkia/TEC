@@ -1,0 +1,15 @@
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\bin\Release\net10.0\SharedCore.deps.json
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\bin\Release\net10.0\SharedCore.runtimeconfig.json
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\bin\Release\net10.0\SharedCore.dll
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\bin\Release\net10.0\SharedCore.pdb
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\SharedCore.csproj.AssemblyReference.cache
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\SharedCore.GeneratedMSBuildEditorConfig.editorconfig
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\SharedCore.AssemblyInfoInputs.cache
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\SharedCore.AssemblyInfo.cs
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\SharedCore.csproj.CoreCompileInputs.cache
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\SharedCore.sourcelink.json
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\SharedCore.dll
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\refint\SharedCore.dll
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\SharedCore.pdb
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\SharedCore.genruntimeconfig.cache
+D:\Desktop\TEC\H3\Project\BankApp\SharedCore\obj\Release\net10.0\ref\SharedCore.dll

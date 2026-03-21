@@ -1,10 +1,21 @@
-﻿@page "/account"
+﻿@attribute [Route(AppRoutes.Account)]
+
 @rendermode InteractiveServer
 
-@inject NavigationManager Nav
+@using System.Reflection
+@using BlazorApp.Components.Pages.AppPages.Admin
+@using BlazorApp.Components.Pages.AppPages.Officer
+@using Microsoft.AspNetCore.Components.Authorization
+@using SharedCore.Entities.Auth
+@using SharedCore.Entities.Banking
+@using SharedCore.Entities.Lending
+@using SharedCore.Services
+
+@inject AppNavigator Navigator
 @inject IdentityService IdentityService
 @inject FinanceService FinanceService
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <PageTitle>BankApp | Account Dashboard</PageTitle>
 
@@ -65,13 +76,13 @@
 <div class="bank-shell">
     @* --- SIDEBAR --- *@
     <aside class="bank-sidebar">
-        <div class="brand-section px-4 py-5">
+        <div class="brand-section px-4 py-5 pointer" @onclick='() => Navigator.NavigateTo("/")'>
             <h4 class="fw-black text-white m-0 ls-1 uppercase">BANK<span class="text-danger">APP</span></h4>
         </div>
 
         @if (user != null)
         {
-            <div class="user-info-box px-4 mb-5">
+            <div class="user-info-box px-4 mb-4">
                 <div class="d-flex align-items-center p-3 bg-dark border border-secondary border-opacity-10 rounded-1">
                     <div class="avatar-square">@user.FullName[0]</div>
                     <div class="ms-3 overflow-hidden">
@@ -82,15 +93,35 @@
             </div>
         }
 
-        <nav class="bank-nav px-3 flex-grow-1">
+        <nav class="bank-nav px-3 flex-grow-1 overflow-auto pb-5">
+
+            @* 1. STANDARD USER TABS *@
+            <div class="px-3 mt-2 mb-2 tiny-caps text-secondary opacity-50">Personal Vault</div>
             @RenderNavButton(AccountTab.Overview, "bi-grid-1x2", "Dashboard")
             @RenderNavButton(AccountTab.Transfer, "bi-arrow-left-right", "Transfer Money")
             @RenderNavButton(AccountTab.Lending, "bi-bank", "Loan Center")
             @RenderNavButton(AccountTab.LoginHistory, "bi-shield-check", "Login Security")
             @RenderNavButton(AccountTab.Profile, "bi-person-gear", "Profile Settings")
 
-            <div class="mt-5 pt-5 border-top border-secondary border-opacity-10">
-                @RenderNavButton(AccountTab.CloseAccount, "bi-x-circle", "Close Account", "nav-danger")
+            @* 2. OFFICER CLEARANCE LINKS - Nu renderes de internt i siden *@
+            <AuthorizeView Roles="Admin, LoanOfficer">
+                <Authorized>
+                    <div class="px-3 mt-4 mb-2 tiny-caps text-warning opacity-75">Officer Systems</div>
+                    @RenderNavButton(AccountTab.OfficerLending, "bi-briefcase", "Loan Management", "nav-warning")
+                </Authorized>
+            </AuthorizeView>
+
+            @* 3. ADMIN ROOT LINKS - Nu renderes de internt i siden *@
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <div class="px-3 mt-4 mb-2 tiny-caps text-danger opacity-75">Root Authorization</div>
+                    @RenderNavButton(AccountTab.AdminMarketControl, "bi-graph-up-arrow", "Market Control", "nav-danger")
+                    @RenderNavButton(AccountTab.AdminUserManagement, "bi-people", "User Management", "nav-danger")
+                </Authorized>
+            </AuthorizeView>
+
+            <div class="mt-5 pt-4 border-top border-secondary border-opacity-10">
+                @RenderNavButton(AccountTab.CloseAccount, "bi-x-circle", "Close Account", "nav-danger-text")
             </div>
         </nav>
     </aside>
@@ -98,9 +129,9 @@
     @* --- MAIN CONTENT --- *@
     <main class="bank-main">
         <header class="bank-header px-5 d-flex justify-content-between align-items-center">
-            <h5 class="fw-black text-white uppercase ls-1 mb-0">@ActiveTab</h5>
+            <h5 class="fw-black text-white uppercase ls-1 mb-0">@FormatEnumName(ActiveTab.ToString())</h5>
 
-            @if (user?.BankAccount != null)
+            @if (user?.BankAccount != null && ActiveTab == AccountTab.Overview)
             {
                 <div class="d-flex align-items-center gap-3">
                     <span class="tiny-caps text-secondary">Currency:</span>
@@ -114,7 +145,7 @@
             }
         </header>
 
-        <div class="bank-content p-5">
+        <div class="bank-content p-5 overflow-auto">
             @if (user == null)
             {
                 <div class="text-center py-5">
@@ -141,7 +172,6 @@
     .bank-shell {
         display: flex;
         min-height: 100vh;
-        background: var(--bg-black);
         color: #fff;
         font-family: 'Inter', system-ui, sans-serif;
     }
@@ -153,8 +183,6 @@
         border-right: 1px solid var(--border-color);
         display: flex;
         flex-direction: column;
-        position: sticky;
-        top: 0;
         height: 100vh;
     }
 
@@ -197,7 +225,15 @@
             border-left-color: var(--accent-red);
         }
 
+    .nav-warning:hover {
+        color: #ffc107 !important;
+    }
+
     .nav-danger:hover {
+        color: var(--accent-red) !important;
+    }
+
+    .nav-danger-text:hover {
         color: var(--accent-red) !important;
     }
 
@@ -206,12 +242,14 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        height: 100vh;
     }
 
     .bank-header {
         height: 80px;
         border-bottom: 1px solid var(--border-color);
         background: var(--bg-dark);
+        flex-shrink: 0;
     }
 
     .bank-select {
@@ -337,24 +375,42 @@
     private ApplicationUser editModel = new();
     private decimal transferAmount;
 
-    private enum AccountTab { Overview, Transfer, Lending, Profile, LoginHistory, CloseAccount }
+    // Fang query string-parameteren "?tab=Transfer"
+    [SupplyParameterFromQuery(Name = "tab")]
+    public string? TabQuery { get; set; }
+
+    private enum AccountTab
+    {
+        Overview, Transfer, Lending, Profile, LoginHistory, CloseAccount,
+        AdminMarketControl, AdminUserManagement, OfficerLending
+    }
+
     private AccountTab ActiveTab { get; set; } = AccountTab.Overview;
 
     private IEnumerable<Transaction> FilteredTransactions =>
         (user?.BankAccount?.Transactions ?? new List<Transaction>())
         .Where(t => string.IsNullOrEmpty(historySearchTerm) ||
-                   t.Type.ToString().Contains(historySearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                   (t.Note ?? "").Contains(historySearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                   (t.TransactionReference ?? "").Contains(historySearchTerm, StringComparison.OrdinalIgnoreCase))
+                    t.Type.ToString().Contains(historySearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (t.Note ?? "").Contains(historySearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (t.TransactionReference ?? "").Contains(historySearchTerm, StringComparison.OrdinalIgnoreCase))
         .OrderByDescending(t => t.CreatedAt);
 
     private IEnumerable<LoginActivity> FilteredLoginActivities =>
         (user?.LoginActivities ?? new List<LoginActivity>())
         .Where(l => string.IsNullOrEmpty(loginSearchTerm) ||
-                   l.Status.ToString().Contains(loginSearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                   l.IpAddress.Contains(loginSearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                   (l.UserAgent ?? "").Contains(loginSearchTerm, StringComparison.OrdinalIgnoreCase))
+                    l.Status.ToString().Contains(loginSearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (l.IpAddress ?? "").Contains(loginSearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (l.UserAgent ?? "").Contains(loginSearchTerm, StringComparison.OrdinalIgnoreCase))
         .OrderByDescending(l => l.LoginTime);
+
+    // Kører når komponenten modtager nye parametre (f.eks. fra URL query string)
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(TabQuery) && Enum.TryParse<AccountTab>(TabQuery, true, out var parsedTab))
+        {
+            ActiveTab = parsedTab;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -366,7 +422,7 @@
 
     private async Task LoadData()
     {
-        user = await IdentityService.GetCurrentUserAsync();
+        user = await IdentityService.GetCurrentApplicationUserAsync();
         if (user != null)
         {
             editModel.FullName = user.FullName;
@@ -381,6 +437,9 @@
         }
     }
 
+    private string FormatEnumName(string name) =>
+        System.Text.RegularExpressions.Regex.Replace(name, "([A-Z])", " $1").Trim();
+
     private RenderFragment CurrentTabContent => ActiveTab switch
     {
         AccountTab.Overview => RenderOverview(),
@@ -389,16 +448,32 @@
         AccountTab.LoginHistory => RenderLoginHistory(),
         AccountTab.Profile => RenderProfile(),
         AccountTab.CloseAccount => RenderCloseAccount(),
+
+        AccountTab.AdminMarketControl => @<MarketControl />,
+        AccountTab.AdminUserManagement => @<UserManagement />,
+        AccountTab.OfficerLending => @<LoanManagement />,
+
         _ => __builder => { }
     };
 
     private RenderFragment RenderNavButton(AccountTab tab, string icon, string label, string extraClass = "") => __builder =>
     {
         var isActive = ActiveTab == tab;
-        <button class="nav-btn-bank @(isActive ? "active" : "") @extraClass" @onclick="() => ActiveTab = tab">
+        <button class="nav-btn-bank @(isActive ? "active" : "") @extraClass" @onclick="() => ChangeTab(tab)">
             <i class="bi @icon me-3"></i> <span class="tiny-caps">@label</span>
         </button>
     };
+
+    private void ChangeTab(AccountTab tab)
+    {
+        ActiveTab = tab;
+        // Dette ændrer URL'en (så et sideoppfrisk stadig loader den samme fane)
+        Nav.NavigateTo($"/account?tab={tab}", replace: true);
+    }
+
+    // ------------------------------------------------------------------------------------------------------
+    // TAB RENDER FRAGMENTS
+    // ------------------------------------------------------------------------------------------------------
 
     private RenderFragment RenderOverview() => __builder =>
     {
@@ -419,7 +494,7 @@
                         </div>
                     </div>
                     <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
-                        <button class="btn-bank-red px-5" @onclick="() => ActiveTab = AccountTab.Transfer">Transfer Funds</button>
+                        <button class="btn-bank-red px-5" @onclick="() => ChangeTab(AccountTab.Transfer)">Transfer Funds</button>
                     </div>
                 </div>
             </div>
@@ -434,7 +509,7 @@
                         <div class="table-responsive">
                             <table class="table table-dark table-hover mb-0">
                                 <tbody>
-                                    @foreach (var tx in user.BankAccount.Transactions.OrderByDescending(t => t.CreatedAt).Take(5))
+                                    @foreach (var tx in (user.BankAccount.Transactions ?? new List<Transaction>()).OrderByDescending(t => t.CreatedAt).Take(5))
                                     {
                                         <tr class="border-secondary border-opacity-10">
                                             <td class="ps-0 py-3">
@@ -460,7 +535,7 @@
                         </div>
                         <div class="mb-4">
                             <div class="tiny-caps text-secondary extra-small mb-1">Account Logins (24h)</div>
-                            <div class="h3 fw-black text-white mb-0 font-monospace">@user.LoginActivities.Count(l => l.LoginTime > DateTime.UtcNow.AddDays(-1))</div>
+                            <div class="h3 fw-black text-white mb-0 font-monospace">@((user.LoginActivities ?? new List<LoginActivity>()).Count(l => l.LoginTime > DateTime.UtcNow.AddDays(-1)))</div>
                         </div>
                         <div class="p-3 bg-dark border border-secondary border-opacity-20 text-success tiny-caps text-center">
                             <i class="bi bi-patch-check-fill me-2"></i> Standard Security Active
@@ -550,16 +625,16 @@
                 <label class="tiny-caps text-secondary mb-2">Select Recipient</label>
                 @if (selectedRecipient == null)
                 {
-                    <InputAutoControl TItem="ApplicationUser" Data="allUsers" Placeholder="Search by name or email..."
-                                      SearchSelector="@(u => u.FullName)" @bind-Value="transferSearchValue"
-                                      OnItemSelected="@(u => selectedRecipient = u)">
+                    <InputAutocomplete TItem="ApplicationUser" Data="allUsers" Placeholder="Search by name or email..."
+                                       SearchSelector="@(u => u.FullName)" @bind-Value="transferSearchValue"
+                                       OnItemSelected="@(u => selectedRecipient = u)">
                         <ItemTemplate Context="u">
                             <div class="d-flex align-items-center py-1">
                                 <div class="avatar-square extra-small me-3" style="width:30px; height:30px">@u.FullName[0]</div>
                                 <div class="fw-bold text-white extra-small uppercase">@u.FullName</div>
                             </div>
                         </ItemTemplate>
-                    </InputAutoControl>
+                    </InputAutocomplete>
                 }
                 else
                 {
@@ -651,7 +726,7 @@
                 </div>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-5">
-                <a href="/login/reset" class="btn btn-outline-secondary rounded-pill tiny-caps px-4 py-2">Change Password</a>
+                <button class="btn btn-outline-secondary rounded-pill tiny-caps px-4 py-2" @onclick='() => Navigator.NavigateTo(AppRoutes.LoginReset)'>Change Password</button>
                 <button class="btn-bank-red px-5" @onclick="HandleUpdateProfile" disabled="@isSubmitting">
                     @if (isSubmitting)
                     {
@@ -767,7 +842,7 @@
     {
         isSubmitting = true;
         var success = await IdentityService.DeleteAccountAsync(user!.Id);
-        if (success) Nav.NavigateTo("/", forceLoad: true);
+        if (success) Navigator.NavigateTo("/");
         else { toast.Show("Account closure failed", Toast.ToastLevel.Error); isSubmitting = false; }
     }
 }

@@ -1,6 +1,7 @@
-﻿@page "/login/register"
+﻿@attribute [Route(AppRoutes.LoginRegister)]
+
 @inject IdentityService IdentityService
-@inject NavigationManager Nav
+@inject AppNavigator Navigator
 @rendermode InteractiveServer
 
 <div class="auth-container d-flex align-items-center justify-content-center min-vh-100 py-5">
@@ -12,7 +13,7 @@
                    ButtonText="INITIALIZE ACCOUNT"
                    LoadingText="PROVISIONING..."
                    IsLoading="busy"
-                   ButtonClass="btn-danger fw-black rounded-0 w-100 py-3 mt-2"
+                   ButtonTabIndex="8"
                    FormName="register-form"
                    Class="glass-panel p-4 shadow-lg"
                    style="border-top: 4px solid #dc3545;">
@@ -33,95 +34,59 @@
             </HeaderContent>
 
             <ChildContent>
+                @* --- Inputs (Tab 1-7) --- *@
                 <div class="row g-3 mb-3">
                     <div class="col-md-12">
                         <label class="tiny-caps text-secondary mb-1">Legal Full Name</label>
-                        <InputText @bind-Value="user.FullName" class="form-control trade-input" placeholder="JOHN DOE" />
+                        <InputText @bind-Value="user.FullName" tabindex="1" autofocus class="form-control trade-input" placeholder="JOHN DOE" />
                     </div>
                     <div class="col-md-12">
                         <label class="tiny-caps text-secondary mb-1">Network Identity (Email)</label>
-                        <InputText @bind-Value="user.Email" class="form-control trade-input" placeholder="IDENTITY@NETWORK.COM" />
+                        <InputText @bind-Value="user.Email" tabindex="2" class="form-control trade-input" placeholder="IDENTITY@NETWORK.COM" />
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label class="tiny-caps text-secondary mb-1">Residential Vector (Street)</label>
-                    <InputText @bind-Value="user.Address.Street" class="form-control trade-input" placeholder="123 SECURITY LN" />
+                    <InputText @bind-Value="user.Address.Street" tabindex="3" class="form-control trade-input" placeholder="123 SECURITY LN" />
                 </div>
 
                 <div class="row g-3 mb-3">
                     <div class="col-7">
                         <label class="tiny-caps text-secondary mb-1">City</label>
-                        <InputText @bind-Value="user.Address.City" class="form-control trade-input" placeholder="NEO-CITY" />
+                        <InputText @bind-Value="user.Address.City" tabindex="4" class="form-control trade-input" placeholder="NEO-CITY" />
                     </div>
                     <div class="col-5">
                         <label class="tiny-caps text-secondary mb-1">Zip</label>
-                        <InputText @bind-Value="user.Address.ZipCode" class="form-control trade-input" placeholder="00000" />
+                        <InputText @bind-Value="user.Address.ZipCode" tabindex="5" class="form-control trade-input" placeholder="0000" maxlength="4" />
                     </div>
                 </div>
 
                 <div class="row g-3 mb-2">
                     <div class="col-md-6">
                         <label class="tiny-caps text-secondary mb-1">Username</label>
-                        <InputText @bind-Value="user.UserName" class="form-control trade-input" placeholder="UID_01" />
+                        <InputText @bind-Value="user.UserName" tabindex="6" class="form-control trade-input" placeholder="UID_01" />
                     </div>
                     <div class="col-md-6">
                         <label class="tiny-caps text-secondary mb-1">Access Key</label>
-                        <input type="password" @bind="password" class="form-control trade-input" placeholder="••••••••" />
+                        <InputText @bind-Value="password" type="password" tabindex="7" class="form-control trade-input" placeholder="••••••••" />
                     </div>
                 </div>
             </ChildContent>
-        </InputForm>
 
-        <div class="text-center mt-4">
-            <NavLink href="/login" class="text-decoration-none tiny-caps text-secondary hover-danger">
-                <i class="bi bi-shield-lock me-1"></i> Return to Terminal Login
-            </NavLink>
-        </div>
+            <FooterContent>
+                <div class="text-center mt-2">
+                    <ButtonNav Text="Return to Terminal Login" 
+                               Icon="bi-shield-lock" 
+                               Destination="/login" 
+                               TabIndex="9" 
+                               Class="tiny-caps text-secondary hover-danger" />
+                </div>
+            </FooterContent>
+
+        </InputForm>
     </div>
 </div>
-
-<style>
-    /* Reusing your Market Terminal Styles */
-    .glass-panel {
-        background: #0c0c0c;
-        border: 1px solid #1f1f1f;
-        border-radius: 4px;
-    }
-
-    .fw-black { font-weight: 900; }
-    .tracking-tighter { letter-spacing: -2px; }
-    .tiny-caps { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
-
-    .trade-input {
-        background: #000 !important;
-        border: 1px solid #333 !important;
-        color: white !important;
-        font-weight: 600;
-        border-radius: 0;
-        font-size: 0.9rem;
-    }
-
-    .trade-input:focus {
-        border-color: #dc3545 !important;
-        box-shadow: none !important;
-    }
-
-    .hover-danger:hover {
-        color: #dc3545 !important;
-        transition: 0.2s ease;
-    }
-
-    .pulse-red {
-        animation: pulseR 2s infinite;
-        font-size: 9px;
-    }
-
-    @@keyframes pulseR {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-    }
-</style>
 
 @code {
     [CascadingParameter] public Toast? Toast { get; set; }
@@ -149,13 +114,12 @@
 
         try
         {
-            // IdentityService handles the UserManager logic and Role assignment
             var validationErrors = await IdentityService.Register(user, password);
 
             if (validationErrors == null || !validationErrors.Any())
             {
                 Toast?.Show("Access Granted. Identity Synchronized.", Toast.ToastLevel.Success);
-                Nav.NavigateTo("/login");
+                await Navigator.NavigateTo("/login");
             }
             else
             {

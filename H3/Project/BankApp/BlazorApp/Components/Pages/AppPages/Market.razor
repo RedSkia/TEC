@@ -1,4 +1,5 @@
-﻿@page "/market"
+﻿@attribute [Route(AppRoutes.Market)]
+
 @using Microsoft.EntityFrameworkCore
 @using BlazorApp.Components.Elements
 @rendermode InteractiveServer
@@ -37,7 +38,7 @@
                         <div class="list-group list-group-flush custom-scroll flex-grow-1" style="max-height: 75vh; overflow-y: auto;">
                             @foreach (var stock in FilteredStocks)
                             {
-                                var changePercent = ((stock.CurrentPrice % 1.5m) - 0.75m);
+                                var changePercent = stockChanges.GetValueOrDefault(stock.Id, 0m);
                                 var isPositive = changePercent >= 0;
 
                                 <button @onclick="() => SelectStock(stock)"
@@ -326,10 +327,6 @@
 </style>
 
 @code {
-    // Logic remains exactly as your original, but ensure GetCurrentUserAsync
-    // is called in OnAfterRenderAsync to avoid the spinner trap if needed.
-    // (Kept original logic for brevity as requested)
-
     [CascadingParameter] public Toast? Toast { get; set; }
 
     private ApplicationUser? user;
@@ -343,6 +340,8 @@
     private List<CandleModel> candles = new();
     private Dictionary<long, string> tradeHistoryMarkers = new();
 
+    private Dictionary<int, decimal> stockChanges = new();
+
     private IEnumerable<Stock> FilteredStocks => (availableStocks ?? new()).Where(s => string.IsNullOrEmpty(searchTerm) || s.Ticker.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
@@ -352,11 +351,9 @@
         if (availableStocks?.Any() == true) selectedStock = availableStocks.First();
         await BuildGraph();
 
-        // Subscribe to the service event
         MarketService.OnMarketUpdated += RefreshUI;
     }
 
-    // This runs whenever the background service finishes an update
     private async void RefreshUI()
     {
         await InvokeAsync(async () =>
@@ -371,6 +368,26 @@
     {
         using var db = await DbFactory.CreateDbContextAsync();
         availableStocks = await db.Stocks.AsNoTracking().ToListAsync();
+
+        stockChanges.Clear();
+        foreach (var s in availableStocks)
+        {
+            // Vi henter kun de seneste 2 ticks nu!
+            // Det betyder at vi kigger direkte på ændringen fra LIGE FØR pumpet/crashet
+            var recentHistory = await db.StockHistory
+                .AsNoTracking()
+                .Where(h => h.StockId == s.Id)
+                .OrderByDescending(h => h.Timestamp)
+                .Take(2)
+                .Select(h => h.Price)
+                .ToListAsync();
+
+            // Hvis der findes en forrige pris, bruger vi den. Ellers bruger vi bare nuværende pris.
+            decimal prevPrice = recentHistory.Count > 1 ? recentHistory[1] : s.CurrentPrice;
+
+            decimal change = prevPrice == 0 ? 0 : (s.CurrentPrice - prevPrice) / prevPrice;
+            stockChanges[s.Id] = change;
+        }
 
         if (selectedStock != null)
         {
@@ -461,12 +478,13 @@
 
     private async Task ExecuteSellAll() { orderQuantity = ownedQuantity; if (orderQuantity > 0) await HandleTrade(false); }
     private decimal GetConvertedPrice(decimal p) => user?.BankAccount?.CurrencyType == null ? p : p * user.BankAccount.CurrencyType.Rate;
+
     public void Dispose()
     {
-        // Unsubscribe to prevent memory leaks!
         MarketService.OnMarketUpdated -= RefreshUI;
         _timer?.Dispose();
     }
+
     private async Task SelectStock(Stock stock) { selectedStock = stock; tradeHistoryMarkers.Clear(); await BuildGraph(); }
 
     public class CandleModel
