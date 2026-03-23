@@ -121,14 +121,22 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddHttpClient();
 
-// Custom Application Services
+// 1. IDENTITY SERVICE
+// Vi registrerer først den konkrete klasse, og beder derefter begge interfaces om at bruge den samme instans.
 builder.Services.AddScoped<IdentityService>();
+builder.Services.AddScoped<IIdentityService>(sp => sp.GetRequiredService<IdentityService>());
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<IdentityService>());
 
-builder.Services.AddScoped<AppNavigator>();
-builder.Services.AddScoped<FinanceService>();
+// 2. STANDARD SERVICES (1-til-1 mapping)
+builder.Services.AddScoped<IAppNavigator, AppNavigator>();
+builder.Services.AddScoped<IFinanceService, FinanceService>();
+
+// 3. STOCK MARKET SERVICE (Background Worker)
+// Samme trick som ved Identity. Vi skal bruge én samlet Singleton instans.
 builder.Services.AddSingleton<StockMarketService>();
+builder.Services.AddSingleton<IStockMarketService>(sp => sp.GetRequiredService<StockMarketService>());
 builder.Services.AddHostedService(sp => sp.GetRequiredService<StockMarketService>());
+
 
 var app = builder.Build();
 

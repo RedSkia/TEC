@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using SharedCore.Data;
@@ -7,41 +8,47 @@ using SharedCore.Entities.Market;
 
 namespace SharedCore.Services;
 
+public interface IStockMarketService
+{
+    event Action? OnMarketUpdated;
+    MarketState GetGlobalState();
+    MarketState GetStockState(int stockId);
+    void SetGlobalOverride(MarketState state);
+    void SetStockOverride(int stockId, MarketState state);
+    Task<(bool Success, string Message)> ExecuteTrade(string? userId, int stockId, decimal quantity, bool isBuy);
+}
+
 public enum MarketState { Normal = 0, ForcedPump = 1, ForcedCrash = 2 }
 
-public class StockMarketService(IDbContextFactory<BankAppDbContext> dbFactory) : BackgroundService
+public class StockMarketService(IDbContextFactory<BankAppDbContext> dbFactory) : BackgroundService, IStockMarketService
 {
     public event Action? OnMarketUpdated;
 
-    // --- MANIPULATION STATE ---
-    private static MarketState _globalState = MarketState.Normal;
-    private static Dictionary<int, MarketState> _stockOverrides = new();
+    // VIGTIGT: Ingen 'static' her mere!
+    private MarketState _globalState = MarketState.Normal;
+    private ConcurrentDictionary<int, MarketState> _stockOverrides = new();
 
-    // --- GETTERS ---
     public MarketState GetGlobalState() => _globalState;
 
     public MarketState GetStockState(int stockId)
     {
-        // Global override takes priority over individual settings
         if (_globalState != MarketState.Normal) return _globalState;
-        return _stockOverrides.ContainsKey(stockId) ? _stockOverrides[stockId] : MarketState.Normal;
+        return _stockOverrides.TryGetValue(stockId, out var state) ? state : MarketState.Normal;
     }
 
-    // --- ADMIN COMMANDS ---
     public void SetGlobalOverride(MarketState state)
     {
         _globalState = state;
-        _stockOverrides.Clear(); // Reset individual targets when a global command is issued
+        _stockOverrides.Clear();
     }
 
     public void SetStockOverride(int stockId, MarketState state)
     {
-        _globalState = MarketState.Normal; // Breaking global state for specific targeting
-        if (state == MarketState.Normal) _stockOverrides.Remove(stockId);
+        _globalState = MarketState.Normal;
+        if (state == MarketState.Normal) _stockOverrides.TryRemove(stockId, out _);
         else _stockOverrides[stockId] = state;
     }
 
-    // --- BACKGROUND WORKER ---
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -64,24 +71,20 @@ public class StockMarketService(IDbContextFactory<BankAppDbContext> dbFactory) :
 
             if (activeState != MarketState.Normal)
             {
-                // Forced manipulation: Strong, directional momentum (0.5% til 2% pr. sekund)
                 fluctuation = activeState == MarketState.ForcedPump
                     ? GetRandomDecimal(0.005m, 0.02m)
                     : GetRandomDecimal(-0.02m, -0.005m);
             }
             else
             {
-                // Normal market behavior: Realistic micro-fluctuations (-0.3% til +0.3% pr. sekund)
                 fluctuation = GetRandomDecimal(-0.003m, 0.003m);
             }
 
             stock.CurrentPrice = Math.Round(stock.CurrentPrice * (1 + fluctuation), 2);
 
-            // Floor and 16-bit Ceiling Clamps
-            if (stock.CurrentPrice <= 0.01m) stock.CurrentPrice = 0.01m; // Penny stock floor
-            if (stock.CurrentPrice >= 65535m) stock.CurrentPrice = 65535m; // 16-bit absolute maximum
+            if (stock.CurrentPrice <= 0.01m) stock.CurrentPrice = 0.01m;
+            if (stock.CurrentPrice >= 65535m) stock.CurrentPrice = 65535m;
 
-            // Log history for charts
             db.StockHistory.Add(new StockHistory
             {
                 StockId = stock.Id,
@@ -92,7 +95,6 @@ public class StockMarketService(IDbContextFactory<BankAppDbContext> dbFactory) :
         await db.SaveChangesAsync();
     }
 
-    // --- TRADE EXECUTION (PRESERVED) ---
     public async Task<(bool Success, string Message)> ExecuteTrade(string? userId, int stockId, decimal quantity, bool isBuy)
     {
         if (string.IsNullOrEmpty(userId) || quantity <= 0) return (false, "Invalid Trade Parameters.");
@@ -129,7 +131,6 @@ public class StockMarketService(IDbContextFactory<BankAppDbContext> dbFactory) :
                     if (inv.Quantity <= 0) db.Investments.Remove(inv);
                 }
 
-                // Log to Transactions Ledger
                 db.Transactions.Add(new Transaction
                 {
                     BankAccountId = acc.Id,

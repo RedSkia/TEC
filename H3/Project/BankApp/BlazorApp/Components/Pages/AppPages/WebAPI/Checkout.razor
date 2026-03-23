@@ -7,9 +7,9 @@
 @using SharedCore.Services
 
 @inject IDbContextFactory<BankAppDbContext> DbFactory
-@inject FinanceService FinanceService
-@inject IdentityService IdentityService
-@inject NavigationManager Nav
+@inject IFinanceService FinanceService
+@inject IIdentityService IdentityService
+@inject IAppNavigator Navigator
 
 <div class="checkout-wrapper min-vh-100 position-relative d-flex align-items-center justify-content-center py-5">
     @* Subtil rød glød baggrund *@
@@ -216,7 +216,7 @@
                 });
             }
 
-            Nav.NavigateTo("/account"); // Eller en success-side
+            await Navigator.NavigateTo(AppRoutes.Account); // Eller en success-side
         }
         else
         {
@@ -226,5 +226,5 @@
         isProcessing = false;
     }
 
-    private void Cancel() => Nav.NavigateTo("/account");
+    private void Cancel() => Navigator.NavigateTo(AppRoutes.Account);
 }

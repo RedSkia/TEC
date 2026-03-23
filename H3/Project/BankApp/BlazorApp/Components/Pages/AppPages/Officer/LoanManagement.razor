@@ -2,9 +2,9 @@
 
 @rendermode InteractiveServer
 
-@inject FinanceService FinanceService
-@inject IdentityService IdentityService
-@inject NavigationManager Nav
+@inject IFinanceService FinanceService
+@inject IIdentityService IdentityService
+@inject IAppNavigator Navigator
 
 <AuthorizeView Roles="Admin, LoanOfficer">
     <Authorized>
@@ -134,7 +134,7 @@
                 <i class="bi bi-exclamation-octagon text-danger display-1 mb-4"></i>
                 <h1 class="fw-black tracking-tighter text-white uppercase">Clearance Required.</h1>
                 <p class="text-secondary tiny-caps">Identity must hold Admin or LoanOfficer permissions.</p>
-                <button class="btn btn-outline-danger mt-4 rounded-0 fw-bold px-4" @onclick='() => Nav.NavigateTo("/")'>RETURN TO BASE</button>
+                <button class="btn btn-outline-danger mt-4 rounded-0 fw-bold px-4" @onclick='() => Navigator.NavigateTo(AppRoutes.Index)'>RETURN TO BASE</button>
             </div>
         </div>
     </NotAuthorized>

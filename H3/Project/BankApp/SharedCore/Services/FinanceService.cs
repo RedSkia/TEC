@@ -6,7 +6,33 @@ using SharedCore.Entities.Lending;
 
 namespace SharedCore.Services;
 
-public class FinanceService(IDbContextFactory<BankAppDbContext> dbFactory)
+
+public interface IFinanceService
+{
+    string GenRef();
+    void AppendTransaction(BankAppDbContext db, int accountId, decimal amount, int currencyId, TransactionType type, string note);
+
+    // Admin Override
+    Task<bool> AdjustUserBalance(string userId, decimal amount, string reason);
+    Task<List<ApplicationUser>> GetAdminTargetList();
+
+    // Transfers & Currency
+    Task<(bool Success, string Message)> ExecuteTransfer(string senderId, string recipientId, decimal amount);
+    Task<bool> UpdateAccountCurrency(string userId, int targetId);
+
+    // Generic
+    Task<List<T>> GetList<T>() where T : class;
+
+    // Loans
+    Task<List<LoanRequest>> GetUserLoansAsync(int bankAccountId);
+    Task<bool> SaveLoan(LoanRequest request);
+    Task<bool> DeleteLoanRequestAsync(int loanId);
+    Task<(bool Success, string Message)> RepayLoanAsync(int loanId);
+    Task<List<LoanRequest>> GetAllLoanRequestsAsync();
+    Task<bool> UpdateLoanStatusAsync(int loanId, LoanStatus status, string? officerId, string? response = null);
+}
+
+public class FinanceService(IDbContextFactory<BankAppDbContext> dbFactory) : IFinanceService
 {
     public string GenRef() => Guid.NewGuid().ToString("N").ToUpper()[..12];
 
