@@ -24,12 +24,6 @@ services:
         target: 8080
         published: "7001"
         protocol: tcp
-      - mode: ingress
-        target: 8080
-        protocol: tcp
-      - mode: ingress
-        target: 8081
-        protocol: tcp
     volumes:
       - type: bind
         source: C:\Users\marcu\AppData\Roaming/Microsoft/UserSecrets
@@ -68,61 +62,6 @@ services:
         target: 1433
         published: "1433"
         protocol: tcp
-  webapi:
-    build:
-      context: D:\Desktop\TEC\H3\Project\BankApp
-      dockerfile: WebAPI/Dockerfile
-    depends_on:
-      database:
-        condition: service_started
-        required: true
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_HTTP_PORTS: "8080"
-      ASPNETCORE_HTTPS_PORTS: "8081"
-      ConnectionStrings__DefaultConnection: Server=database;Database=BankDb;User Id=sa;Password=BankAppPassword123!;TrustServerCertificate=True
-      JWT__Audience: BankApp
-      JWT__Issuer: BankApp
-      JWT__Key: '#U?(/7lTxB#S+J(io1x-ChnS}y8@MO(cMNCg3QRO2.OKspLby0v5mhhvh[xJ-6}L'
-    image: webapi
-    networks:
-      bank-net: null
-    ports:
-      - mode: ingress
-        target: 8080
-        published: "5001"
-        protocol: tcp
-      - mode: ingress
-        target: 8080
-        protocol: tcp
-      - mode: ingress
-        target: 8081
-        protocol: tcp
-    volumes:
-      - type: bind
-        source: C:\Users\marcu\AppData\Roaming/Microsoft/UserSecrets
-        target: /home/app/.microsoft/usersecrets
-        read_only: true
-        bind:
-          create_host_path: true
-      - type: bind
-        source: C:\Users\marcu\AppData\Roaming/Microsoft/UserSecrets
-        target: /root/.microsoft/usersecrets
-        read_only: true
-        bind:
-          create_host_path: true
-      - type: bind
-        source: C:\Users\marcu\AppData\Roaming/ASP.NET/Https
-        target: /home/app/.aspnet/https
-        read_only: true
-        bind:
-          create_host_path: true
-      - type: bind
-        source: C:\Users\marcu\AppData\Roaming/ASP.NET/Https
-        target: /root/.aspnet/https
-        read_only: true
-        bind:
-          create_host_path: true
 networks:
   bank-net:
     name: dockercompose11790265661367496852_bank-net

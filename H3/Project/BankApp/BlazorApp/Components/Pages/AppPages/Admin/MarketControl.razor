@@ -1,9 +1,9 @@
 ﻿@attribute [Route(AppRoutes.AdminMarketControl)]
 
-@inject StockMarketService Market
-@inject FinanceService Finance
+@inject IStockMarketService Market
+@inject IFinanceService Finance
 @inject IJSRuntime JS
-@inject AppNavigator Navigator
+@inject IAppNavigator Navigator
 
 <AuthorizeView Roles="Admin">
     <Authorized>

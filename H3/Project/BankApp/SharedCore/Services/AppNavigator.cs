@@ -6,7 +6,12 @@ using SharedCore.Entities.Auth;
 
 namespace SharedCore.Services;
 
-public class AppNavigator(NavigationManager nav, AuthenticationStateProvider auth)
+public interface IAppNavigator
+{
+    Task NavigateTo(string route);
+}
+
+public class AppNavigator(NavigationManager nav, AuthenticationStateProvider auth) : IAppNavigator
 {
     public async Task NavigateTo(string route)
     {

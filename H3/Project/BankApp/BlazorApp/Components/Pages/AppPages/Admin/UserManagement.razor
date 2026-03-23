@@ -6,11 +6,11 @@
 @using SharedCore.Entities.Auth
 @using SharedCore.Services
 
-@inject FinanceService Finance
-@inject IdentityService Identity
+@inject IFinanceService Finance
+@inject IIdentityService Identity
 @inject UserManager<ApplicationUser> UserManager
 @inject IDbContextFactory<BankAppDbContext> DbFactory
-@inject AppNavigator Navigator
+@inject IAppNavigator Navigator
 
 <AuthorizeView Roles="Admin">
     <Authorized>

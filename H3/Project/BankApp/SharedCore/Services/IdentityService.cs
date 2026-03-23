@@ -17,7 +17,26 @@ using System;
 
 namespace SharedCore.Services;
 
-public class IdentityService : AuthenticationStateProvider
+public interface IIdentityService
+{
+    bool IsUserAuthenticated();
+    Task<string?> Login(string username, string password);
+    Task Logout();
+    Task<IdentityResult> ResetPassword(string username, string newPassword);
+
+    Task<ApplicationUser?> GetCurrentUserAsync();
+    Task<ApplicationUser?> GetCurrentApplicationUserAsync();
+    Task<List<ApplicationUser>> GetAllUsersExceptAsync(string excludeUserId);
+    Task<ApplicationRole?> GetCurrentApplicationRoleAsync();
+
+    Task<bool> UpdateUserProfileAsync(string userId, ApplicationUser updatedData);
+    Task<bool> DeleteAccountAsync(string userId);
+
+    Task<IEnumerable<string>?> Register(ApplicationUser user, string password, RoleType role = RoleType.Customer);
+    bool IsUserInRole(RoleType role);
+}
+
+public class IdentityService : AuthenticationStateProvider, IIdentityService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IDbContextFactory<BankAppDbContext> _dbFactory;

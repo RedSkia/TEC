@@ -3,5 +3,6 @@
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>
+  <Project Path="SharedCore.Tests/SharedCore.Tests.csproj" Id="9b7e98f5-e084-4f37-b43f-a5141d04f41b" />
   <Project Path="SharedCore/SharedCore.csproj" Id="4f1975e3-8231-41f3-8a98-ea42dc5bf82a" />
 </Solution>
