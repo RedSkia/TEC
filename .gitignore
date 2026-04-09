@@ -1,2 +1,4 @@
 .vs/
 *.tar
+*/bin
+*/obj

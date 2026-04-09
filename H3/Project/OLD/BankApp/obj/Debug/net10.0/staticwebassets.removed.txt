@@ -1,7 +1,0 @@
-D:\Desktop\TEC\H3\Project\BankApp\wwwroot\lib\bootstrap\js\bootstrap.bundle.min.js.map
-D:\Desktop\TEC\H3\Project\BankApp\wwwroot\lib\bootstrap\css\bootstrap.min.css.map
-D:\Desktop\TEC\H3\Project\BankApp\wwwroot\lib\bootstrap\js\bootstrap.bundle.min.js
-D:\Desktop\TEC\H3\Project\BankApp\wwwroot\lib\bootstrap\css\bootstrap.min.css
-D:\Desktop\TEC\H3\Project\BankApp\wwwroot\app.css
-D:\Desktop\TEC\H3\Project\BankApp\Components\Layout\ReconnectModal.razor.js
-D:\Desktop\TEC\H3\Project\BankApp\wwwroot\assets\logo.ico
