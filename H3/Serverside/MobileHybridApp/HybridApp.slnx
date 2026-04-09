@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+  <Project Path="MauiBlazorHybridApp/MauiBlazorHybridApp.csproj" Id="2878e37a-4a8d-4211-b902-409287b26565" />
+  <Project Path="WebApp/WebApp.csproj" />
+</Solution>

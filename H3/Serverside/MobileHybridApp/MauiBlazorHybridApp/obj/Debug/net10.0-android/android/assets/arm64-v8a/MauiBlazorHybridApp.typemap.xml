@@ -1,0 +1,10 @@
+<api type="debug" assembly-name="MauiBlazorHybridApp" mvid="ddba965a75904bc587763f9df82dfc11">
+  <java-to-managed>
+    <entry java-name="crc64a401b57b219d5494/MainActivity" managed-name="MauiBlazorHybridApp.MainActivity, MauiBlazorHybridApp" managed-type-token-id="33554441" />
+    <entry java-name="crc64a401b57b219d5494/MainApplication" managed-name="MauiBlazorHybridApp.MainApplication, MauiBlazorHybridApp" managed-type-token-id="33554442" />
+  </java-to-managed>
+  <managed-to-java>
+    <entry java-name="crc64a401b57b219d5494/MainActivity" managed-name="MauiBlazorHybridApp.MainActivity, MauiBlazorHybridApp" managed-type-token-id="33554441" />
+    <entry java-name="crc64a401b57b219d5494/MainApplication" managed-name="MauiBlazorHybridApp.MainApplication, MauiBlazorHybridApp" managed-type-token-id="33554442" />
+  </managed-to-java>
+</api>

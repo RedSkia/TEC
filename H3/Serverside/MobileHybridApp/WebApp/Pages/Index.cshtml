@@ -1,0 +1,221 @@
+﻿@page
+@model IndexModel
+@{
+    Layout = null;
+    ViewData["Title"] = "System Monitor";
+}
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="utf-8" />
+    <title>TEC System Monitor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header-panel {
+            background: #1e293b;
+            padding: 25px 30px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+            .header-panel h1 {
+                margin: 0;
+                font-size: 24px;
+                color: #38bdf8;
+            }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-swagger {
+            background: #0ea5e9;
+            color: white;
+        }
+
+            .btn-swagger:hover {
+                background: #0284c7;
+            }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+            .btn-delete:hover {
+                background: #dc2626;
+            }
+
+        .log-container {
+            background: #000;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            overflow: hidden;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.5);
+        }
+
+        .log-header {
+            background: #1e293b;
+            padding: 15px 20px;
+            font-size: 14px;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Animation til LIVE prikken */
+        @@keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.33;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #status {
+            animation: blink 2s infinite;
+            font-weight: bold;
+        }
+
+        .log-body {
+            padding: 20px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 15px;
+            height: 450px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        /* Farver til log-typer */
+        .log-timestamp {
+            color: #64748b;
+        }
+
+        .log-system {
+            color: #fcd34d;
+            font-weight: bold;
+        }
+
+        .log-get {
+            color: #38bdf8;
+        }
+
+        .log-post {
+            color: #4ade80;
+        }
+
+        .log-delete {
+            color: #f87171;
+        }
+
+        .log-error {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header-panel">
+            <div>
+                <h1>TEC System Monitor</h1>
+                <p style="color: #94a3b8; font-size: 14px; margin: 5px 0 0 0;">Hybrid Web App & Minimal API</p>
+            </div>
+            <div class="button-group">
+                <button onclick="clearLog()" class="btn btn-delete">🗑️ Slet Log</button>
+                <a href="/swagger" target="_blank" class="btn btn-swagger">⚙️ Swagger UI</a>
+            </div>
+        </div>
+        <div class="log-container">
+            <div class="log-header">
+                <span>SERVER TERMINAL</span>
+                <span id="status" style="color:#4ade80">● LIVE</span>
+            </div>
+            <div id="log-display" class="log-body">@Model.LogContent</div>
+        </div>
+    </div>
+
+    <script>
+        // Funktion til at slette loggen
+        async function clearLog() {
+            if(confirm("Er du sikker på, at du vil slette hele loggen?")) {
+                await fetch('/api/log', { method: 'DELETE' });
+                refreshLog();
+            }
+        }
+
+        // Funktion til at farve-kode teksten
+        function colorize(text) {
+            return text
+                .replace(/\[(.*?)\]/g, '<span class="log-timestamp">[$1]</span>')
+                .replace(/SYSTEM:/g, '<span class="log-system">SYSTEM:</span>')
+                .replace(/GET:/g, '<span class="log-get">GET:</span>')
+                .replace(/POST:|AddTeacher|AddStudent|AddSubject/g, '<span class="log-post">$&</span>')
+                .replace(/DELETE:|slettet/g, '<span class="log-delete">$&</span>')
+                .replace(/FEJL:|Exception|failed/gi, '<span class="log-error">$&</span>');
+        }
+
+        async function refreshLog() {
+            try {
+                const res = await fetch('/api/log');
+                if (res.ok) {
+                    const text = await res.text();
+                    const logDisplay = document.getElementById('log-display');
+
+                    // Vi bruger innerHTML i stedet for innerText for at vise farverne
+                    const coloredText = colorize(text);
+
+                    if (logDisplay.innerHTML !== coloredText) {
+                        logDisplay.innerHTML = coloredText;
+                        logDisplay.scrollTop = logDisplay.scrollHeight;
+                    }
+                }
+            } catch (e) { console.error("Log fetch error", e); }
+        }
+
+        // Opdaterer hvert sekund (1000ms er normalt nok, 10ms er meget hurtigt!)
+        setInterval(refreshLog, 10);
+
+        // Kør med det samme ved start
+        window.onload = refreshLog;
+    </script>
+</body>
+</html>
