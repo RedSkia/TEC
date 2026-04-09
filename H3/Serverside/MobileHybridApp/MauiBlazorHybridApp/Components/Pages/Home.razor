@@ -1,0 +1,56 @@
+﻿@page "/"
+@inject HttpClient Http
+
+<div style="padding: 10px; font-family: sans-serif;">
+    <h2>📱 TEC Admin Mobil</h2>
+    <p style="color: green; font-weight: bold;">@StatusMessage</p>
+
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+        <input @bind="TeacherName" placeholder="Ny Lærer..." style="padding: 5px;" />
+        <button @onclick="CreateTeacher" style="background: #0ea5e9; color: white; padding: 5px 10px;">Opret Lærer</button>
+
+        <input @bind="StudentName" placeholder="Ny Elev..." style="padding: 5px;" />
+        <button @onclick="CreateStudent" style="background: #4ade80; color: white; padding: 5px 10px;">Opret Elev</button>
+    </div>
+
+    <hr />
+
+    <h3>💻 Live Server Log</h3>
+    <iframe src="@ServerUrl" style="width: 100%; height: 600px; border: 2px solid #1e293b; border-radius: 12px;"></iframe>
+
+</div>
+
+@code {
+    private string TeacherName = "";
+    private string StudentName = "";
+    private string StatusMessage = "";
+
+    // Variablen til vores iframe URL
+    private string ServerUrl = "";
+
+    protected override void OnInitialized()
+    {
+        // Finder den rigtige URL til iframen alt efter platform
+#if ANDROID
+        ServerUrl = "http://10.0.2.2:8080";
+#else
+        ServerUrl = "http://localhost:8080";
+#endif
+    }
+
+    private async Task CreateTeacher()
+    {
+        if (string.IsNullOrWhiteSpace(TeacherName)) return;
+        var res = await Http.PostAsJsonAsync("/api/teacher", new { Name = TeacherName });
+        StatusMessage = res.IsSuccessStatusCode ? $"Lærer {TeacherName} oprettet!" : "Fejl";
+        TeacherName = "";
+    }
+
+    private async Task CreateStudent()
+    {
+        if (string.IsNullOrWhiteSpace(StudentName)) return;
+        var res = await Http.PostAsJsonAsync("/api/school/students", new { Name = StudentName });
+        StatusMessage = res.IsSuccessStatusCode ? $"Elev {StudentName} oprettet!" : "Fejl";
+        StudentName = "";
+    }
+}
