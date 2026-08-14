@@ -136,6 +136,9 @@ $script:dragStartScreen = [System.Drawing.Point]::Empty
 $script:dragDeltaX = 0
 $script:dragDeltaY = 0
 $script:isDragging = $false
+
+$script:setDragStart = [System.Drawing.Point]::Empty
+$script:setDragging = $false
 $script:dragOriginalPositions = @{}
 
 $script:selectedItems = @()
@@ -358,7 +361,10 @@ function Paint-DesktopBackground {
             $hoverBrush = New-Object System.Drawing.SolidBrush($script:Colors.PanelHover)
             $selBrush = New-Object System.Drawing.SolidBrush($script:Colors.Selected)
             $textBrush = New-Object System.Drawing.SolidBrush($script:Colors.Text)
-            $sf = New-Object System.Drawing.StringFormat; $sf.Alignment = [System.Drawing.StringAlignment]::Center
+            $sf = New-Object System.Drawing.StringFormat
+            $sf.Alignment = [System.Drawing.StringAlignment]::Center
+            $sf.Trimming = [System.Drawing.StringTrimming]::EllipsisCharacter
+            $sf.FormatFlags = [System.Drawing.StringFormatFlags]::LineLimit
             $iconSize = [int]$settings.IconScale
             $labelHeight = [int]($script:desktopFont.Size * 4.5)
 
@@ -445,12 +451,15 @@ public static class ShellIcons
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)] public string szTypeName;
     }
 
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-    private static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
+    [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+    public static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbSizeFileInfo, uint uFlags);
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool DestroyIcon(IntPtr hIcon);
+    [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+    public static extern bool SHObjectProperties(IntPtr hwnd, int shopObjectType, string pszObjectName, string pszPropertyPage);
     [DllImport("shell32.dll", EntryPoint = "#727")]
     private static extern int SHGetImageList(int iImageList, ref Guid riid, out IImageList ppv);
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool DestroyIcon(IntPtr hIcon);
 
     [ComImportAttribute()]
     [GuidAttribute("46EB5926-582E-4017-9FDF-E8998DAA0950")]
@@ -523,7 +532,21 @@ public static class ShellIcons
         return null;
     }
 }
-'@ -ReferencedAssemblies @("System.Drawing")
+public class DarkColorTable : System.Windows.Forms.ProfessionalColorTable {
+    public override System.Drawing.Color MenuItemSelected { get { return System.Drawing.ColorTranslator.FromHtml("#334155"); } }
+    public override System.Drawing.Color MenuItemBorder { get { return System.Drawing.Color.Transparent; } }
+    public override System.Drawing.Color ToolStripDropDownBackground { get { return System.Drawing.ColorTranslator.FromHtml("#0f172a"); } }
+    public override System.Drawing.Color ImageMarginGradientBegin { get { return System.Drawing.ColorTranslator.FromHtml("#0f172a"); } }
+    public override System.Drawing.Color ImageMarginGradientMiddle { get { return System.Drawing.ColorTranslator.FromHtml("#0f172a"); } }
+    public override System.Drawing.Color ImageMarginGradientEnd { get { return System.Drawing.ColorTranslator.FromHtml("#0f172a"); } }
+    public override System.Drawing.Color MenuBorder { get { return System.Drawing.ColorTranslator.FromHtml("#334155"); } }
+    public override System.Drawing.Color SeparatorDark { get { return System.Drawing.ColorTranslator.FromHtml("#334155"); } }
+    public override System.Drawing.Color SeparatorLight { get { return System.Drawing.Color.Transparent; } }
+}
+public class DarkMenuRenderer : System.Windows.Forms.ToolStripProfessionalRenderer {
+    public DarkMenuRenderer() : base(new DarkColorTable()) { }
+}
+'@ -ReferencedAssemblies @("System.Drawing", "System.Windows.Forms")
 
 function Resize-IconBitmap {
     param([System.Drawing.Bitmap]$Source, [int]$Size)
@@ -617,29 +640,39 @@ function Rename-DesktopItem {
     try {
         $item = Get-Item -LiteralPath $Path -ErrorAction Stop
         $dialog = New-Object System.Windows.Forms.Form
-        $dialog.Text = "Rename Item"; $dialog.Width = 450; $dialog.Height = 180
-        $dialog.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen; $dialog.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
-        $dialog.MaximizeBox = $false; $dialog.MinimizeBox = $false; $dialog.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#111827")
+        $dialog.Width = 450; $dialog.Height = 180
+        $dialog.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen; $dialog.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
+        $dialog.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#18181b")
         Enable-DoubleBuffer $dialog
+        $dialog.Add_Paint({
+            param($s, $e)
+            $pen = New-Object System.Drawing.Pen([System.Drawing.ColorTranslator]::FromHtml("#3f3f46"), 1)
+            $e.Graphics.DrawRectangle($pen, 0, 0, $s.Width - 1, $s.Height - 1); $pen.Dispose()
+        })
 
         $label = New-Object System.Windows.Forms.Label
-        $label.Text = "Enter new name:"; $label.Left = 20; $label.Top = 20; $label.AutoSize = $true
-        $label.Font = New-Object System.Drawing.Font("Segoe UI", 9); $label.ForeColor = $script:Colors.Text
+        $label.Text = "Rename Item"; $label.Left = 20; $label.Top = 20; $label.AutoSize = $true
+        $label.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold); $label.ForeColor = $script:Colors.Text
         $dialog.Controls.Add($label)
 
         $box = New-Object System.Windows.Forms.TextBox
-        $box.Left = 20; $box.Top = 45; $box.Width = 390; $box.Height = 25
-        $box.Font = New-Object System.Drawing.Font("Segoe UI", 10); $box.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#0b0f19"); $box.ForeColor = $script:Colors.Text
+        $box.Left = 20; $box.Top = 60; $box.Width = 410; $box.Height = 28
+        $box.Font = New-Object System.Drawing.Font("Segoe UI", 11); $box.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#27272a"); $box.ForeColor = $script:Colors.Text
         $box.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle; $box.Text = $item.Name
         $dialog.Controls.Add($box)
 
         $ok = New-Object System.Windows.Forms.Button
-        $ok.Text = "Save"; $ok.Left = 210; $ok.Top = 90; $ok.Width = 95; $ok.Height = 35
+        $ok.Text = "Save"; $ok.Left = 220; $ok.Top = 120; $ok.Width = 100; $ok.Height = 35
         $ok.BackColor = $script:Colors.Accent; $ok.ForeColor = $script:Colors.Text; $ok.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $ok.FlatAppearance.BorderSize = 0
+        $ok.Cursor = [System.Windows.Forms.Cursors]::Hand
+        $ok.Add_MouseEnter({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#2563eb") }); $ok.Add_MouseLeave({ $this.BackColor = $script:Colors.Accent })
         $dialog.Controls.Add($ok)
+        
         $cancel = New-Object System.Windows.Forms.Button
-        $cancel.Text = "Cancel"; $cancel.Left = 315; $cancel.Top = 90; $cancel.Width = 95; $cancel.Height = 35
-        $cancel.BackColor = $script:Colors.Button; $cancel.ForeColor = $script:Colors.Text; $cancel.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $cancel.FlatAppearance.BorderSize = 0
+        $cancel.Text = "Cancel"; $cancel.Left = 330; $cancel.Top = 120; $cancel.Width = 100; $cancel.Height = 35
+        $cancel.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#3f3f46"); $cancel.ForeColor = $script:Colors.Text; $cancel.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $cancel.FlatAppearance.BorderSize = 0
+        $cancel.Cursor = [System.Windows.Forms.Cursors]::Hand
+        $cancel.Add_MouseEnter({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#52525b") }); $cancel.Add_MouseLeave({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#3f3f46") })
         $dialog.Controls.Add($cancel)
 
         $dialog.AcceptButton = $ok; $dialog.CancelButton = $cancel
@@ -695,9 +728,8 @@ function Show-ItemProperties {
     param([string]$Path)
     if (-not (Test-Path -LiteralPath $Path)) { return }
     try {
-        $shell = New-Object -ComObject Shell.Application
-        $folder = $shell.Namespace((Split-Path -Parent $Path)); $item = $folder.ParseName((Split-Path -Leaf $Path))
-        if ($null -ne $item) { $item.InvokeVerb("properties") }
+        $hwnd = if ($null -ne $script:primaryForm) { $script:primaryForm.Handle } else { [IntPtr]::Zero }
+        [ShellIcons]::SHObjectProperties($hwnd, 2, $Path, $null) | Out-Null
     } catch { }
 }
 
@@ -723,10 +755,11 @@ function New-DesktopTextFile {
 
 function Create-ContextMenus {
     $menu = New-Object System.Windows.Forms.ContextMenuStrip
-    $menu.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#1e293b")
+    $menu.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#0f172a")
     $menu.ForeColor = $script:Colors.Text
     $menu.ShowImageMargin = $false; $menu.ShowCheckMargin = $false
     $menu.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+    try { $menu.Renderer = New-Object DarkMenuRenderer } catch { }
 
     function Add-MenuItem($M, $Txt, $Key, $Act) {
         $i = if ($M -is [System.Windows.Forms.ToolStripMenuItem]) { $M.DropDownItems.Add($Txt) } else { $M.Items.Add($Txt) }
@@ -743,10 +776,19 @@ function Create-ContextMenus {
 
     Add-MenuItem $menu "Refresh" "F5" { Refresh-Desktop } | Out-Null
     Add-MenuItem $menu "Snap to Grid (Auto Arrange)" $null { 
+        $occupied = @{}
+        $rows = [Math]::Max(1, [int][Math]::Floor(($script:primaryForm.ClientSize.Height - 14) / $script:cellHeight))
         foreach ($item in $script:desktopItems) {
             if ($null -eq $item) { continue }
-            $col = [int][Math]::Round(($item.Bounds.X - 14) / [double]$script:cellWidth)
-            $row = [int][Math]::Round(($item.Bounds.Y - 14) / [double]$script:cellHeight)
+            $col = [int][Math]::Max(0, [Math]::Round(($item.Bounds.X - 14) / [double]$script:cellWidth))
+            $row = [int][Math]::Max(0, [Math]::Round(($item.Bounds.Y - 14) / [double]$script:cellHeight))
+            
+            while ($occupied.ContainsKey("$col,$row")) {
+                $row++
+                if ($row -ge $rows) { $row = 0; $col++ }
+            }
+            $occupied["$col,$row"] = $true
+            
             $nx = 14 + ($col * $script:cellWidth); $ny = 14 + ($row * $script:cellHeight)
             Save-ItemPosition -Path $item.Path -X $nx -Y $ny -NoSave
         }
@@ -765,18 +807,39 @@ function Create-ContextMenus {
     $script:contextMenu = $menu
 
     $itemMenu = New-Object System.Windows.Forms.ContextMenuStrip
-    $itemMenu.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#1e293b")
+    $itemMenu.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#0f172a")
     $itemMenu.ForeColor = $script:Colors.Text
     $itemMenu.ShowImageMargin = $false; $itemMenu.ShowCheckMargin = $false
     $itemMenu.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+    try { $itemMenu.Renderer = New-Object DarkMenuRenderer } catch { }
 
     Add-MenuItem $itemMenu "Open" $null { 
         foreach ($item in $script:selectedItems) { 
             $path = [string]$item.Path; if (-not [string]::IsNullOrWhiteSpace($path)) { Open-DesktopItem $path }
         } 
     } | Out-Null
+    Add-MenuItem $itemMenu "Edit" $null { 
+        foreach ($item in $script:selectedItems) { 
+            $path = [string]$item.Path; if (-not [string]::IsNullOrWhiteSpace($path) -and -not (Get-Item -LiteralPath $path).PSIsContainer) { try { Start-Process "notepad.exe" -ArgumentList "`"$path`"" -ErrorAction SilentlyContinue } catch { } }
+        } 
+    } | Out-Null
     [void]$itemMenu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
     Add-MenuItem $itemMenu "Copy" "Ctrl+C" { Copy-SelectedFiles } | Out-Null
+    Add-MenuItem $itemMenu "Compress to ZIP file" $null {
+        if ($script:selectedItems.Count -eq 0) { return }
+        try {
+            $paths = @()
+            foreach ($item in $script:selectedItems) {
+                if (-not [string]::IsNullOrWhiteSpace($item.Path)) { $paths += $item.Path }
+            }
+            if ($paths.Count -gt 0) {
+                $baseName = if ($paths.Count -eq 1) { [System.IO.Path]::GetFileNameWithoutExtension($paths[0]) } else { "Archive" }
+                $zipPath = Join-Path $script:desktopPath "$baseName.zip"
+                $i = 1; while (Test-Path -LiteralPath $zipPath) { $zipPath = Join-Path $script:desktopPath "$baseName ($i).zip"; $i++ }
+                Compress-Archive -LiteralPath $paths -DestinationPath $zipPath -Force -ErrorAction SilentlyContinue
+            }
+        } catch { }
+    } | Out-Null
     [void]$itemMenu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
     Add-MenuItem $itemMenu "Rename" "F2" { 
         if ($script:selectedItems.Count -eq 1) {
@@ -825,7 +888,7 @@ function Paste-ClipboardFiles {
 function Refresh-Desktop {
     if ($script:refreshing) { return }
     if ($null -eq $script:primaryForm -or $script:primaryForm.IsDisposed) { return }
-    Save-AllPositions; Build-DesktopIcons
+    Build-DesktopIcons
 }
 
 function Reset-DesktopSettings {
@@ -844,19 +907,34 @@ function Show-Settings {
     if ($script:settingsForm -and -not $script:settingsForm.IsDisposed) { $script:settingsForm.Activate(); return }
     $sf = New-Object System.Windows.Forms.Form
     $script:settingsForm = $sf; $sf.Text = "Personalization"; $sf.Width = 600; $sf.Height = 780
-    $sf.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen; $sf.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
-    $sf.MaximizeBox = $false; $sf.MinimizeBox = $false; $sf.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#0b0f19")
+    $sf.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen; $sf.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
+    $sf.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#0b0f19")
     Enable-DoubleBuffer $sf
+    $sf.Add_Paint({
+        param($s, $e)
+        $pen = New-Object System.Drawing.Pen([System.Drawing.ColorTranslator]::FromHtml("#1e293b"), 1)
+        $e.Graphics.DrawRectangle($pen, 0, 0, $s.Width - 1, $s.Height - 1); $pen.Dispose()
+    })
 
     $header = New-Object System.Windows.Forms.Panel
     $header.Left = 0; $header.Top = 0; $header.Width = 600; $header.Height = 100
     $header.BackColor = [System.Drawing.Color]::Transparent; $sf.Controls.Add($header)
+    $header.Cursor = [System.Windows.Forms.Cursors]::SizeAll
+    $dragDown = { param($s,$e) if ($e.Button -eq [System.Windows.Forms.MouseButtons]::Left) { $script:setDragStart = $e.Location; $script:setDragging = $true } }
+    $dragUp = { param($s,$e) if ($e.Button -eq [System.Windows.Forms.MouseButtons]::Left) { $script:setDragging = $false } }
+    $dragMove = { param($s,$e) if ($script:setDragging) { $sf.Left += $e.X - $script:setDragStart.X; $sf.Top += $e.Y - $script:setDragStart.Y } }
+    
+    $header.Add_MouseDown($dragDown); $header.Add_MouseUp($dragUp); $header.Add_MouseMove($dragMove)
     $title = New-Object System.Windows.Forms.Label
     $title.Text = "Personalization"; $title.Left = 25; $title.Top = 25; $title.AutoSize = $true; $title.ForeColor = $script:Colors.Text
-    $title.Font = New-Object System.Drawing.Font("Segoe UI", 20, [System.Drawing.FontStyle]::Bold); $header.Controls.Add($title)
+    $title.Font = New-Object System.Drawing.Font("Segoe UI", 20, [System.Drawing.FontStyle]::Bold)
+    $title.Cursor = [System.Windows.Forms.Cursors]::SizeAll; $title.Add_MouseDown($dragDown); $title.Add_MouseUp($dragUp); $title.Add_MouseMove($dragMove)
+    $header.Controls.Add($title)
     $subtitle = New-Object System.Windows.Forms.Label
     $subtitle.Text = "Customize your emulated desktop appearance and behavior"; $subtitle.Left = 30; $subtitle.Top = 68; $subtitle.AutoSize = $true
-    $subtitle.ForeColor = $script:Colors.Muted; $subtitle.Font = New-Object System.Drawing.Font("Segoe UI", 9); $header.Controls.Add($subtitle)
+    $subtitle.ForeColor = $script:Colors.Muted; $subtitle.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+    $subtitle.Cursor = [System.Windows.Forms.Cursors]::SizeAll; $subtitle.Add_MouseDown($dragDown); $subtitle.Add_MouseUp($dragUp); $subtitle.Add_MouseMove($dragMove)
+    $header.Controls.Add($subtitle)
 
     function Add-Card($Top, $Title, $Height) {
         $c = New-Object System.Windows.Forms.Panel; $c.Left = 30; $c.Top = $Top; $c.Width = 524; $c.Height = $Height
@@ -869,6 +947,9 @@ function Show-Settings {
         $b = New-Object System.Windows.Forms.Button; $b.Text = $Txt; $b.Left = $L; $b.Top = $T; $b.Width = $W; $b.Height = 36
         $b.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#1f2937"); $b.ForeColor = $script:Colors.Text
         $b.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $b.FlatAppearance.BorderSize = 1; $b.FlatAppearance.BorderColor = [System.Drawing.ColorTranslator]::FromHtml("#374151")
+        $b.Cursor = [System.Windows.Forms.Cursors]::Hand
+        $b.Add_MouseEnter({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#374151") })
+        $b.Add_MouseLeave({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#1f2937") })
         $b.Add_Click($Act); $P.Controls.Add($b); return $b
     }
 
@@ -922,14 +1003,24 @@ function Show-Settings {
     # Bottom Buttons
     $reset = New-Object System.Windows.Forms.Button; $reset.Text = "Restore Defaults"; $reset.Left = 30; $reset.Top = 680; $reset.Width = 140; $reset.Height = 40
     $reset.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#111827"); $reset.ForeColor = $script:Colors.Danger; $reset.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $reset.FlatAppearance.BorderSize = 1; $reset.FlatAppearance.BorderColor = [System.Drawing.ColorTranslator]::FromHtml("#ef4444")
+    $reset.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $reset.Add_MouseEnter({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#7f1d1d"); $this.ForeColor = [System.Drawing.Color]::White })
+    $reset.Add_MouseLeave({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#111827"); $this.ForeColor = $script:Colors.Danger })
     $reset.Add_Click({ if ([System.Windows.Forms.MessageBox]::Show("Restore defaults?", "Reset", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question) -eq [System.Windows.Forms.DialogResult]::Yes) { Reset-DesktopSettings; $sf.Close() } }); $sf.Controls.Add($reset)
     
     $cancel = New-Object System.Windows.Forms.Button; $cancel.Text = "Cancel"; $cancel.Left = 294; $cancel.Top = 680; $cancel.Width = 120; $cancel.Height = 40
     $cancel.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#1f2937"); $cancel.ForeColor = $script:Colors.Text; $cancel.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $cancel.FlatAppearance.BorderSize = 0
+    $cancel.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $cancel.Add_MouseEnter({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#374151") })
+    $cancel.Add_MouseLeave({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#1f2937") })
     $cancel.Add_Click({ $sf.Close() }); $sf.Controls.Add($cancel)
+    $sf.CancelButton = $cancel
     
     $apply = New-Object System.Windows.Forms.Button; $apply.Text = "Apply Changes"; $apply.Left = 424; $apply.Top = 680; $apply.Width = 130; $apply.Height = 40
     $apply.BackColor = $script:Colors.Accent; $apply.ForeColor = $script:Colors.Text; $apply.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $apply.FlatAppearance.BorderSize = 0
+    $apply.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $apply.Add_MouseEnter({ $this.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#2563eb") })
+    $apply.Add_MouseLeave({ $this.BackColor = $script:Colors.Accent })
     $apply.Add_Click({
         $settings.BackgroundType = if ($radioImage.Checked) { "Image" } else { "Color" }
         if ($null -ne $modeCombo.SelectedItem) { $settings.ImageMode = [string]$modeCombo.SelectedItem }
@@ -937,11 +1028,15 @@ function Show-Settings {
         $newPath = $pathBox.Text.Trim()
         if (-not [string]::IsNullOrWhiteSpace($newPath)) {
             try { $newPath = [Environment]::ExpandEnvironmentVariables($newPath) } catch { }
+            if (-not (Test-Path -LiteralPath $newPath)) {
+                [System.Windows.Forms.MessageBox]::Show("The specified desktop folder does not exist.", "Invalid Path", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
+                return
+            }
             $settings.DesktopPath = $newPath; $script:desktopPath = $newPath; $desktopPath = $newPath
         }
         Save-AllPositions; Save-DesktopSettings; Load-BackgroundImage; Apply-Background; Refresh-Desktop; $sf.Close()
         Init-FileSystemWatcher
-    }); $sf.Controls.Add($apply)
+    }); $sf.Controls.Add($apply); $sf.AcceptButton = $apply
 
     [void]$sf.ShowDialog(); $script:settingsForm = $null; try { $sf.Dispose() } catch { }
 }
@@ -959,7 +1054,7 @@ function Build-DesktopIcons {
         $usePath = $script:desktopPath
         $items = @()
         try {
-            $items = @(Get-ChildItem -LiteralPath $usePath -Force -ErrorAction Stop | Where-Object { $_.Name -ne "desktop.ini" })
+            $items = @(Get-ChildItem -LiteralPath $usePath -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne "desktop.ini" })
             if ($settings.SortBy -eq "Size") {
                 $items = @($items | Sort-Object @{Expression={-not $_.PSIsContainer}}, Length, Name)
             } elseif ($settings.SortBy -eq "Date") {
@@ -979,6 +1074,17 @@ function Build-DesktopIcons {
         $script:cellHeight = [int]($iconSize + $labelHeight + 15)
         
         $index = 0
+        
+        $occupiedSlots = @{}
+        foreach ($item in $items) {
+            $saved = Get-SavedPosition $item.FullName
+            if ($null -ne $saved) {
+                $col = [int][Math]::Round(($saved.X - 14) / $script:cellWidth)
+                $row = [int][Math]::Round(($saved.Y - 14) / $script:cellHeight)
+                $occupiedSlots["$col,$row"] = $true
+            }
+        }
+        $rows = [Math]::Max(1, [int][Math]::Floor(($script:primaryForm.ClientSize.Height - 14) / $script:cellHeight))
 
         foreach ($item in $items) {
             try {
@@ -993,13 +1099,14 @@ function Build-DesktopIcons {
                     $px = [Math]::Max(0, [Math]::Min($maxX, [int]$saved.X))
                     $py = [Math]::Max(0, [Math]::Min($maxY, [int]$saved.Y))
                 } else {
-                    $rows = [Math]::Max(1, [int][Math]::Floor($script:primaryForm.ClientSize.Height / $script:cellHeight))
-                    if ($rows -eq 0) { $rows = 1 }
-                    $row = $index % $rows; $col = [int][Math]::Floor($index / $rows)
-                    $px = 14 + ($col * $script:cellWidth); $py = 14 + ($row * $script:cellHeight)
-                    if ($px -gt $maxX) { $px = $maxX }; if ($py -gt $maxY) { $py = $maxY }
+                    $slotCol = 0; $slotRow = 0
+                    while ($occupiedSlots.ContainsKey("$slotCol,$slotRow")) {
+                        $slotRow++
+                        if ($slotRow -ge $rows) { $slotRow = 0; $slotCol++ }
+                    }
+                    $occupiedSlots["$slotCol,$slotRow"] = $true
+                    $px = 14 + ($slotCol * $script:cellWidth); $py = 14 + ($slotRow * $script:cellHeight)
                     Save-ItemPosition -Path $path -X $px -Y $py -NoSave
-                    $index++
                 }
 
                 $bitmap = Get-DesktopIcon -Item $item -Size $iconSize
