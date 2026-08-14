@@ -258,8 +258,7 @@ function Load-BackgroundImage {
     if ($settings.BackgroundType -ne "Image" -or [string]::IsNullOrWhiteSpace($settings.ImagePath) -or -not (Test-Path -LiteralPath $settings.ImagePath)) { return }
     try {
         $source = [System.Drawing.Image]::FromFile($settings.ImagePath)
-        $script:backgroundImage = New-Object System.Drawing.Bitmap($source)
-        $source.Dispose()
+        try { $script:backgroundImage = New-Object System.Drawing.Bitmap($source) } finally { $source.Dispose() }
     } catch { $script:backgroundImage = $null }
 }
 
@@ -270,42 +269,41 @@ function Apply-Background {
         try {
             $bmp = New-Object System.Drawing.Bitmap($form.ClientSize.Width, $form.ClientSize.Height, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
             $g = [System.Drawing.Graphics]::FromImage($bmp)
+            try {
+                $g.Clear((Get-ColorFromHex $settings.BackgroundColor))
             
-            $g.Clear((Get-ColorFromHex $settings.BackgroundColor))
-        
-        if ($settings.BackgroundType -eq "Image" -and $null -ne $script:backgroundImage) {
-            $image = $script:backgroundImage
-            if ($image.Width -gt 0 -and $image.Height -gt 0) {
-                $width = $bmp.Width; $height = $bmp.Height
-                try {
-                    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-                    $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-                    $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
-    
-                    $mode = [string]$settings.ImageMode
-                    if ($mode -eq "Stretch") {
-                        $g.DrawImage($image, (New-Object System.Drawing.Rectangle(0,0,$width,$height)))
-                    } elseif ($mode -eq "Center") {
-                        $x = [int](($width - $image.Width) / 2); $y = [int](($height - $image.Height) / 2)
-                        $g.DrawImage($image, $x, $y, $image.Width, $image.Height)
-                    } elseif ($mode -eq "Tile") {
-                        $brush = New-Object System.Drawing.TextureBrush($image)
-                        try { $g.FillRectangle($brush, 0, 0, $width, $height) } finally { $brush.Dispose() }
-                    } else {
-                        if ($mode -eq "Fit") { $scale = [Math]::Min($width / [double]$image.Width, $height / [double]$image.Height) }
-                        else { $scale = [Math]::Max($width / [double]$image.Width, $height / [double]$image.Height) }
-                        $newWidth = [int]($image.Width * $scale); $newHeight = [int]($image.Height * $scale)
-                        $x = [int](($width - $newWidth) / 2); $y = [int](($height - $newHeight) / 2)
-                        $g.DrawImage($image, (New-Object System.Drawing.Rectangle($x, $y, $newWidth, $newHeight)))
+                if ($settings.BackgroundType -eq "Image" -and $null -ne $script:backgroundImage) {
+                    $image = $script:backgroundImage
+                    if ($image.Width -gt 0 -and $image.Height -gt 0) {
+                        $width = $bmp.Width; $height = $bmp.Height
+                        try {
+                            $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+                            $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+                            $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+            
+                            $mode = [string]$settings.ImageMode
+                            if ($mode -eq "Stretch") {
+                                $g.DrawImage($image, (New-Object System.Drawing.Rectangle(0,0,$width,$height)))
+                            } elseif ($mode -eq "Center") {
+                                $x = [int](($width - $image.Width) / 2); $y = [int](($height - $image.Height) / 2)
+                                $g.DrawImage($image, $x, $y, $image.Width, $image.Height)
+                            } elseif ($mode -eq "Tile") {
+                                $brush = New-Object System.Drawing.TextureBrush($image)
+                                try { $g.FillRectangle($brush, 0, 0, $width, $height) } finally { $brush.Dispose() }
+                            } else {
+                                if ($mode -eq "Fit") { $scale = [Math]::Min($width / [double]$image.Width, $height / [double]$image.Height) }
+                                else { $scale = [Math]::Max($width / [double]$image.Width, $height / [double]$image.Height) }
+                                $newWidth = [int]($image.Width * $scale); $newHeight = [int]($image.Height * $scale)
+                                $x = [int](($width - $newWidth) / 2); $y = [int](($height - $newHeight) / 2)
+                                $g.DrawImage($image, (New-Object System.Drawing.Rectangle($x, $y, $newWidth, $newHeight)))
+                            }
+                        } catch { }
                     }
-                } catch { }
-            }
-        }
-            $g.Dispose()
+                }
+            } finally { $g.Dispose() }
             
-            $oldImage = $form.BackgroundImage
+            if ($form.BackgroundImage) { $form.BackgroundImage.Dispose() }
             $form.BackgroundImage = $bmp
-            if ($null -ne $oldImage) { $oldImage.Dispose() }
         } catch { }
     }
 }
@@ -336,23 +334,20 @@ function Paint-DesktopBackground {
         if ($script:isDragging -and $isCtrl -and $cWidth -gt 0 -and $cHeight -gt 0) {
             $gridPen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(40, 255, 255, 255), 1)
             $gridPen.DashStyle = [System.Drawing.Drawing2D.DashStyle]::Dash
-            $w = [int]$script:primaryForm.ClientSize.Width
-            $h = [int]$script:primaryForm.ClientSize.Height
-            for ($x = 14; $x -lt $w; $x += $cWidth) { $g.DrawLine($gridPen, $x, 0, $x, $h) }
-            for ($y = 14; $y -lt $h; $y += $cHeight) { $g.DrawLine($gridPen, 0, $y, $w, $y) }
-            $gridPen.Dispose()
-            
-            $slotBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(35, 59, 130, 246))
-            foreach ($item in $script:selectedItems) {
-                $orig = $script:dragOriginalPositions[$item.Path]; if ($null -eq $orig) { continue }
-                $nx = [int]$orig.X + [int]$script:dragDeltaX; $ny = [int]$orig.Y + [int]$script:dragDeltaY
-                $col = [int][Math]::Round(($nx - 14) / [double]$cWidth); $row = [int][Math]::Round(($ny - 14) / [double]$cHeight)
-                $slotX = 14 + ($col * $cWidth); $slotY = 14 + ($row * $cHeight)
+            $slotBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(20, 255, 255, 255))
+            try {
+                for ($x = 14; $x -lt $script:primaryForm.ClientSize.Width; $x += $cWidth) { $g.DrawLine($gridPen, $x, 0, $x, $script:primaryForm.ClientSize.Height) }
+                for ($y = 14; $y -lt $script:primaryForm.ClientSize.Height; $y += $cHeight) { $g.DrawLine($gridPen, 0, $y, $script:primaryForm.ClientSize.Width, $y) }
                 
-                $slotRect = New-Object System.Drawing.Rectangle($slotX, $slotY, $cWidth, $cHeight)
-                $g.FillRectangle($slotBrush, $slotRect)
-            }
-            $slotBrush.Dispose()
+                foreach ($item in $script:selectedItems) {
+                    if ($null -eq $item) { continue }
+                    $orig = $script:dragOriginalPositions[$item.Path]; if ($null -eq $orig) { continue }
+                    $nx = [int]$orig.X + [int]$script:dragDeltaX; $ny = [int]$orig.Y + [int]$script:dragDeltaY
+                    $col = [int][Math]::Round(($nx - 14) / [double]$cWidth); $row = [int][Math]::Round(($ny - 14) / [double]$cHeight)
+                    $snappedX = 14 + ($col * $cWidth); $snappedY = 14 + ($row * $cHeight)
+                    $g.FillRectangle($slotBrush, $snappedX, $snappedY, $cWidth, $cHeight)
+                }
+            } finally { $gridPen.Dispose(); $slotBrush.Dispose() }
         }
 
         # 3. Draw Desktop Items (Direct rendering - No Panels!)
@@ -369,7 +364,8 @@ function Paint-DesktopBackground {
             $labelHeight = [int]($script:desktopFont.Size * 4.5)
 
             foreach ($item in $script:desktopItems) {
-                if ($script:isDragging -and $item.Selected) { continue }
+                if ($null -eq $item) { continue }
+                if ($script:isDragging -and $script:selectedItems -contains $item) { continue }
                 
                 if ($item.Selected) { $g.FillRectangle($selBrush, $item.Bounds) }
                 elseif ($item -eq $script:hoverItem) { $g.FillRectangle($hoverBrush, $item.Bounds) }
@@ -545,6 +541,10 @@ public class DarkColorTable : System.Windows.Forms.ProfessionalColorTable {
 }
 public class DarkMenuRenderer : System.Windows.Forms.ToolStripProfessionalRenderer {
     public DarkMenuRenderer() : base(new DarkColorTable()) { }
+    protected override void OnRenderItemText(System.Windows.Forms.ToolStripItemTextRenderEventArgs e) {
+        e.TextColor = System.Drawing.ColorTranslator.FromHtml("#e2e8f0");
+        base.OnRenderItemText(e);
+    }
 }
 '@ -ReferencedAssemblies @("System.Drawing", "System.Windows.Forms")
 
@@ -647,7 +647,7 @@ function Rename-DesktopItem {
         $dialog.Add_Paint({
             param($s, $e)
             $pen = New-Object System.Drawing.Pen([System.Drawing.ColorTranslator]::FromHtml("#3f3f46"), 1)
-            $e.Graphics.DrawRectangle($pen, 0, 0, $s.Width - 1, $s.Height - 1); $pen.Dispose()
+            try { $e.Graphics.DrawRectangle($pen, 0, 0, $s.Width - 1, $s.Height - 1) } finally { $pen.Dispose() }
         })
 
         $label = New-Object System.Windows.Forms.Label
@@ -852,11 +852,6 @@ function Create-ContextMenus {
     $script:itemContextMenu = $itemMenu
 }
 
-function Show-ItemContextMenu {
-    param([string]$Path, [System.Drawing.Point]$ScreenPoint)
-    if ($null -eq $script:itemContextMenu) { return }
-    $script:itemContextMenu.Tag = $Path; try { $script:itemContextMenu.Show($ScreenPoint) } catch { }
-}
 
 function Copy-SelectedFiles {
     if ($script:selectedItems.Count -eq 0) { return }
@@ -913,7 +908,7 @@ function Show-Settings {
     $sf.Add_Paint({
         param($s, $e)
         $pen = New-Object System.Drawing.Pen([System.Drawing.ColorTranslator]::FromHtml("#1e293b"), 1)
-        $e.Graphics.DrawRectangle($pen, 0, 0, $s.Width - 1, $s.Height - 1); $pen.Dispose()
+        try { $e.Graphics.DrawRectangle($pen, 0, 0, $s.Width - 1, $s.Height - 1) } finally { $pen.Dispose() }
     })
 
     $header = New-Object System.Windows.Forms.Panel
@@ -1076,6 +1071,7 @@ function Build-DesktopIcons {
         $index = 0
         
         $occupiedSlots = @{}
+        $lastSlotCol = 0; $lastSlotRow = 0
         foreach ($item in $items) {
             $saved = Get-SavedPosition $item.FullName
             if ($null -ne $saved) {
@@ -1099,12 +1095,13 @@ function Build-DesktopIcons {
                     $px = [Math]::Max(0, [Math]::Min($maxX, [int]$saved.X))
                     $py = [Math]::Max(0, [Math]::Min($maxY, [int]$saved.Y))
                 } else {
-                    $slotCol = 0; $slotRow = 0
+                    $slotCol = $lastSlotCol; $slotRow = $lastSlotRow
                     while ($occupiedSlots.ContainsKey("$slotCol,$slotRow")) {
                         $slotRow++
                         if ($slotRow -ge $rows) { $slotRow = 0; $slotCol++ }
                     }
                     $occupiedSlots["$slotCol,$slotRow"] = $true
+                    $lastSlotCol = $slotCol; $lastSlotRow = $slotRow
                     $px = 14 + ($slotCol * $script:cellWidth); $py = 14 + ($slotRow * $script:cellHeight)
                     Save-ItemPosition -Path $path -X $px -Y $py -NoSave
                 }
@@ -1176,7 +1173,7 @@ $script:mouseDownHandler = {
     try {
         $sender.Focus()
         $clickedItem = $null
-        foreach ($item in $script:desktopItems) { if ($item.Bounds.Contains($e.Location)) { $clickedItem = $item; break } }
+        foreach ($item in $script:desktopItems) { if ($null -ne $item -and $item.Bounds.Contains($e.Location)) { $clickedItem = $item; break } }
         
         if ($e.Button -eq [System.Windows.Forms.MouseButtons]::Left) {
             if ($null -ne $clickedItem) {
@@ -1217,7 +1214,7 @@ $script:mouseMoveHandler = {
     if ($null -eq $sender -or $null -eq $e) { return }
     try {
         $newHover = $null
-        foreach ($item in $script:desktopItems) { if ($item.Bounds.Contains($e.Location)) { $newHover = $item; break } }
+        foreach ($item in $script:desktopItems) { if ($null -ne $item -and $item.Bounds.Contains($e.Location)) { $newHover = $item; break } }
         if ($script:hoverItem -ne $newHover) { $script:hoverItem = $newHover; $sender.Invalidate() }
         
         if ($script:isLassoing) {
@@ -1254,8 +1251,6 @@ $script:mouseUpHandler = {
                             $nx = 14 + ($col * $script:cellWidth); $ny = 14 + ($row * $script:cellHeight)
                         }
                         if ($nx -lt 0) { $nx = 0 }; if ($ny -lt 0) { $ny = 0 }
-                        $maxPx = [Math]::Max(0, $mx - $item.Bounds.Width); $maxPy = [Math]::Max(0, $my - $item.Bounds.Height)
-                        if ($nx -gt $maxPx) { $nx = $maxPx }; if ($ny -gt $maxPy) { $ny = $maxPy }
                         $item.Bounds = New-Object System.Drawing.Rectangle($nx, $ny, $item.Bounds.Width, $item.Bounds.Height)
                         Save-ItemPosition -Path $item.Path -X $nx -Y $ny
                     }
@@ -1357,9 +1352,26 @@ function Init-FileSystemWatcher {
     $script:fsw.EnableRaisingEvents = $true
     
     $handler = { $script:refreshPending = $true }
+    $renameHandler = {
+        param($sender, $e)
+        if ($null -ne $settings.Positions[$e.OldFullPath]) {
+            $settings.Positions[$e.FullPath] = $settings.Positions[$e.OldFullPath]
+            $settings.Positions.Remove($e.OldFullPath)
+            Save-DesktopSettings
+        }
+        $script:refreshPending = $true
+    }
+    $deleteHandler = {
+        param($sender, $e)
+        if ($null -ne $settings.Positions[$e.FullPath]) {
+            $settings.Positions.Remove($e.FullPath)
+            Save-DesktopSettings
+        }
+        $script:refreshPending = $true
+    }
     $script:fsw.Add_Created($handler)
-    $script:fsw.Add_Deleted($handler)
-    $script:fsw.Add_Renamed($handler)
+    $script:fsw.Add_Deleted($deleteHandler)
+    $script:fsw.Add_Renamed($renameHandler)
     $script:fsw.Add_Changed($handler)
 }
 
