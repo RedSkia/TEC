@@ -194,7 +194,7 @@ $script:Colors = @{
 }
 
 # ============================================================
-# 006 - HELPER FUNCTIONS & MULTI-MONITOR INLINE MAPPING
+# 006 - HELPER FUNCTIONS & SCREEN CLAMPING
 # ============================================================
 
 function Save-DesktopSettings {
@@ -304,63 +304,116 @@ function Get-VisibleDesktopCoordinate([int]$TargetX, [int]$TargetY, [int]$ItemWi
 }
 
 # ============================================================
-# 007 - GRID OCCUPANCY & ANTI-OVERLAP ENGINE
+# 007 - MULTI-MONITOR SCREEN-ADAPTIVE GRID ENGINE
 # ============================================================
+
+function Get-ScreenForPoint([int]$X, [int]$Y) {
+    $screens = [System.Windows.Forms.Screen]::AllScreens
+    foreach ($s in $screens) {
+        if ($s.WorkingArea.Contains($X, $Y)) { return $s }
+    }
+    return [System.Windows.Forms.Screen]::PrimaryScreen
+}
+
+function Get-ScreenGridBounds($Screen) {
+    $uiScale = 1.0; if ($null -ne $settings.UiScale -and [double]$settings.UiScale -gt 0) { $uiScale = [double]$settings.UiScale }
+    $cW = [Math]::Max(1, [int]$script:cellWidth)
+    $cH = [Math]::Max(1, [int]$script:cellHeight)
+    $margin = [int](14 * $uiScale)
+    
+    $availW = [Math]::Max($cW, $Screen.WorkingArea.Width - ($margin * 2))
+    $availH = [Math]::Max($cH, $Screen.WorkingArea.Height - ($margin * 2))
+    
+    $cols = [Math]::Max(1, [int][Math]::Floor($availW / [double]$cW))
+    $rows = [Math]::Max(1, [int][Math]::Floor($availH / [double]$cH))
+    
+    return @{
+        Screen = $Screen
+        Margin = $margin
+        Cols   = $cols
+        Rows   = $rows
+        Left   = $Screen.WorkingArea.Left
+        Top    = $Screen.WorkingArea.Top
+    }
+}
 
 function Get-OccupiedGridMap($excludeItems = @()) {
     $map = @{}
     $cW = [Math]::Max(1, [int]$script:cellWidth)
     $cH = [Math]::Max(1, [int]$script:cellHeight)
+    
     foreach ($item in $script:desktopItems) {
         if ($null -eq $item -or $excludeItems -contains $item -or $excludeItems -contains $item.Path) { continue }
         if ($item.Bounds.Width -gt 0 -and $item.Bounds.Height -gt 0) {
-            $col = [int][Math]::Max(0, [Math]::Round(($item.Bounds.X - 14) / [double]$cW))
-            $row = [int][Math]::Max(0, [Math]::Round(($item.Bounds.Y - 14) / [double]$cH))
-            $map["$col,$row"] = $true
+            $screen = Get-ScreenForPoint $item.Bounds.X $item.Bounds.Y
+            $info = Get-ScreenGridBounds $screen
+            $relX = $item.Bounds.X - $info.Left - $info.Margin
+            $relY = $item.Bounds.Y - $info.Top - $info.Margin
+            $col = [int][Math]::Max(0, [Math]::Min($info.Cols - 1, [Math]::Round($relX / [double]$cW)))
+            $row = [int][Math]::Max(0, [Math]::Min($info.Rows - 1, [Math]::Round($relY / [double]$cH)))
+            $map["$($screen.DeviceName)_$col,$row"] = $true
         }
     }
     return $map
 }
 
-function Find-NearestFreeGridSlot([int]$TargetCol, [int]$TargetRow, [hashtable]$OccupiedMap) {
-    $maxRows = 1
-    if ($null -ne $script:primaryForm -and -not $script:primaryForm.IsDisposed -and $script:primaryForm.ClientSize.Height -gt 0) {
-        $maxRows = [Math]::Max(1, [int][Math]::Floor(($script:primaryForm.ClientSize.Height - 14) / [double]$script:cellHeight))
-    } else {
-        $maxRows = 10
+function Find-NearestFreeGridSlot([int]$TargetX, [int]$TargetY, [hashtable]$OccupiedMap) {
+    $screen = Get-ScreenForPoint $TargetX $TargetY
+    $info = Get-ScreenGridBounds $screen
+    $cW = [int]$script:cellWidth; $cH = [int]$script:cellHeight
+    
+    $relX = $TargetX - $info.Left - $info.Margin
+    $relY = $TargetY - $info.Top - $info.Margin
+    $targetCol = [int][Math]::Max(0, [Math]::Min($info.Cols - 1, [Math]::Round($relX / [double]$cW)))
+    $targetRow = [int][Math]::Max(0, [Math]::Min($info.Rows - 1, [Math]::Round($relY / [double]$cH)))
+
+    # 1. Check exact requested grid slot on this screen
+    $slotKey = "$($screen.DeviceName)_$targetCol,$targetRow"
+    if (-not $OccupiedMap.ContainsKey($slotKey)) {
+        $OccupiedMap[$slotKey] = $true
+        $x = $info.Left + $info.Margin + ($targetCol * $cW)
+        $y = $info.Top + $info.Margin + ($targetRow * $cH)
+        return @{ X = $x; Y = $y; Screen = $screen }
     }
 
-    $c = [Math]::Max(0, $TargetCol)
-    $r = [Math]::Max(0, [Math]::Min($maxRows - 1, $TargetRow))
-
-    if (-not $OccupiedMap.ContainsKey("$c,$r")) {
-        $OccupiedMap["$c,$r"] = $true
-        return @{ Col = $c; Row = $r; X = 14 + ($c * $script:cellWidth); Y = 14 + ($r * $script:cellHeight) }
-    }
-
-    for ($dist = 1; $dist -lt 60; $dist++) {
+    # 2. Spiral 2D search on this specific screen
+    $maxDist = [Math]::Max($info.Cols, $info.Rows) + 5
+    for ($dist = 1; $dist -le $maxDist; $dist++) {
         for ($dr = -$dist; $dr -le $dist; $dr++) {
             for ($dc = -$dist; $dc -le $dist; $dc++) {
                 if ([Math]::Abs($dr) -ne $dist -and [Math]::Abs($dc) -ne $dist) { continue }
-                $nc = $c + $dc
-                $nr = $r + $dr
-                if ($nc -ge 0 -and $nr -ge 0 -and $nr -lt $maxRows) {
-                    if (-not $OccupiedMap.ContainsKey("$nc,$nr")) {
-                        $OccupiedMap["$nc,$nr"] = $true
-                        return @{ Col = $nc; Row = $nr; X = 14 + ($nc * $script:cellWidth); Y = 14 + ($nr * $script:cellHeight) }
+                $nc = $targetCol + $dc
+                $nr = $targetRow + $dr
+                if ($nc -ge 0 -and $nc -lt $info.Cols -and $nr -ge 0 -and $nr -lt $info.Rows) {
+                    $key = "$($screen.DeviceName)_$nc,$nr"
+                    if (-not $OccupiedMap.ContainsKey($key)) {
+                        $OccupiedMap[$key] = $true
+                        $x = $info.Left + $info.Margin + ($nc * $cW)
+                        $y = $info.Top + $info.Margin + ($nr * $cH)
+                        return @{ X = $x; Y = $y; Screen = $screen }
                     }
                 }
             }
         }
     }
 
-    $scanCol = 0; $scanRow = 0
-    while ($OccupiedMap.ContainsKey("$scanCol,$scanRow")) {
-        $scanRow++
-        if ($scanRow -ge $maxRows) { $scanRow = 0; $scanCol++ }
+    # 3. Fallback scan across all screens (column by column, top to bottom)
+    foreach ($s in [System.Windows.Forms.Screen]::AllScreens) {
+        $sInfo = Get-ScreenGridBounds $s
+        for ($c = 0; $c -lt $sInfo.Cols; $c++) {
+            for ($r = 0; $r -lt $sInfo.Rows; $r++) {
+                $k = "$($s.DeviceName)_$c,$r"
+                if (-not $OccupiedMap.ContainsKey($k)) {
+                    $OccupiedMap[$k] = $true
+                    $x = $sInfo.Left + $sInfo.Margin + ($c * $cW)
+                    $y = $sInfo.Top + $sInfo.Margin + ($r * $cH)
+                    return @{ X = $x; Y = $y; Screen = $s }
+                }
+            }
+        }
     }
-    $OccupiedMap["$scanCol,$scanRow"] = $true
-    return @{ Col = $scanCol; Row = $scanRow; X = 14 + ($scanCol * $script:cellWidth); Y = 14 + ($scanRow * $script:cellHeight) }
+
+    return @{ X = $info.Left + $info.Margin; Y = $info.Top + $info.Margin; Screen = $screen }
 }
 
 # ============================================================
@@ -1555,7 +1608,7 @@ function Paint-DesktopBackground {
 
         $iconSize = [int]$settings.IconScale
         $uiScale = 1.0; if ($null -ne $settings.UiScale -and [double]$settings.UiScale -gt 0) { $uiScale = [double]$settings.UiScale }
-        $labelHeight = [int](36 * $uiScale)
+        $labelHeight = [int](38 * $uiScale)
 
         try {
             # 1. Draw Stationary Desktop Items (Filtered by Form client area for proper multi-monitor support)
@@ -1643,12 +1696,19 @@ function Paint-DesktopBackground {
                 $gridPen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(40, 255, 255, 255), 1)
                 $gridPen.DashStyle = [System.Drawing.Drawing2D.DashStyle]::Dash
                 try {
-                    for ($x = 14; $x -lt $Sender.ClientSize.Width; $x += $cWidth) { $g.DrawLine($gridPen, $x, 0, $x, $Sender.ClientSize.Height) }
-                    for ($y = 14; $y -lt $Sender.ClientSize.Height; $y += $cHeight) { $g.DrawLine($gridPen, 0, $y, $Sender.ClientSize.Width, $y) }
+                    $sInfo = Get-ScreenGridBounds (Get-ScreenForPoint $Sender.Left $Sender.Top)
+                    for ($c = 0; $c -le $sInfo.Cols; $c++) {
+                        $gx = $sInfo.Margin + ($c * $cWidth)
+                        $g.DrawLine($gridPen, $gx, 0, $gx, $Sender.ClientSize.Height)
+                    }
+                    for ($r = 0; $r -le $sInfo.Rows; $r++) {
+                        $gy = $sInfo.Margin + ($r * $cHeight)
+                        $g.DrawLine($gridPen, 0, $gy, $Sender.ClientSize.Width, $gy)
+                    }
                 } finally { $gridPen.Dispose() }
             }
 
-            # 4. Drag Ghost Preview (Single clean card with zero duplicate boxes)
+            # 4. Drag Ghost Preview (Adaptive screen-aware snap preview)
             if ($script:isDragging -and $script:selectedItems.Count -gt 0) {
                 $ghostSelBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(85, 59, 130, 246))
                 $ghostBorderPen = New-Object System.Drawing.Pen([System.Drawing.ColorTranslator]::FromHtml("#3b82f6"), 1)
@@ -1661,10 +1721,14 @@ function Paint-DesktopBackground {
                         $rawY = if ($null -ne $orig) { [int]$orig.Y + [int]$script:dragDeltaY } else { [int]$sel.Bounds.Y + [int]$script:dragDeltaY }
                         
                         if ($isCtrl -or $settings.AlignToGrid) {
-                            $col = [int][Math]::Max(0, [Math]::Round(($rawX - 14) / [double]$script:cellWidth))
-                            $row = [int][Math]::Max(0, [Math]::Round(($rawY - 14) / [double]$script:cellHeight))
-                            $rawX = 14 + ($col * $script:cellWidth)
-                            $rawY = 14 + ($row * $script:cellHeight)
+                            $targetScreen = Get-ScreenForPoint $rawX $rawY
+                            $sInfo = Get-ScreenGridBounds $targetScreen
+                            $relX = $rawX - $sInfo.Left - $sInfo.Margin
+                            $relY = $rawY - $sInfo.Top - $sInfo.Margin
+                            $col = [int][Math]::Max(0, [Math]::Min($sInfo.Cols - 1, [Math]::Round($relX / [double]$cWidth)))
+                            $row = [int][Math]::Max(0, [Math]::Min($sInfo.Rows - 1, [Math]::Round($relY / [double]$cHeight)))
+                            $rawX = $sInfo.Left + $sInfo.Margin + ($col * $cWidth)
+                            $rawY = $sInfo.Top + $sInfo.Margin + ($row * $cHeight)
                         }
                         
                         $ghostRect = New-Object System.Drawing.Rectangle($rawX, $rawY, $sel.Bounds.Width, $sel.Bounds.Height)
@@ -2047,9 +2111,7 @@ function Create-ContextMenus {
         $occupiedMap = @{}
         foreach ($item in $script:desktopItems) {
             if ($null -eq $item) { continue }
-            $col = [int][Math]::Max(0, [Math]::Round(($item.Bounds.X - 14) / [double]$script:cellWidth))
-            $row = [int][Math]::Max(0, [Math]::Round(($item.Bounds.Y - 14) / [double]$script:cellHeight))
-            $slot = Find-NearestFreeGridSlot $col $row $occupiedMap
+            $slot = Find-NearestFreeGridSlot $item.Bounds.X $item.Bounds.Y $occupiedMap
             $snapX = $slot.X
             $snapY = $slot.Y
             $item.Bounds = New-Object System.Drawing.Rectangle($snapX, $snapY, $item.Bounds.Width, $item.Bounds.Height)
@@ -2555,12 +2617,12 @@ function Build-DesktopIcons {
 
     $uiScale = 1.0; if ($null -ne $settings.UiScale -and [double]$settings.UiScale -gt 0) { $uiScale = [double]$settings.UiScale }
     $iconSize = [int]$settings.IconScale
-    $itemWidth = [int]($iconSize + (30 * $uiScale))
-    $labelHeight = [int](36 * $uiScale)
-    $itemHeight = [int]($iconSize + $labelHeight + (12 * $uiScale))
+    $itemWidth = [int]($iconSize + (36 * $uiScale))
+    $labelHeight = [int](38 * $uiScale)
+    $itemHeight = [int]($iconSize + $labelHeight + (14 * $uiScale))
 
-    $script:cellWidth = $itemWidth + [int](10 * $uiScale)
-    $script:cellHeight = $itemHeight + [int](10 * $uiScale)
+    $script:cellWidth = $itemWidth + [int](12 * $uiScale)
+    $script:cellHeight = $itemHeight + [int](12 * $uiScale)
     $script:desktopFont = New-Object System.Drawing.Font("Segoe UI", [float](9.0 * $uiScale), [System.Drawing.FontStyle]::Regular)
 
     $occupiedSlots = @{}
@@ -2602,9 +2664,11 @@ function Build-DesktopIcons {
         }
 
         if ($null -ne $savedRb) {
-            $col = [int][Math]::Max(0, [Math]::Round(($savedRb.X - 14) / [double]$script:cellWidth))
-            $row = [int][Math]::Max(0, [Math]::Round(($savedRb.Y - 14) / [double]$script:cellHeight))
-            $slotKey = "$col,$row"
+            $screen = Get-ScreenForPoint $savedRb.X $savedRb.Y
+            $sInfo = Get-ScreenGridBounds $screen
+            $col = [int][Math]::Max(0, [Math]::Min($sInfo.Cols - 1, [Math]::Round(($savedRb.X - $sInfo.Left - $sInfo.Margin) / [double]$script:cellWidth)))
+            $row = [int][Math]::Max(0, [Math]::Min($sInfo.Rows - 1, [Math]::Round(($savedRb.Y - $sInfo.Top - $sInfo.Margin) / [double]$script:cellHeight)))
+            $slotKey = "$($screen.DeviceName)_$col,$row"
             if (-not $occupiedSlots.ContainsKey($slotKey)) {
                 $occupiedSlots[$slotKey] = $true
                 $rbItem.Bounds = New-Object System.Drawing.Rectangle($savedRb.X, $savedRb.Y, $itemWidth, $itemHeight)
@@ -2649,9 +2713,11 @@ function Build-DesktopIcons {
             }
 
             if ($null -ne $savedPos) {
-                $col = [int][Math]::Max(0, [Math]::Round(($savedPos.X - 14) / [double]$script:cellWidth))
-                $row = [int][Math]::Max(0, [Math]::Round(($savedPos.Y - 14) / [double]$script:cellHeight))
-                $slotKey = "$col,$row"
+                $screen = Get-ScreenForPoint $savedPos.X $savedPos.Y
+                $sInfo = Get-ScreenGridBounds $screen
+                $col = [int][Math]::Max(0, [Math]::Min($sInfo.Cols - 1, [Math]::Round(($savedPos.X - $sInfo.Left - $sInfo.Margin) / [double]$script:cellWidth)))
+                $row = [int][Math]::Max(0, [Math]::Min($sInfo.Rows - 1, [Math]::Round(($savedPos.Y - $sInfo.Top - $sInfo.Margin) / [double]$script:cellHeight)))
+                $slotKey = "$($screen.DeviceName)_$col,$row"
                 if (-not $occupiedSlots.ContainsKey($slotKey)) {
                     $occupiedSlots[$slotKey] = $true
                     $itemObj.Bounds = New-Object System.Drawing.Rectangle($savedPos.X, $savedPos.Y, $itemWidth, $itemHeight)
@@ -2665,23 +2731,17 @@ function Build-DesktopIcons {
         }
     }
 
-    # Pass 2: Place all new/unplaced items into the first free non-overlapping grid slots
-    $scanCol = 0; $scanRow = 0
-    $maxRows = [Math]::Max(1, [int][Math]::Floor(($script:primaryForm.ClientSize.Height - 14) / [double]$script:cellHeight))
+    # Pass 2: Place all new/unplaced items into nearest free grid slots across screens (filling columns top to bottom)
+    $primaryScreen = [System.Windows.Forms.Screen]::PrimaryScreen
+    $pInfo = Get-ScreenGridBounds $primaryScreen
     
     foreach ($itemObj in $pendingPlacement) {
-        while ($occupiedSlots.ContainsKey("$scanCol,$scanRow")) {
-            $scanRow++
-            if ($scanRow -ge $maxRows) { $scanRow = 0; $scanCol++ }
-        }
-        $occupiedSlots["$scanCol,$scanRow"] = $true
-        $x = 14 + ($scanCol * $script:cellWidth)
-        $y = 14 + ($scanRow * $script:cellHeight)
+        $freeSlot = Find-NearestFreeGridSlot $pInfo.Left $pInfo.Top $occupiedSlots
+        $x = $freeSlot.X
+        $y = $freeSlot.Y
         $itemObj.Bounds = New-Object System.Drawing.Rectangle($x, $y, $itemWidth, $itemHeight)
         Save-ItemPosition -Path $itemObj.Path -X $x -Y $y -NoSave
         $script:desktopItems += $itemObj
-        $scanRow++
-        if ($scanRow -ge $maxRows) { $scanRow = 0; $scanCol++ }
     }
 
     # Restore active selection
@@ -2733,18 +2793,18 @@ $script:dragDropHandler = {
     param($sender, $e)
     if ($null -eq $sender -or $null -eq $e) { return }
     try {
-        $dropPoint = $sender.PointToClient((New-Object System.Drawing.Point($e.X, $e.Y)))
-
+        $dropScreenPoint = New-Object System.Drawing.Point($e.X, $e.Y)
         $extracted = [OleDropHelper]::ExtractFiles($e.Data, $script:desktopPath)
+        
         if ($null -ne $extracted -and $extracted.Count -gt 0) {
             $occupiedMap = Get-OccupiedGridMap
-            $startCol = [int][Math]::Max(0, [Math]::Round(($dropPoint.X - 14) / [double]$script:cellWidth))
-            $startRow = [int][Math]::Max(0, [Math]::Round(($dropPoint.Y - 14) / [double]$script:cellHeight))
+            $curX = $dropScreenPoint.X
+            $curY = $dropScreenPoint.Y
             
             foreach ($newFile in $extracted) {
-                $slot = Find-NearestFreeGridSlot $startCol $startRow $occupiedMap
+                $slot = Find-NearestFreeGridSlot $curX $curY $occupiedMap
                 Save-ItemPosition -Path $newFile -X $slot.X -Y $slot.Y -NoSave
-                $startRow++
+                $curY += [int]$script:cellHeight
             }
             Save-DesktopSettings
             Refresh-Desktop
@@ -2892,9 +2952,7 @@ $script:mouseUpHandler = {
                     $rawY = if ($null -ne $orig) { [int]$orig.Y + [int]$script:dragDeltaY } else { [int]$item.Bounds.Y + [int]$script:dragDeltaY }
                     
                     if ($isCtrl -or $settings.AlignToGrid) {
-                        $col = [int][Math]::Max(0, [Math]::Round(($rawX - 14) / [double]$script:cellWidth))
-                        $row = [int][Math]::Max(0, [Math]::Round(($rawY - 14) / [double]$script:cellHeight))
-                        $freeSlot = Find-NearestFreeGridSlot $col $row $occupiedMap
+                        $freeSlot = Find-NearestFreeGridSlot $rawX $rawY $occupiedMap
                         $snapX = $freeSlot.X
                         $snapY = $freeSlot.Y
                     } else {
