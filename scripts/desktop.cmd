@@ -1,37 +1,12 @@
+<# : hybrid batch/powershell bootstrap
 @echo off
-setlocal EnableExtensions
-chcp 65001 >nul
-
-rem ============================================================
-rem 001 - CMD BOOTSTRAP (100%% HIDDEN SPAWN & AUTO-CLOSE CMD)
-rem ============================================================
-
-set "EMULATED_CMD=%~f0"
-set "PSFILE=%TEMP%\EmulatedDesktop_%RANDOM%_%RANDOM%.ps1"
-set "VBSFILE=%TEMP%\EmulatedDesktop_%RANDOM%_%RANDOM%.vbs"
-
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
- "$a=Get-Content -LiteralPath $env:EMULATED_CMD;" ^
- "$i=[Array]::IndexOf($a,'#=== POWERSHELL START ===');" ^
- "if($i -lt 0){exit 1};" ^
- "$a[($i+1)..($a.Length-1)] | Set-Content -LiteralPath $env:PSFILE -Encoding UTF8"
-
-if not exist "%PSFILE%" exit /b 1
-
-(
-echo Set WshShell = CreateObject("WScript.Shell"^)
-echo WshShell.Run "powershell.exe -WindowStyle Hidden -STA -NoProfile -ExecutionPolicy Bypass -File """ ^& "%PSFILE%" ^& """", 0, False
-echo Set WshShell = Nothing
-) > "%VBSFILE%"
-
-start "" wscript.exe "%VBSFILE%"
-
-timeout /t 1 /nobreak >nul 2>&1
-if exist "%VBSFILE%" del /f /q "%VBSFILE%" >nul 2>&1
-exit /b 0
-
-
-#=== POWERSHELL START ===
+setlocal
+set "VBS=%TEMP%\_dsk_run_%RANDOM%.vbs"
+(echo CreateObject("WScript.Shell"^).Run "powershell.exe -WindowStyle Hidden -STA -NoProfile -ExecutionPolicy Bypass -Command """ ^& "Invoke-Expression ([System.IO.File]::ReadAllText('%~f0', [System.Text.Encoding]::UTF8))""" , 0, False) > "%VBS%"
+wscript.exe "%VBS%"
+del "%VBS%" >nul 2>&1
+exit /b
+#>
 
 # ============================================================
 # 002 - ASSEMBLIES & VISUAL STYLES
@@ -55,8 +30,8 @@ if (-not (Test-Path -LiteralPath $settingsDirectory)) {
 
 function Get-DefaultSettings {
     return [ordered]@{
-        BackgroundType   = "Color"
-        BackgroundColor  = "#0b0f19"
+        BackgroundType   = "Brand"
+        BackgroundColor  = "#040306"
         ImagePath        = ""
         ImageMode        = "Fill"
         WallpaperDimming = 0
@@ -114,7 +89,7 @@ $settings.IconScale = [Math]::Max(32, [Math]::Min(256, [int]$settings.IconScale)
 if ($null -eq $settings.UiScale -or [double]$settings.UiScale -le 0.4) { $settings.UiScale = 1.0 }
 if ([string]::IsNullOrWhiteSpace($settings.SortBy)) { $settings.SortBy = "Name" }
 if ([string]::IsNullOrWhiteSpace($settings.BackgroundColor)) { $settings.BackgroundColor = "#0b0f19" }
-if ([string]::IsNullOrWhiteSpace($settings.BackgroundType)) { $settings.BackgroundType = "Color" }
+if ([string]::IsNullOrWhiteSpace($settings.BackgroundType)) { $settings.BackgroundType = "Brand" }
 if ([string]::IsNullOrWhiteSpace($settings.ImageMode)) { $settings.ImageMode = "Fill" }
 if ([string]::IsNullOrWhiteSpace($settings.DesktopPath)) { $settings.DesktopPath = Join-Path $env:USERPROFILE "Desktop" }
 try { $settings.DesktopPath = [Environment]::ExpandEnvironmentVariables($settings.DesktopPath) } catch { }
@@ -1542,17 +1517,127 @@ function Apply-Background {
             $bmp = New-Object System.Drawing.Bitmap($form.ClientSize.Width, $form.ClientSize.Height, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
             $g = [System.Drawing.Graphics]::FromImage($bmp)
             try {
-                $g.Clear((Get-ColorFromHex $settings.BackgroundColor))
-            
-                if ($settings.BackgroundType -eq "Image" -and $null -ne $script:backgroundImage) {
+                $width = $bmp.Width; $height = $bmp.Height
+                $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+                $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
+                $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+                $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+                $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+
+                if ($settings.BackgroundType -eq "Brand") {
+                    # 1. Base Pitch Black Canvas
+                    $rect = New-Object System.Drawing.Rectangle(0, 0, $width, $height)
+                    $g.Clear([System.Drawing.ColorTranslator]::FromHtml("#020104"))
+
+                    # 2. REAL Optical Bicubic Gaussian Blur for the -45 Degree Crimson Beam
+                    $lowW = 160; $lowH = 90
+                    $blurBmp = New-Object System.Drawing.Bitmap($lowW, $lowH, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+                    $bgLow = [System.Drawing.Graphics]::FromImage($blurBmp)
+                    $bgLow.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+
+                    $lowRect = New-Object System.Drawing.Rectangle(0, 0, $lowW, $lowH)
+                    $gradBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($lowRect, [System.Drawing.Color]::Transparent, [System.Drawing.Color]::Transparent, -45.0)
+
+                    $cb = New-Object System.Drawing.Drawing2D.ColorBlend
+                    $cb.Positions = @(0.0, 0.20, 0.40, 0.50, 0.60, 0.80, 1.0)
+                    $cb.Colors = @(
+                        [System.Drawing.Color]::FromArgb(0, 0, 0, 0),
+                        [System.Drawing.Color]::FromArgb(10, 50, 6, 10),
+                        [System.Drawing.Color]::FromArgb(35, 120, 16, 24),
+                        [System.Drawing.Color]::FromArgb(70, 220, 30, 45),
+                        [System.Drawing.Color]::FromArgb(35, 120, 16, 24),
+                        [System.Drawing.Color]::FromArgb(10, 50, 6, 10),
+                        [System.Drawing.Color]::FromArgb(0, 0, 0, 0)
+                    )
+                    $gradBrush.InterpolationColors = $cb
+                    $bgLow.FillRectangle($gradBrush, $lowRect)
+                    $gradBrush.Dispose()
+                    $bgLow.Dispose()
+
+                    $destRect = New-Object System.Drawing.Rectangle(0, 0, $width, $height)
+                    $g.DrawImage($blurBmp, $destRect, 0, 0, $lowW, $lowH, [System.Drawing.GraphicsUnit]::Pixel)
+                    $blurBmp.Dispose()
+
+                    # 3. Unified Single-Line Typography: "Red" + "Skia" + ".dev" on the exact same baseline
+                    $fontMain = New-Object System.Drawing.Font("Segoe UI", 38, [System.Drawing.FontStyle]::Bold)
+                    $fontSub  = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+
+                    $sfCenter = New-Object System.Drawing.StringFormat
+                    $sfCenter.Alignment = [System.Drawing.StringAlignment]::Center
+                    $sfCenter.LineAlignment = [System.Drawing.StringAlignment]::Center
+
+                    $shadowDeep = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(250, 0, 0, 0))
+                    $shadowSoft = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(140, 0, 0, 0))
+
+                    $redBrush   = New-Object System.Drawing.SolidBrush([System.Drawing.ColorTranslator]::FromHtml("#ef4444"))
+                    $skiaBrush  = New-Object System.Drawing.SolidBrush([System.Drawing.ColorTranslator]::FromHtml("#ffffff"))
+                    $devBrush   = New-Object System.Drawing.SolidBrush([System.Drawing.ColorTranslator]::FromHtml("#f87171"))
+                    $subBrush   = New-Object System.Drawing.SolidBrush([System.Drawing.ColorTranslator]::FromHtml("#94a3b8"))
+
+                    # Measure accurately for single-line inline placement
+                    $szRed  = $g.MeasureString("Red", $fontMain)
+                    $szSkia = $g.MeasureString("Skia", $fontMain)
+                    $szDev  = $g.MeasureString(".dev", $fontMain)
+
+                    $k1 = 12; $k2 = 10
+                    $totalTitleW = ($szRed.Width - $k1) + ($szSkia.Width - $k2) + $szDev.Width
+
+                    $startX = [int](($width - $totalTitleW) / 2)
+                    $centerY = [int]($height / 2) - 15
+
+                    $titleY = $centerY - 38
+
+                    # Shadows (Same single line)
+                    $g.DrawString("Red", $fontMain, $shadowSoft, [float]($startX + 3), [float]($titleY + 3))
+                    $g.DrawString("Red", $fontMain, $shadowDeep, [float]($startX + 1.5), [float]($titleY + 1.5))
+
+                    $xSkia = $startX + $szRed.Width - $k1
+                    $g.DrawString("Skia", $fontMain, $shadowSoft, [float]($xSkia + 3), [float]($titleY + 3))
+                    $g.DrawString("Skia", $fontMain, $shadowDeep, [float]($xSkia + 1.5), [float]($titleY + 1.5))
+
+                    $xDev = $xSkia + $szSkia.Width - $k2
+                    $g.DrawString(".dev", $fontMain, $shadowSoft, [float]($xDev + 3), [float]($titleY + 3))
+                    $g.DrawString(".dev", $fontMain, $shadowDeep, [float]($xDev + 1.5), [float]($titleY + 1.5))
+
+                    # Foregrounds (Same single line)
+                    $g.DrawString("Red", $fontMain, $redBrush, [float]$startX, [float]$titleY)
+                    $g.DrawString("Skia", $fontMain, $skiaBrush, [float]$xSkia, [float]$titleY)
+                    $g.DrawString(".dev", $fontMain, $devBrush, [float]$xDev, [float]$titleY)
+
+                    # 4. Splitter Line: Exactly Centered Horizontally & Mathematically Centered Vertically
+                    $titleHeight = 52
+                    $barY = $titleY + $titleHeight + 14
+                    $barW = 160; $barH = 2
+                    $barX = [int](($width - $barW) / 2)
+
+                    $barRect = New-Object System.Drawing.Rectangle($barX, $barY, $barW, $barH)
+                    $barBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($barRect, [System.Drawing.Color]::Transparent, [System.Drawing.Color]::Transparent, 0.0)
+                    $barCb = New-Object System.Drawing.Drawing2D.ColorBlend
+                    $barCb.Positions = @(0.0, 0.5, 1.0)
+                    $barCb.Colors = @(
+                        [System.Drawing.Color]::FromArgb(0, 239, 68, 68),
+                        [System.Drawing.Color]::FromArgb(230, 239, 68, 68),
+                        [System.Drawing.Color]::FromArgb(0, 239, 68, 68)
+                    )
+                    $barBrush.InterpolationColors = $barCb
+                    try {
+                        $g.FillRectangle($barBrush, $barRect)
+                    } finally { $barBrush.Dispose() }
+
+                    # 5. Subtitle: D E S K T O P   E M U L A T O R (14px gap below splitter line)
+                    $subY = $barY + 2 + 14
+                    $subRect = New-Object System.Drawing.RectangleF(0, [float]$subY, [float]$width, 24)
+                    $subShadowRect = New-Object System.Drawing.RectangleF(1, [float]($subY + 1), [float]$width, 24)
+                    $g.DrawString("D E S K T O P   E M U L A T O R", $fontSub, $shadowDeep, $subShadowRect, $sfCenter)
+                    $g.DrawString("D E S K T O P   E M U L A T O R", $fontSub, $subBrush, $subRect, $sfCenter)
+
+                    $fontMain.Dispose(); $fontSub.Dispose(); $sfCenter.Dispose()
+                    $skiaBrush.Dispose(); $redBrush.Dispose(); $devBrush.Dispose(); $subBrush.Dispose(); $shadowDeep.Dispose(); $shadowSoft.Dispose()
+                } elseif ($settings.BackgroundType -eq "Image" -and $null -ne $script:backgroundImage) {
+                    $g.Clear((Get-ColorFromHex $settings.BackgroundColor))
                     $image = $script:backgroundImage
                     if ($image.Width -gt 0 -and $image.Height -gt 0) {
-                        $width = $bmp.Width; $height = $bmp.Height
                         try {
-                            $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-                            $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-                            $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
-            
                             $mode = [string]$settings.ImageMode
                             if ($mode -eq "Stretch") {
                                 $g.DrawImage($image, (New-Object System.Drawing.Rectangle(0,0,$width,$height)))
@@ -1569,17 +1654,19 @@ function Apply-Background {
                                 $x = [int](($width - $newWidth) / 2); $y = [int](($height - $newHeight) / 2)
                                 $g.DrawImage($image, (New-Object System.Drawing.Rectangle($x, $y, $newWidth, $newHeight)))
                             }
-                            
-                            $dimVal = [Math]::Max(0, [Math]::Min(90, [int]$settings.WallpaperDimming))
-                            if ($dimVal -gt 0) {
-                                $alpha = [int](255 * ($dimVal / 100.0))
-                                $dimBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb($alpha, 0, 0, 0))
-                                try {
-                                    $g.FillRectangle($dimBrush, 0, 0, $width, $height)
-                                } finally { $dimBrush.Dispose() }
-                            }
                         } catch { }
                     }
+                } else {
+                    $g.Clear((Get-ColorFromHex $settings.BackgroundColor))
+                }
+
+                $dimVal = [Math]::Max(0, [Math]::Min(90, [int]$settings.WallpaperDimming))
+                if ($dimVal -gt 0) {
+                    $alpha = [int](255 * ($dimVal / 100.0))
+                    $dimBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb($alpha, 0, 0, 0))
+                    try {
+                        $g.FillRectangle($dimBrush, 0, 0, $width, $height)
+                    } finally { $dimBrush.Dispose() }
                 }
             } finally { $g.Dispose() }
             
@@ -2352,19 +2439,24 @@ function Show-Settings {
         return $c
     }
 
-    # Card 1: Background & Wallpaper Engine
+    # Card 1: Background & Wallpaper Engine (Signature RedSkia.Dev Branding Included)
     $cardBg = Add-SettingsCard "Desktop Background & Wallpaper" 295
-    $rbColor = New-Object System.Windows.Forms.RadioButton; $rbColor.Text = "Solid Color"; $rbColor.Left = [int](15 * $uiScale); $rbColor.Top = [int](42 * $uiScale); $rbColor.AutoSize = $true; $rbColor.ForeColor = [System.Drawing.Color]::White
-    $rbImage = New-Object System.Windows.Forms.RadioButton; $rbImage.Text = "Image / Wallpaper"; $rbImage.Left = [int](130 * $uiScale); $rbImage.Top = [int](42 * $uiScale); $rbImage.AutoSize = $true; $rbImage.ForeColor = [System.Drawing.Color]::White
-    if ($settings.BackgroundType -eq "Image") { $rbImage.Checked = $true } else { $rbColor.Checked = $true }
-    $cardBg.Controls.Add($rbColor); $cardBg.Controls.Add($rbImage)
+    $rbBrand = New-Object System.Windows.Forms.RadioButton; $rbBrand.Text = "RedSkia.Dev (Default)"; $rbBrand.Left = [int](15 * $uiScale); $rbBrand.Top = [int](42 * $uiScale); $rbBrand.AutoSize = $true; $rbBrand.ForeColor = [System.Drawing.Color]::White
+    $rbColor = New-Object System.Windows.Forms.RadioButton; $rbColor.Text = "Solid Color"; $rbColor.Left = [int](175 * $uiScale); $rbColor.Top = [int](42 * $uiScale); $rbColor.AutoSize = $true; $rbColor.ForeColor = [System.Drawing.Color]::White
+    $rbImage = New-Object System.Windows.Forms.RadioButton; $rbImage.Text = "Image / Wallpaper"; $rbImage.Left = [int](290 * $uiScale); $rbImage.Top = [int](42 * $uiScale); $rbImage.AutoSize = $true; $rbImage.ForeColor = [System.Drawing.Color]::White
+    
+    if ($settings.BackgroundType -eq "Image") { $rbImage.Checked = $true } 
+    elseif ($settings.BackgroundType -eq "Color") { $rbColor.Checked = $true }
+    else { $rbBrand.Checked = $true }
 
-    # Color swatches
-    $swatches = @("#0b0f19", "#0f172a", "#18181b", "#1e1b4b", "#064e3b", "#4c0519", "#000000")
+    $cardBg.Controls.Add($rbBrand); $cardBg.Controls.Add($rbColor); $cardBg.Controls.Add($rbImage)
+
+    # Top 10 Vibrant Rainbow Palette Swatches + Dark Neutrals
+    $rainbowHexes = @("#ef4444", "#f97316", "#eab308", "#84cc16", "#10b981", "#06b6d4", "#3b82f6", "#6366f1", "#a855f7", "#ec4899", "#0f172a", "#040306")
     $swatchX = [int](15 * $uiScale)
-    foreach ($colHex in $swatches) {
+    foreach ($colHex in $rainbowHexes) {
         $sw = New-Object System.Windows.Forms.Panel
-        $sw.Left = $swatchX; $sw.Top = [int](72 * $uiScale); $sw.Width = [int](26 * $uiScale); $sw.Height = [int](26 * $uiScale)
+        $sw.Left = $swatchX; $sw.Top = [int](72 * $uiScale); $sw.Width = [int](22 * $uiScale); $sw.Height = [int](22 * $uiScale)
         $sw.BackColor = [System.Drawing.ColorTranslator]::FromHtml($colHex)
         $sw.Cursor = [System.Windows.Forms.Cursors]::Hand
         $sw.Tag = $colHex
@@ -2375,12 +2467,12 @@ function Show-Settings {
             Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms
         })
         $cardBg.Controls.Add($sw)
-        $swatchX += [int](32 * $uiScale)
+        $swatchX += [int](26 * $uiScale)
     }
 
     $colorBtn = New-Object System.Windows.Forms.Button
     $colorBtn.Text = "Pick Custom Color..."
-    $colorBtn.Left = [int](15 * $uiScale); $colorBtn.Top = [int](110 * $uiScale); $colorBtn.Width = [int](170 * $uiScale); $colorBtn.Height = [int](32 * $uiScale)
+    $colorBtn.Left = [int](15 * $uiScale); $colorBtn.Top = [int](106 * $uiScale); $colorBtn.Width = [int](210 * $uiScale); $colorBtn.Height = [int](32 * $uiScale)
     $colorBtn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $colorBtn.FlatAppearance.BorderSize = 0
     $colorBtn.BackColor = $script:Colors.InputBg; $colorBtn.ForeColor = [System.Drawing.Color]::White; $colorBtn.Cursor = [System.Windows.Forms.Cursors]::Hand
     $colorBtn.Add_Click({
@@ -2397,8 +2489,8 @@ function Show-Settings {
     $cardBg.Controls.Add($colorBtn)
 
     $browseBtn = New-Object System.Windows.Forms.Button
-    $browseBtn.Text = "Browse Wallpaper..."
-    $browseBtn.Left = [int](200 * $uiScale); $browseBtn.Top = [int](110 * $uiScale); $browseBtn.Width = [int](160 * $uiScale); $browseBtn.Height = [int](32 * $uiScale)
+    $browseBtn.Text = "Browse Image..."
+    $browseBtn.Left = [int](240 * $uiScale); $browseBtn.Top = [int](106 * $uiScale); $browseBtn.Width = [int](210 * $uiScale); $browseBtn.Height = [int](32 * $uiScale)
     $browseBtn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $browseBtn.FlatAppearance.BorderSize = 0
     $browseBtn.BackColor = $script:Colors.InputBg; $browseBtn.ForeColor = [System.Drawing.Color]::White; $browseBtn.Cursor = [System.Windows.Forms.Cursors]::Hand
     $browseBtn.Add_Click({
@@ -2450,7 +2542,7 @@ function Show-Settings {
 
     $d0 = New-Object System.Windows.Forms.Button; $d0.Text = "None (0%)"; $d0.Left = [int](15 * $uiScale); $d0.Top = [int](242 * $uiScale); $d0.Width = [int](105 * $uiScale); $d0.Height = [int](26 * $uiScale); $d0.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $d0.BackColor = $script:Colors.InputBg; $d0.ForeColor = [System.Drawing.Color]::White; $d0.FlatAppearance.BorderSize = 0; $d0.Cursor = [System.Windows.Forms.Cursors]::Hand
     $d20 = New-Object System.Windows.Forms.Button; $d20.Text = "Light (20%)"; $d20.Left = [int](130 * $uiScale); $d20.Top = [int](242 * $uiScale); $d20.Width = [int](105 * $uiScale); $d20.Height = [int](26 * $uiScale); $d20.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $d20.BackColor = $script:Colors.InputBg; $d20.ForeColor = [System.Drawing.Color]::White; $d20.FlatAppearance.BorderSize = 0; $d20.Cursor = [System.Windows.Forms.Cursors]::Hand
-    $d40 = New-Object System.Windows.Forms.Button; $d40.Text = "Medium (40%)"; $d40.Left = [int](245 * $uiScale); $d40.Top = [int](242 * $uiScale); $d40.Width = [int](105 * $uiScale); $d40.Height = [int](26 * $uiScale); $d40.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $d40.BackColor = $script:Colors.InputBg; $d40.ForeColor = [System.Drawing.Color]::White; $d40.FlatAppearance.BorderSize = 0; $d40.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $d40 = New-Object System.Windows.Forms.Button; $d40.Text = "Medium (40%)"; $d40.Left = [int](245 * $uiScale); $d40.Top = [int](242 * $uiScale); $d40.Width = [int](105 * $uiScale); $d40.Height = [int](26 * $uiScale); $d40.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $d20.BackColor = $script:Colors.InputBg; $d40.ForeColor = [System.Drawing.Color]::White; $d40.FlatAppearance.BorderSize = 0; $d40.Cursor = [System.Windows.Forms.Cursors]::Hand
     $d60 = New-Object System.Windows.Forms.Button; $d60.Text = "Dark (60%)"; $d60.Left = [int](360 * $uiScale); $d60.Top = [int](242 * $uiScale); $d60.Width = [int](110 * $uiScale); $d60.Height = [int](26 * $uiScale); $d60.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $d60.BackColor = $script:Colors.InputBg; $d60.ForeColor = [System.Drawing.Color]::White; $d60.FlatAppearance.BorderSize = 0; $d60.Cursor = [System.Windows.Forms.Cursors]::Hand
 
     $d0.Add_Click({ $dimTrack.Value = 0; $dimLbl.Text = "Wallpaper Dimming: 0%"; $settings.WallpaperDimming = 0; Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms })
@@ -2460,6 +2552,7 @@ function Show-Settings {
 
     $cardBg.Controls.Add($d0); $cardBg.Controls.Add($d20); $cardBg.Controls.Add($d40); $cardBg.Controls.Add($d60)
 
+    $rbBrand.Add_CheckedChanged({ if ($rbBrand.Checked) { $settings.BackgroundType = "Brand"; Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms } })
     $rbColor.Add_CheckedChanged({ if ($rbColor.Checked) { $settings.BackgroundType = "Color"; Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms } })
     $rbImage.Add_CheckedChanged({ if ($rbImage.Checked) { $settings.BackgroundType = "Image"; Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms } })
 
@@ -3298,13 +3391,5 @@ Clear-IconCache
 if ($script:contextMenu) { try { $script:contextMenu.Dispose() } catch { } }
 if ($script:itemContextMenu) { try { $script:itemContextMenu.Dispose() } catch { } }
 if ($script:recycleBinContextMenu) { try { $script:recycleBinContextMenu.Dispose() } catch { } }
-
-# Self-delete temporary payload file
-try {
-    $currentScript = $MyInvocation.MyCommand.Definition
-    if ($currentScript -and (Test-Path -LiteralPath $currentScript)) {
-        Remove-Item -LiteralPath $currentScript -Force -ErrorAction SilentlyContinue
-    }
-} catch { }
 
 [System.Environment]::Exit(0)
