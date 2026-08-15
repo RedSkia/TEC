@@ -3,26 +3,31 @@ setlocal EnableExtensions
 chcp 65001 >nul
 
 rem ============================================================
-rem 001 - CMD BOOTSTRAP (AUTO DETACH & CLOSE CONSOLE WINDOW)
+rem 001 - CMD BOOTSTRAP (100%% HIDDEN SPAWN & AUTO-CLOSE CMD)
 rem ============================================================
 
 set "EMULATED_CMD=%~f0"
 set "PSFILE=%TEMP%\EmulatedDesktop_%RANDOM%_%RANDOM%.ps1"
+set "VBSFILE=%TEMP%\EmulatedDesktop_%RANDOM%_%RANDOM%.vbs"
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
  "$a=Get-Content -LiteralPath $env:EMULATED_CMD;" ^
  "$i=[Array]::IndexOf($a,'#=== POWERSHELL START ===');" ^
- "if($i -lt 0){Write-Host 'ERROR: PowerShell marker not found';exit 1};" ^
+ "if($i -lt 0){exit 1};" ^
  "$a[($i+1)..($a.Length-1)] | Set-Content -LiteralPath $env:PSFILE -Encoding UTF8"
 
-if not exist "%PSFILE%" (
-    echo.
-    echo ERROR: Could not create PowerShell payload.
-    pause
-    exit /b 1
-)
+if not exist "%PSFILE%" exit /b 1
 
-start "" powershell.exe -WindowStyle Hidden -STA -NoProfile -ExecutionPolicy Bypass -File "%PSFILE%"
+(
+echo Set WshShell = CreateObject("WScript.Shell"^)
+echo WshShell.Run "powershell.exe -WindowStyle Hidden -STA -NoProfile -ExecutionPolicy Bypass -File """ ^& "%PSFILE%" ^& """", 0, False
+echo Set WshShell = Nothing
+) > "%VBSFILE%"
+
+start "" wscript.exe "%VBSFILE%"
+
+timeout /t 1 /nobreak >nul 2>&1
+if exist "%VBSFILE%" del /f /q "%VBSFILE%" >nul 2>&1
 exit /b 0
 
 
@@ -292,7 +297,6 @@ function Get-VisibleDesktopCoordinate([int]$TargetX, [int]$TargetY, [int]$ItemWi
         }
     }
 
-    # When monitor is disconnected, clamp onto Primary Screen area while preserving home coordinates in settings
     $primary = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
     $clampedX = [Math]::Max($primary.Left + 14, [Math]::Min($primary.Right - $ItemWidth - 14, $TargetX))
     $clampedY = [Math]::Max($primary.Top + 14, [Math]::Min($primary.Bottom - $ItemHeight - 14, $TargetY))
@@ -360,7 +364,7 @@ function Find-NearestFreeGridSlot([int]$TargetCol, [int]$TargetRow, [hashtable]$
 }
 
 # ============================================================
-# 008 - NATIVE C# SUITE: RECYCLE BIN, HOOKS, OLE & ICONS
+# 008 - NATIVE C# SUITE: RECYCLE BIN, HOOKS, OLE, ICONS & MODERN SCROLLBAR
 # ============================================================
 
 Add-Type -TypeDefinition @'
@@ -389,6 +393,126 @@ public static class NativeWindowDrag {
             ReleaseCapture();
             SendMessage(hWnd, WM_NCLBUTTONDOWN, (IntPtr)HTCAPTION, IntPtr.Zero);
         } catch { }
+    }
+}
+
+public class ModernScrollBar : Control {
+    private int _minimum = 0;
+    private int _maximum = 100;
+    private int _value = 0;
+    private int _largeChange = 20;
+    private bool _isDragging = false;
+    private int _dragStartMouseY = 0;
+    private int _dragStartValue = 0;
+    private bool _isHovered = false;
+
+    public event EventHandler ValueChanged;
+
+    public int Minimum { get { return _minimum; } set { _minimum = value; Invalidate(); } }
+    public int Maximum { get { return _maximum; } set { _maximum = value; Invalidate(); } }
+    public int LargeChange { get { return _largeChange; } set { _largeChange = value; Invalidate(); } }
+    public int Value {
+        get { return _value; }
+        set {
+            int clamped = Math.Max(_minimum, Math.Min(_maximum, value));
+            if (_value != clamped) {
+                _value = clamped;
+                Invalidate();
+                if (ValueChanged != null) ValueChanged(this, EventArgs.Empty);
+            }
+        }
+    }
+
+    public ModernScrollBar() {
+        SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+        Width = 8;
+        BackColor = Color.FromArgb(15, 23, 42);
+        Cursor = Cursors.Default;
+    }
+
+    protected override void OnMouseEnter(EventArgs e) { _isHovered = true; Invalidate(); base.OnMouseEnter(e); }
+    protected override void OnMouseLeave(EventArgs e) { if (!_isDragging) { _isHovered = false; Invalidate(); } base.OnMouseLeave(e); }
+
+    private Rectangle GetThumbRectangle() {
+        int trackHeight = Height;
+        if (trackHeight <= 0 || _maximum <= _minimum) return Rectangle.Empty;
+
+        int totalRange = (_maximum - _minimum) + _largeChange;
+        int thumbHeight = Math.Max(24, (int)((float)_largeChange / totalRange * trackHeight));
+        int availableTrack = trackHeight - thumbHeight;
+
+        int thumbY = (int)((float)(_value - _minimum) / (_maximum - _minimum) * availableTrack);
+        return new Rectangle(1, thumbY, Width - 2, thumbHeight);
+    }
+
+    protected override void OnPaint(PaintEventArgs e) {
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(BackColor);
+
+        Rectangle thumb = GetThumbRectangle();
+        if (!thumb.IsEmpty) {
+            Color thumbColor = _isDragging ? ColorTranslator.FromHtml("#3b82f6") : (_isHovered ? ColorTranslator.FromHtml("#64748b") : ColorTranslator.FromHtml("#334155"));
+            using (SolidBrush sb = new SolidBrush(thumbColor)) {
+                using (GraphicsPath gp = GetRoundedRectangle(thumb, (Width - 2) / 2)) {
+                    g.FillPath(sb, gp);
+                }
+            }
+        }
+    }
+
+    private GraphicsPath GetRoundedRectangle(Rectangle rc, int r) {
+        GraphicsPath gp = new GraphicsPath();
+        if (r <= 0) { gp.AddRectangle(rc); return gp; }
+        int d = r * 2;
+        gp.AddArc(rc.X, rc.Y, d, d, 180, 90);
+        gp.AddArc(rc.Right - d, rc.Y, d, d, 270, 90);
+        gp.AddArc(rc.Right - d, rc.Bottom - d, d, d, 0, 90);
+        gp.AddArc(rc.X, rc.Bottom - d, d, d, 90, 90);
+        gp.CloseFigure();
+        return gp;
+    }
+
+    protected override void OnMouseDown(MouseEventArgs e) {
+        if (e.Button == MouseButtons.Left) {
+            Rectangle thumb = GetThumbRectangle();
+            if (thumb.Contains(e.Location)) {
+                _isDragging = true;
+                _dragStartMouseY = e.Y;
+                _dragStartValue = _value;
+                Capture = true;
+            } else {
+                int availableTrack = Height - thumb.Height;
+                if (availableTrack > 0) {
+                    float ratio = (float)Math.Max(0, Math.Min(availableTrack, e.Y - (thumb.Height / 2))) / availableTrack;
+                    Value = _minimum + (int)(ratio * (_maximum - _minimum));
+                }
+            }
+        }
+        base.OnMouseDown(e);
+    }
+
+    protected override void OnMouseMove(MouseEventArgs e) {
+        if (_isDragging) {
+            Rectangle thumb = GetThumbRectangle();
+            int availableTrack = Height - thumb.Height;
+            if (availableTrack > 0) {
+                int deltaY = e.Y - _dragStartMouseY;
+                float deltaVal = ((float)deltaY / availableTrack) * (_maximum - _minimum);
+                Value = _dragStartValue + (int)deltaVal;
+            }
+        }
+        base.OnMouseMove(e);
+    }
+
+    protected override void OnMouseUp(MouseEventArgs e) {
+        if (_isDragging) {
+            _isDragging = false;
+            Capture = false;
+            _isHovered = ClientRectangle.Contains(e.Location);
+            Invalidate();
+        }
+        base.OnMouseUp(e);
     }
 }
 
@@ -436,10 +560,14 @@ public class CustomDesktopForm : Form {
     private const uint SWP_NOSIZE = 0x0001;
     private const uint SWP_SHOWWINDOW = 0x0040;
 
+    [DllImport("kernel32.dll")]
+    private static extern bool FreeConsole();
+
     public static HashSet<IntPtr> DesktopHwnds = new HashSet<IntPtr>();
 
     public static void HideConsole() {
         try {
+            FreeConsole();
             IntPtr hWnd = GetConsoleWindow();
             if (hWnd != IntPtr.Zero) {
                 ShowWindow(hWnd, SW_HIDE);
@@ -1332,15 +1460,28 @@ function Get-DesktopIcon {
 # ============================================================
 
 function Load-BackgroundImage {
-    if ($null -ne $script:backgroundImage) { try { $script:backgroundImage.Dispose() } catch { }; $script:backgroundImage = $null }
+    if ($null -ne $script:backgroundImage) { 
+        try { $script:backgroundImage.Dispose() } catch { }
+        $script:backgroundImage = $null 
+    }
     if ($settings.BackgroundType -ne "Image" -or [string]::IsNullOrWhiteSpace($settings.ImagePath) -or -not (Test-Path -LiteralPath $settings.ImagePath)) { return }
     try {
-        $source = [System.Drawing.Image]::FromFile($settings.ImagePath)
-        try { $script:backgroundImage = New-Object System.Drawing.Bitmap($source) } finally { $source.Dispose() }
-    } catch { $script:backgroundImage = $null }
+        $bytes = [System.IO.File]::ReadAllBytes($settings.ImagePath)
+        $ms = New-Object System.IO.MemoryStream($bytes, 0, $bytes.Length)
+        $source = [System.Drawing.Image]::FromStream($ms)
+        try { 
+            $script:backgroundImage = New-Object System.Drawing.Bitmap($source) 
+        } finally { 
+            $source.Dispose()
+            $ms.Dispose()
+        }
+    } catch { 
+        $script:backgroundImage = $null 
+    }
 }
 
 function Apply-Background {
+    Load-BackgroundImage
     foreach ($form in $script:forms) {
         if ($null -eq $form -or $form.IsDisposed -or $form.ClientSize.Width -le 0 -or $form.ClientSize.Height -le 0) { continue }
         
@@ -1423,7 +1564,6 @@ function Paint-DesktopBackground {
                 if ($script:isDragging -and ($script:selectedItems -contains $item)) { continue }
                 $b = $item.Bounds
                 
-                # Check if item intersects this specific monitor's client bounds
                 if (-not $Sender.ClientRectangle.IntersectsWith($b)) { continue }
                 
                 $isCut = ($script:cutFiles -contains $item.Path)
@@ -1862,12 +2002,10 @@ function New-DesktopTextFile {
 function Create-ContextMenus {
     $uiScale = 1.0; if ($null -ne $settings.UiScale) { $uiScale = [double]$settings.UiScale }
 
-    # Dispose previous context menus cleanly to prevent handle leakage
     if ($null -ne $script:contextMenu) { try { $script:contextMenu.Dispose() } catch {} }
     if ($null -ne $script:itemContextMenu) { try { $script:itemContextMenu.Dispose() } catch {} }
     if ($null -ne $script:recycleBinContextMenu) { try { $script:recycleBinContextMenu.Dispose() } catch {} }
 
-    # Desktop Context Menu
     $menu = New-Object System.Windows.Forms.ContextMenuStrip
     $menu.MaximumSize = New-Object System.Drawing.Size(0, [int]([System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea.Height * 0.9))
     $menu.BackColor = [System.Drawing.ColorTranslator]::FromHtml("#0f172a")
@@ -2032,7 +2170,7 @@ function Create-ContextMenus {
 }
 
 # ============================================================
-# 013 - REFRESH & RICH PERSONALIZATION SETTINGS UI
+# 013 - REFRESH & RICH PERSONALIZATION SETTINGS UI (MODERN SCROLLBAR)
 # ============================================================
 
 function Refresh-Desktop {
@@ -2060,7 +2198,7 @@ function Show-Settings {
     $form.Text = "Personalization & Settings"
     $form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
     $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
-    $form.Width = [int](550 * $uiScale); $form.Height = [int](720 * $uiScale)
+    $form.Width = [int](560 * $uiScale); $form.Height = [int](720 * $uiScale)
     $form.BackColor = $script:Colors.Background
     Enable-DoubleBuffer $form
 
@@ -2099,15 +2237,36 @@ function Show-Settings {
     Enable-FormDragging $form @($header, $title)
     $form.Controls.Add($header)
 
-    # Scrollable Body Panel
+    # Modern Outer Container Panel (Zero Win95 Scrollbars)
     $body = New-Object System.Windows.Forms.Panel
     $body.Dock = [System.Windows.Forms.DockStyle]::Fill
-    $body.AutoScroll = $true
-    $body.Padding = New-Object System.Windows.Forms.Padding([int](20 * $uiScale))
+    $body.BackColor = $script:Colors.Background
+    $body.AutoScroll = $false
+    Enable-DoubleBuffer $body
     $form.Controls.Add($body)
     $body.BringToFront()
 
-    $cardW = [int](495 * $uiScale)
+    # Inner Movable Content Panel
+    $content = New-Object System.Windows.Forms.Panel
+    $content.Left = 0; $content.Top = 0; $content.Width = $body.Width - [int](14 * $uiScale)
+    $content.BackColor = $script:Colors.Background
+    Enable-DoubleBuffer $content
+    $body.Controls.Add($content)
+
+    # Modern Rounded Dark Scrollbar
+    $scrollBar = New-Object ModernScrollBar
+    $scrollBar.Left = $body.Width - [int](10 * $uiScale)
+    $scrollBar.Top = 0
+    $scrollBar.Width = [int](8 * $uiScale)
+    $scrollBar.Height = $body.Height
+    $scrollBar.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Right
+    $body.Controls.Add($scrollBar)
+
+    $scrollBar.Add_ValueChanged({
+        $content.Top = -$scrollBar.Value
+    })
+
+    $cardW = [int](505 * $uiScale)
     $script:currY = [int](15 * $uiScale)
 
     function Add-SettingsCard([string]$CardTitle, [int]$CardHeight) {
@@ -2126,7 +2285,7 @@ function Show-Settings {
         $lbl.ForeColor = [System.Drawing.Color]::White; $lbl.AutoSize = $true
         $lbl.Left = [int](15 * $uiScale); $lbl.Top = [int](12 * $uiScale)
         $c.Controls.Add($lbl)
-        $body.Controls.Add($c)
+        $content.Controls.Add($c)
         $script:currY += [int](($CardHeight + 15) * $uiScale)
         return $c
     }
@@ -2151,7 +2310,7 @@ function Show-Settings {
             $settings.BackgroundColor = $this.Tag
             $settings.BackgroundType = "Color"
             $rbColor.Checked = $true
-            Save-DesktopSettings; Refresh-Desktop
+            Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms
         })
         $cardBg.Controls.Add($sw)
         $swatchX += [int](32 * $uiScale)
@@ -2169,7 +2328,7 @@ function Show-Settings {
             $settings.BackgroundColor = [System.Drawing.ColorTranslator]::ToHtml($cd.Color)
             $settings.BackgroundType = "Color"
             $rbColor.Checked = $true
-            Save-DesktopSettings; Refresh-Desktop
+            Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms
         }
         $cd.Dispose()
     })
@@ -2182,12 +2341,12 @@ function Show-Settings {
     $browseBtn.BackColor = $script:Colors.InputBg; $browseBtn.ForeColor = [System.Drawing.Color]::White; $browseBtn.Cursor = [System.Windows.Forms.Cursors]::Hand
     $browseBtn.Add_Click({
         $ofd = New-Object System.Windows.Forms.OpenFileDialog
-        $ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif"
+        $ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp;*.jfif|All Files|*.*"
         if ($ofd.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
             $settings.ImagePath = $ofd.FileName
             $settings.BackgroundType = "Image"
             $rbImage.Checked = $true
-            Save-DesktopSettings; Refresh-Desktop
+            Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms
         }
         $ofd.Dispose()
     })
@@ -2205,7 +2364,7 @@ function Show-Settings {
     $fitCombo.SelectedItem = $settings.ImageMode
     $fitCombo.Add_SelectedIndexChanged({
         $settings.ImageMode = [string]$fitCombo.SelectedItem
-        Save-DesktopSettings; Refresh-Desktop
+        Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms
     })
     $cardBg.Controls.Add($fitCombo)
 
@@ -2239,20 +2398,20 @@ function Show-Settings {
 
     $cardBg.Controls.Add($d0); $cardBg.Controls.Add($d20); $cardBg.Controls.Add($d40); $cardBg.Controls.Add($d60)
 
-    $rbColor.Add_CheckedChanged({ if ($rbColor.Checked) { $settings.BackgroundType = "Color"; Save-DesktopSettings; Refresh-Desktop } })
-    $rbImage.Add_CheckedChanged({ if ($rbImage.Checked) { $settings.BackgroundType = "Image"; Save-DesktopSettings; Refresh-Desktop } })
+    $rbColor.Add_CheckedChanged({ if ($rbColor.Checked) { $settings.BackgroundType = "Color"; Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms } })
+    $rbImage.Add_CheckedChanged({ if ($rbImage.Checked) { $settings.BackgroundType = "Image"; Save-DesktopSettings; Apply-Background; Invalidate-AllDesktopForms } })
 
     # Card 2: Desktop Path & Explorer
     $cardPath = Add-SettingsCard "Desktop Folder Location" 105
     $pathBox = New-Object System.Windows.Forms.TextBox
-    $pathBox.Left = [int](15 * $uiScale); $pathBox.Top = [int](45 * $uiScale); $pathBox.Width = [int](330 * $uiScale); $pathBox.Height = [int](28 * $uiScale)
+    $pathBox.Left = [int](15 * $uiScale); $pathBox.Top = [int](45 * $uiScale); $pathBox.Width = [int](340 * $uiScale); $pathBox.Height = [int](28 * $uiScale)
     $pathBox.BackColor = $script:Colors.InputBg; $pathBox.ForeColor = [System.Drawing.Color]::White; $pathBox.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
     $pathBox.Text = $script:desktopPath
     $cardPath.Controls.Add($pathBox)
 
     $pathBtn = New-Object System.Windows.Forms.Button
     $pathBtn.Text = "Browse..."
-    $pathBtn.Left = [int](355 * $uiScale); $pathBtn.Top = [int](45 * $uiScale); $pathBtn.Width = [int](115 * $uiScale); $pathBtn.Height = [int](28 * $uiScale)
+    $pathBtn.Left = [int](365 * $uiScale); $pathBtn.Top = [int](45 * $uiScale); $pathBtn.Width = [int](115 * $uiScale); $pathBtn.Height = [int](28 * $uiScale)
     $pathBtn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat; $pathBtn.FlatAppearance.BorderSize = 0
     $pathBtn.BackColor = $script:Colors.InputBg; $pathBtn.ForeColor = [System.Drawing.Color]::White; $pathBtn.Cursor = [System.Windows.Forms.Cursors]::Hand
     $pathBtn.Add_Click({
@@ -2276,7 +2435,7 @@ function Show-Settings {
 
     $track = New-Object System.Windows.Forms.TrackBar
     $track.Minimum = 32; $track.Maximum = 160; $track.Value = [int]$settings.IconScale
-    $track.Left = [int](150 * $uiScale); $track.Top = [int](32 * $uiScale); $track.Width = [int](310 * $uiScale)
+    $track.Left = [int](150 * $uiScale); $track.Top = [int](32 * $uiScale); $track.Width = [int](320 * $uiScale)
     $track.TickFrequency = 16
     $cardScale.Controls.Add($track)
 
@@ -2306,7 +2465,7 @@ function Show-Settings {
 
     $uiTrack = New-Object System.Windows.Forms.TrackBar
     $uiTrack.Minimum = 70; $uiTrack.Maximum = 180; $uiTrack.Value = [Math]::Max(70, [Math]::Min(180, $uiPct))
-    $uiTrack.Left = [int](150 * $uiScale); $uiTrack.Top = [int](124 * $uiScale); $uiTrack.Width = [int](310 * $uiScale)
+    $uiTrack.Left = [int](150 * $uiScale); $uiTrack.Top = [int](124 * $uiScale); $uiTrack.Width = [int](320 * $uiScale)
     $uiTrack.TickFrequency = 10
     $cardScale.Controls.Add($uiTrack)
 
@@ -2357,7 +2516,27 @@ function Show-Settings {
         Refresh-Desktop
         $form.Close()
     })
-    $body.Controls.Add($resetBtn)
+    $content.Controls.Add($resetBtn)
+    $script:currY += [int](60 * $uiScale)
+
+    # Configure content height and modern scrollbar range
+    $content.Height = $script:currY
+    $maxScroll = [Math]::Max(0, $content.Height - $body.Height)
+    $scrollBar.Maximum = $maxScroll
+    $scrollBar.LargeChange = $body.Height
+    $scrollBar.Visible = ($maxScroll -gt 0)
+
+    # Mouse wheel smooth scrolling across the entire Settings window
+    $wheelScroll = {
+        param($s, $e)
+        if ($scrollBar.Visible) {
+            $step = if ($e.Delta -gt 0) { -50 } else { 50 }
+            $scrollBar.Value = [Math]::Max(0, [Math]::Min($scrollBar.Maximum, $scrollBar.Value + $step))
+        }
+    }
+    $form.Add_MouseWheel($wheelScroll)
+    $body.Add_MouseWheel($wheelScroll)
+    $content.Add_MouseWheel($wheelScroll)
 
     $script:settingsForm = $form
     [void]$form.ShowDialog()
@@ -2779,7 +2958,6 @@ $script:resizeHandler = {
 function Sync-MultiMonitorForms {
     $screens = [System.Windows.Forms.Screen]::AllScreens
     
-    # Check if existing forms can simply be adjusted without disposing root pump
     if ($screens.Count -eq $script:forms.Count) {
         $allMatched = $true
         for ($i = 0; $i -lt $screens.Count; $i++) {
@@ -2794,7 +2972,6 @@ function Sync-MultiMonitorForms {
         if ($allMatched) { return }
     }
 
-    # Screen count changed: Adjust list preserving active primary form
     [CustomDesktopForm]::DesktopHwnds.Clear()
     $newForms = @()
 
@@ -2834,7 +3011,6 @@ function Sync-MultiMonitorForms {
         $newForms += $form
     }
 
-    # Close any extra forms beyond current screen count
     if ($script:forms.Count -gt $screens.Count) {
         for ($j = $screens.Count; $j -lt $script:forms.Count; $j++) {
             $extra = $script:forms[$j]
@@ -3043,7 +3219,6 @@ $script:refreshTimer.Add_Tick({
 
 Sync-MultiMonitorForms
 Create-ContextMenus
-Load-BackgroundImage
 Apply-Background
 Build-DesktopIcons
 Init-FileSystemWatcher
