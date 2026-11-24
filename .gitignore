@@ -1,4 +1,70 @@
+# ===== OS =====
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ===== Editors / IDE =====
 .vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+
+# ===== Temp, logs, dumps, archives =====
+*.log
+*.tmp
+*.bak
+*.dmp
+*.zip
+*.7z
+*.rar
+
+# ===== Office lock/temp files =====
+~$*
+~WRL*.tmp
+
+# ===== Claude Code local state =====
+.claude/worktrees/
+.claude/settings.local.json
+
+# ===== Secrets / keys =====
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+*.key
+
+# ===== .NET build output =====
+[Bb]in/
+[Oo]bj/
+[Pp]ublish/
+[Aa]rtifacts/
+TestResults/
+*.binlog
+*.nupkg
+*.snupkg
+*.pdb
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+*.pubxml.user
+*.slnLaunch.user
+_ReSharper*/
+*.coverage
+coverage/
+
+# ===== Project specific =====
 *.tar
 **bin/
 **obj/
